@@ -1,12 +1,15 @@
 .TH Spot-On-Lite-Daemon-Child 1 "February 21, 2018"
 .SH NAME
-Spot-On-Lite-DaemonChild
+Spot-On-Lite-Daemon-Child
 .SH SYNOPSIS
-.B Spot-On-Lite-DaemonChild [options]
+.B Spot-On-Lite-Daemon-Child [options]
 .SH DESCRIPTION
-.B Spot-On-Lite-DaemonChild
+.B Spot-On-Lite-Daemon-Child
 is the child process of Spot-On-Lite-Daemon.
 .SH OPTIONS
+.TP
+.BI --congestion-control-file " file"
+Absolute path of the congestion control file. Assumed to be correct. Only the first instance will be considered.
 .TP
 .BI --log-file " file"
 Absolute path of the log file. Assumed to be correct. Only the first instance will be considered.
