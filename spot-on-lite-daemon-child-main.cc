@@ -1,5 +1,28 @@
 /*
-** Alexis Megas.
+** Copyright (c) 2011 - 10^10^10, Alexis Megas.
+** All rights reserved.
+**
+** Redistribution and use in source and binary forms, with or without
+** modification, are permitted provided that the following conditions
+** are met:
+** 1. Redistributions of source code must retain the above copyright
+**    notice, this list of conditions and the following disclaimer.
+** 2. Redistributions in binary form must reproduce the above copyright
+**    notice, this list of conditions and the following disclaimer in the
+**    documentation and/or other materials provided with the distribution.
+** 3. The name of the author may not be used to endorse or promote products
+**    derived from Spot-On without specific prior written permission.
+**
+** SPOT-ON-LITE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
+** IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+** OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+** IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,
+** INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
+** NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+** DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+** THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+** (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+** SPOT-ON-LITE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 extern "C"
@@ -56,7 +79,7 @@ int main(int argc, char *argv[])
   int rc = EXIT_SUCCESS;
   int sd = -1;
   int silence = -1;
-  int sslKeySize = -1;
+  int ssl_key_size = -1;
 
   for(int i = 0; i < argc; i++)
     if(argv && argv[i] && strcmp(argv[i], "--log-file") == 0)
@@ -142,12 +165,12 @@ int main(int argc, char *argv[])
       }
     else if(argv && argv[i] && strcmp(argv[i], "--ssl-tls-key-size") == 0)
       {
-	if(sslKeySize == -1)
+	if(ssl_key_size == -1)
 	  {
 	    i += 1;
 
 	    if(argc > i && argv[i])
-	      sslKeySize = atoi(argv[i]);
+	      ssl_key_size = atoi(argv[i]);
 	    else
 	      {
 		/*
@@ -174,7 +197,7 @@ int main(int argc, char *argv[])
 	     maximum_accumulated_bytes,
 	     silence,
 	     sd,
-	     sslKeySize);
+	     ssl_key_size);
 
 	  rc = qapplication.exec();
 	}
