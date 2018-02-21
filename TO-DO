@@ -1,4 +1,4 @@
 Remaining Items
 
-1.  Congestion control.
+1.  Congestion control, per child process.
 2.  Echo through child processes.
