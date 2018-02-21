@@ -58,15 +58,15 @@ spot_on_lite_daemon_tcp_listener::
 
 #if QT_VERSION >= 0x050000
 void spot_on_lite_daemon_tcp_listener::incoming_connection
-(qintptr socketDescriptor)
+(qintptr socket_descriptor)
 #else
 void spot_on_lite_daemon_tcp_listener::incoming_connection
-(int socketDescriptor)
+(int socket_descriptor)
 #endif
 {
   if(!spot_on_lite_daemon::instance())
     {
-      ::close(static_cast<int> (socketDescriptor));
+      ::close(static_cast<int> (socket_descriptor));
       return;
     }
 
@@ -76,7 +76,10 @@ void spot_on_lite_daemon_tcp_listener::incoming_connection
   pid_t pid = 0;
   std::string command
     (spot_on_lite_daemon::instance()->child_process_file_name().toStdString());
-  std::string ldLibraryPath
+  std::string congestion_control_file_name
+    (spot_on_lite_daemon::instance()->congestion_control_file_name().
+     toStdString());
+  std::string ld_library_path
     (spot_on_lite_daemon::instance()->child_process_ld_library_path().
      toStdString());
   std::string log_file_name
@@ -89,17 +92,19 @@ void spot_on_lite_daemon_tcp_listener::incoming_connection
       else if(pid > 0)
 	_exit(EXIT_SUCCESS);
 
-      int sd = dup(static_cast<int> (socketDescriptor));
+      int sd = dup(static_cast<int> (socket_descriptor));
 
-      ::close(static_cast<int> (socketDescriptor));
+      ::close(static_cast<int> (socket_descriptor));
 
       if(sd == -1)
 	_exit(EXIT_FAILURE);
 
-      const char *envp[] = {ldLibraryPath.data(), NULL};
+      const char *envp[] = {ld_library_path.data(), NULL};
 
       if(execle(command.data(),
 		command.data(),
+		"--congestion-control-file",
+		congestion_control_file_name,
 		"--log-file",
 		log_file_name.data(),
 		"--maximum--accumulated-bytes",
@@ -124,7 +129,7 @@ void spot_on_lite_daemon_tcp_listener::incoming_connection
     }
   else
     {
-      ::close(static_cast<int> (socketDescriptor));
+      ::close(static_cast<int> (socket_descriptor));
       waitpid(pid, NULL, 0);
     }
 }

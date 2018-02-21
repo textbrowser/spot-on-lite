@@ -72,9 +72,10 @@ int main(int argc, char *argv[])
   if(prepare_signal_handlers())
     return EXIT_FAILURE;
 
+  QString congestion_control_file_name("");
   QString log_file_name("");
-  QString ssl_control_string("");
   QString protocol("tcp");
+  QString ssl_control_string("");
   int maximum_accumulated_bytes = -1;
   int rc = EXIT_SUCCESS;
   int sd = -1;
@@ -82,7 +83,23 @@ int main(int argc, char *argv[])
   int ssl_key_size = -1;
 
   for(int i = 0; i < argc; i++)
-    if(argv && argv[i] && strcmp(argv[i], "--log-file") == 0)
+    if(argv && argv[i] && strcmp(argv[i], "--congestion-control-file") == 0)
+      {
+	if(congestion_control_file_name.isEmpty())
+	  {
+	    i += 1;
+
+	    if(argc > i && argv[i])
+	      congestion_control_file_name = argv[i];
+	    else
+	      {
+		std::cerr << "Invalid congestion-control-file usage. Exiting."
+			  << std::endl;
+		return EXIT_FAILURE;
+	      }
+	  }
+      }
+    else if(argv && argv[i] && strcmp(argv[i], "--log-file") == 0)
       {
 	if(log_file_name.isEmpty())
 	  {
@@ -192,7 +209,8 @@ int main(int argc, char *argv[])
       if(protocol == "tcp")
 	{
 	  spot_on_lite_daemon_child_tcp_client client
-	    (log_file_name,
+	    (congestion_control_file_name,
+	     log_file_name,
 	     ssl_control_string,
 	     maximum_accumulated_bytes,
 	     silence,
