@@ -41,10 +41,6 @@ extern "C"
 #include <QSslKey>
 #include <QStringList>
 #include <QTimer>
-#if QT_VERSION >= 0x050000
-#include <QtConcurrent>
-#endif
-#include <QtCore>
 
 #include <limits>
 
@@ -298,10 +294,10 @@ generate_certificate(RSA *rsa,
   X509 *x509 = 0;
   X509_NAME *name = 0;
   X509_NAME *subject = 0;
-  X509_NAME_ENTRY *commonNameEntry = 0;
+  X509_NAME_ENTRY *common_name_entry = 0;
   char *buffer = 0;
   int length = 0;
-  unsigned char *commonName = 0;
+  unsigned char *common_name = 0;
 
   if(!error.isEmpty())
     goto done_label;
@@ -354,29 +350,29 @@ generate_certificate(RSA *rsa,
 
   if(std::numeric_limits<int>::max() -
      localAddress().toString().toLatin1().length() < 1)
-    commonName = 0;
+    common_name = 0;
   else
-    commonName = static_cast<unsigned char *>
+    common_name = static_cast<unsigned char *>
       (calloc(static_cast<size_t> (localAddress().toString().
 				   toLatin1().length() + 1),
 	      sizeof(unsigned char)));
 
-  if(!commonName)
+  if(!common_name)
     {
       error = "calloc() returned zero or invalid local address";
       goto done_label;
     }
 
   length = localAddress().toString().toLatin1().length();
-  memcpy(commonName,
+  memcpy(common_name,
 	 localAddress().toString().toLatin1().constData(),
 	 static_cast<size_t> (length));
-  commonNameEntry = X509_NAME_ENTRY_create_by_NID
+  common_name_entry = X509_NAME_ENTRY_create_by_NID
     (0,
      NID_commonName, V_ASN1_PRINTABLESTRING,
-     commonName, length);
+     common_name, length);
 
-  if(!commonNameEntry)
+  if(!common_name_entry)
     {
       error = "X509_NAME_ENTRY_create_by_NID() returned zero";
       goto done_label;
@@ -390,7 +386,7 @@ generate_certificate(RSA *rsa,
       goto done_label;
     }
 
-  if(X509_NAME_add_entry(subject, commonNameEntry, -1, 0) != 1)
+  if(X509_NAME_add_entry(subject, common_name_entry, -1, 0) != 1)
     {
       error = "X509_NAME_add_entry() failure";
       goto done_label;
@@ -471,26 +467,26 @@ generate_certificate(RSA *rsa,
     RSA_up_ref(rsa); // Reference counter.
 
   EVP_PKEY_free(pk);
-  X509_NAME_ENTRY_free(commonNameEntry);
+  X509_NAME_ENTRY_free(common_name_entry);
   X509_NAME_free(subject);
   X509_free(x509);
   free(buffer);
-  free(commonName);
+  free(common_name);
 }
 
 void spot_on_lite_daemon_child_tcp_client::generate_ssl_tls(void)
 {
   BIGNUM *f4 = 0;
-  BIO *privateMemory = 0;
-  BIO *publicMemory = 0;
+  BIO *private_memory = 0;
+  BIO *public_memory = 0;
   BUF_MEM *bptr;
   QByteArray certificate;
-  QByteArray privateKey;
-  QByteArray publicKey;
+  QByteArray private_key;
+  QByteArray public_key;
   QString error("");
   RSA *rsa = 0;
-  char *privateBuffer = 0;
-  char *publicBuffer = 0;
+  char *private_buffer = 0;
+  char *public_buffer = 0;
   long int days = 60L * 60L * 24L * 365L; // One year.
 
   if(m_ssl_key_size <= 0)
@@ -528,58 +524,58 @@ void spot_on_lite_daemon_child_tcp_client::generate_ssl_tls(void)
       goto done_label;
     }
 
-  if(!(privateMemory = BIO_new(BIO_s_mem())))
+  if(!(private_memory = BIO_new(BIO_s_mem())))
     {
       error = "BIO_new() returned zero";
       goto done_label;
     }
 
-  if(!(publicMemory = BIO_new(BIO_s_mem())))
+  if(!(public_memory = BIO_new(BIO_s_mem())))
     {
       error = "BIO_new() returned zero";
       goto done_label;
     }
 
-  if(PEM_write_bio_RSAPrivateKey(privateMemory, rsa, 0, 0, 0, 0, 0) == 0)
+  if(PEM_write_bio_RSAPrivateKey(private_memory, rsa, 0, 0, 0, 0, 0) == 0)
     {
       error = "PEM_write_bio_RSAPrivateKey() returned zero";
       goto done_label;
     }
 
-  if(PEM_write_bio_RSAPublicKey(publicMemory, rsa) == 0)
+  if(PEM_write_bio_RSAPublicKey(public_memory, rsa) == 0)
     {
       error = "PEM_write_bio_RSAPublicKey() returned zero";
       goto done_label;
     }
 
-  BIO_get_mem_ptr(privateMemory, &bptr);
+  BIO_get_mem_ptr(private_memory, &bptr);
 
   if(bptr->length + 1 <= 0 ||
      std::numeric_limits<size_t>::max() - bptr->length < 1 ||
-     !(privateBuffer = static_cast<char *> (calloc(bptr->length + 1,
+     !(private_buffer = static_cast<char *> (calloc(bptr->length + 1,
 						   sizeof(char)))))
     {
       error = "calloc() failure or bptr->length + 1 is irregular";
       goto done_label;
     }
 
-  memcpy(privateBuffer, bptr->data, bptr->length);
-  privateBuffer[bptr->length] = 0;
-  privateKey = privateBuffer;
-  BIO_get_mem_ptr(publicMemory, &bptr);
+  memcpy(private_buffer, bptr->data, bptr->length);
+  private_buffer[bptr->length] = 0;
+  private_key = private_buffer;
+  BIO_get_mem_ptr(public_memory, &bptr);
 
   if(bptr->length + 1 <= 0 ||
      std::numeric_limits<size_t>::max() - bptr->length < 1 ||
-     !(publicBuffer = static_cast<char *> (calloc(bptr->length + 1,
+     !(public_buffer = static_cast<char *> (calloc(bptr->length + 1,
 						  sizeof(char)))))
     {
       error = "calloc() failure or bptr->length + 1 is irregular";
       goto done_label;
     }
 
-  memcpy(publicBuffer, bptr->data, bptr->length);
-  publicBuffer[bptr->length] = 0;
-  publicKey = publicBuffer;
+  memcpy(public_buffer, bptr->data, bptr->length);
+  public_buffer[bptr->length] = 0;
+  public_key = public_buffer;
 
   if(days > 0)
     generate_certificate(rsa, certificate, days, error);
@@ -592,12 +588,12 @@ void spot_on_lite_daemon_child_tcp_client::generate_ssl_tls(void)
       certificate.replace
 	(0, certificate.length(), QByteArray(certificate.length(), 0));
       certificate.clear();
-      privateKey.replace
-	(0, privateKey.length(), QByteArray(privateKey.length(), 0));
-      privateKey.clear();
-      publicKey.replace
-	(0, publicKey.length(), QByteArray(publicKey.length(), 0));
-      publicKey.clear();
+      private_key.replace
+	(0, private_key.length(), QByteArray(private_key.length(), 0));
+      private_key.clear();
+      public_key.replace
+	(0, public_key.length(), QByteArray(public_key.length(), 0));
+      public_key.clear();
       log(QString("spot_on_lite_daemon_child_tcp_client::"
 		  "generate_ssl_tls(): error (%1) occurred.").arg(error));
     }
@@ -613,7 +609,7 @@ void spot_on_lite_daemon_child_tcp_client::generate_ssl_tls(void)
       if(!configuration.localCertificate().isNull())
 #endif
 	{
-	  configuration.setPrivateKey(QSslKey(privateKey, QSsl::Rsa));
+	  configuration.setPrivateKey(QSslKey(private_key, QSsl::Rsa));
 
 	  if(!configuration.privateKey().isNull())
 	    {
@@ -655,12 +651,12 @@ void spot_on_lite_daemon_child_tcp_client::generate_ssl_tls(void)
 	}
     }
 
-  BIO_free(privateMemory);
-  BIO_free(publicMemory);
+  BIO_free(private_memory);
+  BIO_free(public_memory);
   BN_free(f4);
   RSA_free(rsa);
-  free(privateBuffer);
-  free(publicBuffer);
+  free(private_buffer);
+  free(public_buffer);
 }
 
 void spot_on_lite_daemon_child_tcp_client::log(const QString &error) const
@@ -682,17 +678,6 @@ void spot_on_lite_daemon_child_tcp_client::log(const QString &error) const
       file.write("\n");
       file.close();
     }
-}
-
-void spot_on_lite_daemon_child_tcp_client::parse(const QByteArray &data)
-{
-  if(data.isEmpty())
-    return;
-
-  QReadLocker locker(&m_contentLock);
-
-  if(!m_content.isEmpty())
-    emit readyRead();
 }
 
 void spot_on_lite_daemon_child_tcp_client::
@@ -735,8 +720,6 @@ void spot_on_lite_daemon_child_tcp_client::slot_ready_read(void)
     {
       emit keep_alive();
 
-      QWriteLocker locker(&m_contentLock);
-
       if(m_content.length() >= m_maximum_accumulated_bytes)
 	m_content.clear();
 
@@ -744,24 +727,11 @@ void spot_on_lite_daemon_child_tcp_client::slot_ready_read(void)
 	(data.mid(0, qAbs(m_maximum_accumulated_bytes - m_content.length())));
     }
 
-  if(!m_future.isFinished())
-    return;
-  else
-    data.clear();
-
   int index = 0;
 
-  {
-    QWriteLocker locker(&m_contentLock);
-
-    if((index = m_content.indexOf(EOM)) > 0)
-      {
-	data = m_content.mid(0, EOM.length() + index);
-	m_content.remove(0, data.length());
-      }
-  }
-
-  if(!data.isEmpty())
-    m_future = QtConcurrent::run
-      (this, &spot_on_lite_daemon_child_tcp_client::parse, data);
+  if((index = m_content.indexOf(EOM)) > 0)
+    {
+      data = m_content.mid(0, EOM.length() + index);
+      m_content.remove(0, data.length());
+    }
 }
