@@ -44,6 +44,7 @@ class spot_on_lite_daemon: public QObject
   ~spot_on_lite_daemon();
   QString child_process_file_name(void) const;
   QString child_process_ld_library_path(void) const;
+  QString congestion_control_file_name(void) const;
   QString log_file_name(void) const;
   int maximum_accumulated_bytes(void) const;
   static spot_on_lite_daemon *instance(void);
@@ -56,9 +57,10 @@ class spot_on_lite_daemon: public QObject
  private:
   QList<spot_on_lite_daemon_tcp_listener *> m_listeners;
   QSocketNotifier *m_signal_usr1_socket_notifier;
-  QString m_configuration_file_name;
   QString m_child_process_file_name;
   QString m_child_process_ld_library_path;
+  QString m_configuration_file_name;
+  QString m_congestion_control_file_name;
   QString m_log_file_name;
   QVector<QString> m_listeners_properties;
   int m_maximum_accumulated_bytes;

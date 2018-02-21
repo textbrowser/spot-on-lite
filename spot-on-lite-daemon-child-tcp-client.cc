@@ -62,7 +62,7 @@ spot_on_lite_daemon_child_tcp_client
   m_maximum_accumulated_bytes = maximum_accumulated_bytes;
 
   if(m_maximum_accumulated_bytes < 1024)
-    m_maximum_accumulated_bytes = 32 * 1024 * 1024;
+    m_maximum_accumulated_bytes = 8 * 1024 * 1024;
 
   m_silence = 1000 * qBound(15, silence, 3600);
   m_ssl_control_string = ssl_control_string.trimmed();

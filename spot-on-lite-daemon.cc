@@ -59,7 +59,7 @@ spot_on_lite_daemon::spot_on_lite_daemon
 	   "socketpair() failure. Exiting.");
 
   m_configuration_file_name = configuration_file_name;
-  m_maximum_accumulated_bytes = 32 * 1024 * 1024; // 32 MiB
+  m_maximum_accumulated_bytes = 8 * 1024 * 1024; // 8 MiB
   m_signal_usr1_socket_notifier = new QSocketNotifier
     (s_signal_usr1_fd[1], QSocketNotifier::Read, this);
   connect(m_signal_usr1_socket_notifier,
@@ -140,6 +140,7 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
 {
   m_child_process_file_name.clear();
   m_child_process_ld_library_path.clear();
+  m_congestion_control_file_name.clear();
   m_log_file_name.clear();
 
   QHash<QString, char> hash;
@@ -177,6 +178,41 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
     else if(key == "child_process_ld_library_path")
       m_child_process_ld_library_path =
 	settings.value(key).toString().trimmed();
+    else if(key == "congestion_control_file")
+      {
+	QFileInfo fileInfo(settings.value(key).toString());
+
+	fileInfo = QFileInfo(fileInfo.absolutePath());
+
+	if(!fileInfo.isDir())
+	  {
+	    if(ok)
+	      *ok = false;
+
+	    std::cerr << "spot_on_lite_daemon::"
+		      << "process_configuration_file(): "
+		      << "The parent directory \""
+		      << fileInfo.absoluteFilePath().toStdString()
+		      << "\" of the congestion control file is "
+		      << "not a directory. Ignoring entry."
+		      << std::endl;
+	  }
+	else if(!fileInfo.isWritable())
+	  {
+	    if(ok)
+	      *ok = false;
+
+	    std::cerr << "spot_on_lite_daemon::"
+		      << "process_configuration_file(): "
+		      << "The parent directory \""
+		      << fileInfo.absoluteFilePath().toStdString()
+		      << "\" of the congestion control file is not writable. "
+		      << "Ignoring entry."
+		      << std::endl;
+	  }
+	else
+	  m_congestion_control_file_name = settings.value(key).toString();
+      }
     else if(key == "log_file")
       {
 	QFileInfo fileInfo(settings.value(key).toString());

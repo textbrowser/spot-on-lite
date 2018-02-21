@@ -15,7 +15,7 @@ Absolute path of the congestion control file. Assumed to be correct. Only the fi
 Absolute path of the log file. Assumed to be correct. Only the first instance will be considered.
 .TP
 .BI --maximum-accumulated-bytes " bytes"
-The maximum number of bytes a child process will accumulate. Data will be discarded if the limit is breached. A default value of 32 MiB is assumed. The bytes parameter must be in the range [1024, 2147483647]. Only the first instance will be considered.
+The maximum number of bytes a child process will accumulate. Data will be discarded if the limit is breached. A default value of 8 MiB is assumed. The bytes parameter must be in the range [1024, 2147483647]. Only the first instance will be considered.
 .TP
 .BI --silence-timeout " seconds"
 The process expects periodic data from its peer. If data is not received within the specified number of seconds, the process will terminate itself. The seconds parameter will be bound to the range [15, 3600]. Only the first instance will be considered.
