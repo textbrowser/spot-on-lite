@@ -42,9 +42,9 @@ class spot_on_lite_daemon_tcp_listener: public QTcpServer
 
  protected:
 #if QT_VERSION >= 0x050000
-  void incoming_connection(qintptr socket_descriptor);
+  void incomingConnection(qintptr socket_descriptor);
 #else
-  void incoming_connection(int socket_descriptor);
+  void incomingConnection(int socket_descriptor);
 #endif
 
  private:
