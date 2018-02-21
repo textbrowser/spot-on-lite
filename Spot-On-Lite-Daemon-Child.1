@@ -1,0 +1,36 @@
+.TH Spot-On-Lite-Daemon-Child 1 "February 21, 2018"
+.SH NAME
+Spot-On-Lite-DaemonChild
+.SH SYNOPSIS
+.B Spot-On-Lite-DaemonChild [options]
+.SH DESCRIPTION
+.B Spot-On-Lite-DaemonChild
+is the child process of Spot-On-Lite-Daemon.
+.SH OPTIONS
+.TP
+.BI --log-file " file"
+Absolute path of the log file. Assumed to be correct. Only the first instance will be considered.
+.TP
+.BI --maximum-accumulated-bytes " bytes"
+The maximum number of bytes a child process will accumulate. Data will be discarded if the limit is breached. A default value of 32 MiB is assumed. The bytes parameter must be in the range [1024, 2147483647]. Only the first instance will be considered.
+.TP
+.BI --silence-timeout " seconds"
+The process expects periodic data from its peer. If data is not received within the specified number of seconds, the process will terminate itself. The seconds parameter will be bound to the range [15, 3600]. Only the first instance will be considered.
+.TP
+.BI --socket-descriptor " descriptor"
+The socket descriptor. Assumed to be correct. If incorrect, the child process will self-terminate. Only the first instance will be considered.
+.TP
+.BI --ssl-tls-control-string " string"
+May be used to define the preferred cipher algorithms. The available algorithms depend on both OpenSSL and Qt. Assumed to be correct. Only the first instance will be considered. Please review the results of openssl ciphers -v.
+.TP
+.BI --ssl-tls-key-size " size"
+The size, in bits, of the RSA key to be generated for the server's certificate. If the provided size is not in the set {2048, 3072, 4096}, SSL/TLS will be disabled. Only the first instance will be considered.
+.TP
+.BI --tcp
+TCP is the assumed protocol. Only the first instance will be considered.
+.SH NOTES
+SSL/TLS certificates are self-signed and expire in one year. The certificates are generated per child process and are not saved on disk.
+
+openssl s_client -connect 127.0.0.1:4711, for example, may be used to test OpenSSL.
+.SH AUTHOR(S)
+.B Alexis Megas

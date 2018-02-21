@@ -1,0 +1,17 @@
+General Requirements
+
+- Child processes should not create local files.
+- Child processes should self-terminate after a configurable period of silence.
+- Child processes will not re-process a configuration file upon the parent
+  receiving a SIGUSR1 signal.
+- Multiple instances of a daemon are allowed.
+- Optional SSL/TLS within child processes.
+- Terminating the daemon should terminate child processes.
+- The configuration file is to be written in an INI format.
+- The daemon must be very simple. That is, all essential activity must be
+  performed by a child process. The daemon should only create child processes.
+- The daemon must not require special permissions.
+- The daemon must support the re-processing of its configuration
+  file via SIGUSR1. Asynchronous-safe functions only.
+- The daemon must support multiple listeners.
+- The daemon will separate itself from its parent terminal.
