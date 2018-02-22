@@ -841,6 +841,14 @@ void spot_on_lite_daemon_child_tcp_client::slot_local_socket_disconnected(void)
   m_local_socket->deleteLater();
   m_local_socket = new QLocalSocket(this);
   m_local_socket->connectToServer(m_local_server_file_name);
+  connect(m_local_socket,
+	  SIGNAL(disconnected(void)),
+	  this,
+	  SLOT(slot_local_socket_disconnected(void)));
+  connect(m_local_socket,
+	  SIGNAL(readyRead(void)),
+	  this,
+	  SLOT(slot_local_socket_ready_read(void)));
 }
 
 void spot_on_lite_daemon_child_tcp_client::slot_local_socket_ready_read(void)
