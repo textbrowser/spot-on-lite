@@ -49,6 +49,7 @@ extern "C"
 #include "spot-on-lite-daemon.h"
 #include "spot-on-lite-daemon-tcp-listener.h"
 
+extern char *s_local_server_file_name;
 int spot_on_lite_daemon::s_signal_usr1_fd[2];
 spot_on_lite_daemon *spot_on_lite_daemon::s_instance = 0;
 
@@ -168,10 +169,22 @@ void spot_on_lite_daemon::prepare_local_socket_server(void)
     }
 
   if(!m_local_server->isListening())
-    m_local_server->listen
-      (QString("%1/Spot-On-Lite-Daemon-Local-Server.%2").
-       arg(m_local_socket_server_directory_name).
-       arg(QCoreApplication::applicationPid()));
+    {
+      m_local_server->listen
+	(QString("%1/Spot-On-Lite-Daemon-Local-Server.%2").
+	 arg(m_local_socket_server_directory_name).
+	 arg(QCoreApplication::applicationPid()));
+
+      if(m_local_server->isListening())
+	if(!s_local_server_file_name)
+	  {
+	    s_local_server_file_name = new char[2048];
+	    memset(s_local_server_file_name, 0, 2048);
+	    qstrcpy
+	      (s_local_server_file_name,
+	       m_local_server->fullServerName().toStdString().data());
+	  }
+    }
 }
 
 void spot_on_lite_daemon::process_configuration_file(bool *ok)

@@ -43,6 +43,8 @@ extern "C"
 
 #include "spot-on-lite-daemon.h"
 
+char *s_local_server_file_name = 0;
+
 void spot_on_lite_daemon::handler_signal(int signal_number)
 {
   switch(signal_number)
@@ -54,6 +56,10 @@ void spot_on_lite_daemon::handler_signal(int signal_number)
     default:
       {
 	kill(0, signal_number);
+
+	if(s_local_server_file_name)
+	  unlink(s_local_server_file_name);
+
 	exit(0);
 	return;
       }
