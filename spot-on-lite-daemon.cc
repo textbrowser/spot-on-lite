@@ -63,7 +63,6 @@ spot_on_lite_daemon::spot_on_lite_daemon
 	   "socketpair() failure. Exiting.");
 
   m_configuration_file_name = configuration_file_name;
-  m_local_server = 0;
   m_maximum_accumulated_bytes = 8 * 1024 * 1024; // 8 MiB
   m_signal_usr1_socket_notifier = new QSocketNotifier
     (s_signal_usr1_fd[1], QSocketNotifier::Read, this);
@@ -561,6 +560,12 @@ void spot_on_lite_daemon::slot_ready_read(void)
   if(!socket)
     return;
 
+  if(!m_local_server)
+    {
+      socket->readAll();
+      return;
+    }
+
   QByteArray data(socket->readAll());
 
   foreach(QLocalSocket *s, m_local_server->findChildren<QLocalSocket *> ())
@@ -589,6 +594,20 @@ void spot_on_lite_daemon::slot_signal_usr1(void)
 void spot_on_lite_daemon::start(void)
 {
   m_listeners_properties.clear();
+
+  if(m_local_server)
+    {
+      m_local_server->close();
+      m_local_server->removeServer(m_local_server->fullServerName());
+      m_local_server->deleteLater();
+    }
+
+  if(s_local_server_file_name)
+    {
+      delete []s_local_server_file_name;
+      s_local_server_file_name = 0;
+    }
+
   process_configuration_file(0);
   prepare_listeners();
   prepare_local_socket_server();

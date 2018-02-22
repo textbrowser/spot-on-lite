@@ -28,10 +28,11 @@
 #ifndef _spot_on_lite_daemon_h_
 #define _spot_on_lite_daemon_h_
 
+#include <QLocalServer>
 #include <QObject>
+#include <QPointer>
 #include <QVector>
 
-class QLocalServer;
 class QSocketNotifier;
 class spot_on_lite_daemon_tcp_listener;
 
@@ -58,7 +59,7 @@ class spot_on_lite_daemon: public QObject
 
  private:
   QList<spot_on_lite_daemon_tcp_listener *> m_listeners;
-  QLocalServer *m_local_server;
+  QPointer<QLocalServer> m_local_server;
   QSocketNotifier *m_signal_usr1_socket_notifier;
   QString m_child_process_file_name;
   QString m_child_process_ld_library_path;
