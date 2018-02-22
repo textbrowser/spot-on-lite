@@ -21,7 +21,7 @@ QMAKE_EXTRA_TARGETS = purge
 
 LANGUAGE = C++
 LIBS += -lcrypto -lssl
-QT += network
+QT += network sql
 TEMPLATE = app
 
 greaterThan(QT_MAJOR_VERSION, 4) {

@@ -34,9 +34,12 @@ extern "C"
 }
 
 #include <QCoreApplication>
+#include <QCryptographicHash>
 #include <QDateTime>
 #include <QFile>
 #include <QHostAddress>
+#include <QSqlDatabase>
+#include <QSqlQuery>
 #include <QSslConfiguration>
 #include <QSslKey>
 #include <QStringList>
@@ -286,11 +289,50 @@ default_ssl_ciphers(void) const
   return list;
 }
 
-void spot_on_lite_daemon_child_tcp_client::
-generate_certificate(RSA *rsa,
-		     QByteArray &certificate,
-		     const long int days,
-		     QString &error)
+bool spot_on_lite_daemon_child_tcp_client::record_congestion
+(const QByteArray &bytes) const
+{
+  bool added = false;
+
+  {
+    QSqlDatabase db = QSqlDatabase::addDatabase
+      ("QSQLITE", "congestion_control_database");
+
+    db.setDatabaseName(m_congestion_control_file_name);
+
+    if(db.open())
+      {
+	QSqlQuery query(db);
+
+	query.exec("CREATE TABLE IF NOT EXISTS congestion_control ("
+		   "date_time_inserted BIGINT NOT NULL, "
+		   "hash TEXT PRIMARY KEY NOT NULL)");
+	query.prepare("INSERT INTO congestion_control "
+		      "(date_time_inserted, hash) "
+		      "VALUES (?, ?)");
+	query.addBindValue(QDateTime::currentDateTime().toTime_t());
+#if QT_VERSION >= 0x050000
+	query.addBindValue(QCryptographicHash::
+			   hash(bytes, QCryptographicHash::Sha384).toBase64());
+#else
+	query.addBindValue(QCryptographicHash::
+			   hash(bytes, QCryptographicHash::Sha1).toBase64());
+#endif
+	added = query.exec();
+      }
+
+    db.close();
+  }
+
+  QSqlDatabase::removeDatabase("congestion_control_database");
+  return added;
+}
+
+void spot_on_lite_daemon_child_tcp_client::generate_certificate
+(RSA *rsa,
+ QByteArray &certificate,
+ const long int days,
+ QString &error)
 {
   BIO *memory = 0;
   BUF_MEM *bptr;
@@ -718,7 +760,7 @@ void spot_on_lite_daemon_child_tcp_client::slot_ready_read(void)
       return;
     }
 
-  QByteArray data(readAll().trimmed());
+  QByteArray data(readAll());
 
   if(!data.isEmpty())
     {
@@ -737,5 +779,10 @@ void spot_on_lite_daemon_child_tcp_client::slot_ready_read(void)
     {
       data = m_content.mid(0, EOM.length() + index);
       m_content.remove(0, data.length());
+
+      if(!record_congestion(data))
+	{
+	  // Echo!
+	}
     }
 }

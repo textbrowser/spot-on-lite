@@ -63,6 +63,7 @@ class spot_on_lite_daemon_child_tcp_client: public QSslSocket
   int m_silence;
   int m_ssl_key_size;
   QList<QSslCipher> default_ssl_ciphers(void) const;
+  bool record_congestion(const QByteArray &bytes) const;
   void generate_certificate(RSA *rsa,
 			    QByteArray &certificate,
 			    const long int days,

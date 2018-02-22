@@ -91,7 +91,7 @@ QString spot_on_lite_daemon::child_process_ld_library_path(void) const
 
 QString spot_on_lite_daemon::congestion_control_file_name(void) const
 {
-  return m_configuration_file_name;
+  return m_congestion_control_file_name;
 }
 
 QString spot_on_lite_daemon::log_file_name(void) const

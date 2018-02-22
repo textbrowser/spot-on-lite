@@ -104,7 +104,7 @@ void spot_on_lite_daemon_tcp_listener::incomingConnection
       if(execle(command.data(),
 		command.data(),
 		"--congestion-control-file",
-		congestion_control_file_name,
+		congestion_control_file_name.data(),
 		"--log-file",
 		log_file_name.data(),
 		"--maximum--accumulated-bytes",
