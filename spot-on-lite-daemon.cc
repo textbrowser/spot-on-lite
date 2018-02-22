@@ -596,9 +596,6 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
 		      << "in the range [1, 65535]. Ignoring entry."
 		      << std::endl;
 	  }
-	else
-	  {
-	  }
       }
 }
 
