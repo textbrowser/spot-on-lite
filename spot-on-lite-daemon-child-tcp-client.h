@@ -37,6 +37,8 @@ extern "C"
 #include <QSslSocket>
 #include <QTimer>
 
+class QLocalSocket;
+
 class spot_on_lite_daemon_child_tcp_client: public QSslSocket
 {
   Q_OBJECT
@@ -44,6 +46,7 @@ class spot_on_lite_daemon_child_tcp_client: public QSslSocket
  public:
   spot_on_lite_daemon_child_tcp_client
     (const QString &congestion_control_file_name,
+     const QString &local_server_file_name,
      const QString &log_file_name,
      const QString &ssl_control_string,
      const int maximum_accumulated_bytes,
@@ -54,7 +57,9 @@ class spot_on_lite_daemon_child_tcp_client: public QSslSocket
 
  private:
   QByteArray m_content;
+  QLocalSocket *m_local_socket;
   QString m_congestion_control_file_name;
+  QString m_local_server_file_name;
   QString m_log_file_name;
   QString m_ssl_control_string;
   QTimer m_keep_alive_timer;
@@ -63,7 +68,7 @@ class spot_on_lite_daemon_child_tcp_client: public QSslSocket
   int m_silence;
   int m_ssl_key_size;
   QList<QSslCipher> default_ssl_ciphers(void) const;
-  bool record_congestion(const QByteArray &bytes) const;
+  bool record_congestion(const QByteArray &data) const;
   void generate_certificate(RSA *rsa,
 			    QByteArray &certificate,
 			    const long int days,
@@ -76,6 +81,7 @@ class spot_on_lite_daemon_child_tcp_client: public QSslSocket
  private slots:
   void slot_disconnected(void);
   void slot_keep_alive(void);
+  void slot_local_ready_read(void);
   void slot_ready_read(void);
 
  signals:

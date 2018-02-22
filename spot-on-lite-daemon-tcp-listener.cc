@@ -82,6 +82,8 @@ void spot_on_lite_daemon_tcp_listener::incomingConnection
   std::string ld_library_path
     (spot_on_lite_daemon::instance()->child_process_ld_library_path().
      toStdString());
+  std::string local_server_file_name
+    (spot_on_lite_daemon::instance()->local_server_file_name().toStdString());
   std::string log_file_name
     (spot_on_lite_daemon::instance()->log_file_name().toStdString());
 
@@ -105,6 +107,8 @@ void spot_on_lite_daemon_tcp_listener::incomingConnection
 		command.data(),
 		"--congestion-control-file",
 		congestion_control_file_name.data(),
+		"--local-server-file",
+		local_server_file_name.data(),
 		"--log-file",
 		log_file_name.data(),
 		"--maximum--accumulated-bytes",

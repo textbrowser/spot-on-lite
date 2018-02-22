@@ -73,6 +73,7 @@ int main(int argc, char *argv[])
     return EXIT_FAILURE;
 
   QString congestion_control_file_name("");
+  QString local_server_file_name("");
   QString log_file_name("");
   QString protocol("tcp");
   QString ssl_control_string("");
@@ -94,6 +95,22 @@ int main(int argc, char *argv[])
 	    else
 	      {
 		std::cerr << "Invalid congestion-control-file usage. Exiting."
+			  << std::endl;
+		return EXIT_FAILURE;
+	      }
+	  }
+      }
+    else if(argv && argv[i] && strcmp(argv[i], "--local-server-file") == 0)
+      {
+	if(local_server_file_name.isEmpty())
+	  {
+	    i += 1;
+
+	    if(argc > i && argv[i])
+	      local_server_file_name = argv[i];
+	    else
+	      {
+		std::cerr << "Invalid local-server-file usage. Exiting."
 			  << std::endl;
 		return EXIT_FAILURE;
 	      }
@@ -210,6 +227,7 @@ int main(int argc, char *argv[])
 	{
 	  spot_on_lite_daemon_child_tcp_client client
 	    (congestion_control_file_name,
+	     local_server_file_name,
 	     log_file_name,
 	     ssl_control_string,
 	     maximum_accumulated_bytes,

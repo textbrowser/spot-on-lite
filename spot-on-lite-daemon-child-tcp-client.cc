@@ -38,6 +38,7 @@ extern "C"
 #include <QDateTime>
 #include <QFile>
 #include <QHostAddress>
+#include <QLocalSocket>
 #include <QSqlDatabase>
 #include <QSqlQuery>
 #include <QSslConfiguration>
@@ -54,6 +55,7 @@ static QByteArray EOM = "\r\n\r\n\r\n";
 spot_on_lite_daemon_child_tcp_client::
 spot_on_lite_daemon_child_tcp_client
 (const QString &congestion_control_file_name,
+ const QString &local_server_file_name,
  const QString &log_file_name,
  const QString &ssl_control_string,
  const int maximum_accumulated_bytes,
@@ -63,6 +65,7 @@ spot_on_lite_daemon_child_tcp_client
 {
   m_can_use_ssl = false;
   m_congestion_control_file_name = congestion_control_file_name;
+  m_local_server_file_name = local_server_file_name;
   m_log_file_name = log_file_name;
   m_maximum_accumulated_bytes = maximum_accumulated_bytes;
 
@@ -93,10 +96,17 @@ spot_on_lite_daemon_child_tcp_client
       return;
     }
 
+  m_keep_alive_timer.start(m_silence);
+  m_local_socket = new QLocalSocket(this);
+  m_local_socket->connectToServer(m_local_server_file_name);
   connect(&m_keep_alive_timer,
 	  SIGNAL(timeout(void)),
 	  this,
 	  SLOT(slot_disconnected(void)));
+  connect(m_local_socket,
+	  SIGNAL(readyRead(void)),
+	  this,
+	  SLOT(slot_local_ready_read(void)));
   connect(this,
 	  SIGNAL(disconnected(void)),
 	  this,
@@ -109,7 +119,6 @@ spot_on_lite_daemon_child_tcp_client
 	  SIGNAL(readyRead(void)),
 	  this,
 	  SLOT(slot_ready_read(void)));
-  m_keep_alive_timer.start(m_silence);
 
   if(!m_ssl_control_string.isEmpty() && m_ssl_key_size > 0)
     {
@@ -290,7 +299,7 @@ default_ssl_ciphers(void) const
 }
 
 bool spot_on_lite_daemon_child_tcp_client::record_congestion
-(const QByteArray &bytes) const
+(const QByteArray &data) const
 {
   bool added = false;
 
@@ -313,10 +322,10 @@ bool spot_on_lite_daemon_child_tcp_client::record_congestion
 	query.addBindValue(QDateTime::currentDateTime().toTime_t());
 #if QT_VERSION >= 0x050000
 	query.addBindValue(QCryptographicHash::
-			   hash(bytes, QCryptographicHash::Sha384).toBase64());
+			   hash(data, QCryptographicHash::Sha384).toBase64());
 #else
 	query.addBindValue(QCryptographicHash::
-			   hash(bytes, QCryptographicHash::Sha1).toBase64());
+			   hash(data, QCryptographicHash::Sha1).toBase64());
 #endif
 	added = query.exec();
       }
@@ -752,6 +761,12 @@ void spot_on_lite_daemon_child_tcp_client::slot_keep_alive(void)
   m_keep_alive_timer.start();
 }
 
+void spot_on_lite_daemon_child_tcp_client::slot_local_ready_read(void)
+{
+  write(m_local_socket->readAll());
+  flush();
+}
+
 void spot_on_lite_daemon_child_tcp_client::slot_ready_read(void)
 {
   if(!isEncrypted() && m_can_use_ssl)
@@ -780,9 +795,10 @@ void spot_on_lite_daemon_child_tcp_client::slot_ready_read(void)
       data = m_content.mid(0, EOM.length() + index);
       m_content.remove(0, data.length());
 
-      if(!record_congestion(data))
+      if(record_congestion(data))
 	{
-	  // Echo!
+	  m_local_socket->write(data);
+	  m_local_socket->flush();
 	}
     }
 }

@@ -35,9 +35,12 @@ extern "C"
 #include <iostream>
 #include <limits>
 
+#include <QCoreApplication>
 #include <QDateTime>
 #include <QFileInfo>
 #include <QHostAddress>
+#include <QLocalServer>
+#include <QLocalSocket>
 #include <QSettings>
 #include <QSocketNotifier>
 #include <QStringList>
@@ -59,6 +62,7 @@ spot_on_lite_daemon::spot_on_lite_daemon
 	   "socketpair() failure. Exiting.");
 
   m_configuration_file_name = configuration_file_name;
+  m_local_server = 0;
   m_maximum_accumulated_bytes = 8 * 1024 * 1024; // 8 MiB
   m_signal_usr1_socket_notifier = new QSocketNotifier
     (s_signal_usr1_fd[1], QSocketNotifier::Read, this);
@@ -76,6 +80,9 @@ spot_on_lite_daemon::spot_on_lite_daemon(void):QObject()
 
 spot_on_lite_daemon::~spot_on_lite_daemon()
 {
+  if(m_local_server)
+    QLocalServer::removeServer(m_local_server->fullServerName());
+
   s_instance = 0;
 }
 
@@ -92,6 +99,14 @@ QString spot_on_lite_daemon::child_process_ld_library_path(void) const
 QString spot_on_lite_daemon::congestion_control_file_name(void) const
 {
   return m_congestion_control_file_name;
+}
+
+QString spot_on_lite_daemon::local_server_file_name(void) const
+{
+  if(m_local_server)
+    return m_local_server->fullServerName();
+  else
+    return "";
 }
 
 QString spot_on_lite_daemon::log_file_name(void) const
@@ -141,11 +156,30 @@ void spot_on_lite_daemon::prepare_listeners(void)
       (m_listeners_properties.at(i), this);
 }
 
+void spot_on_lite_daemon::prepare_local_socket_server(void)
+{
+  if(!m_local_server)
+    {
+      m_local_server = new QLocalServer(this);
+      connect(m_local_server,
+	      SIGNAL(newConnection(void)),
+	      this,
+	      SLOT(slot_new_local_connection(void)));
+    }
+
+  if(!m_local_server->isListening())
+    m_local_server->listen
+      (QString("%1/Spot-On-Lite-Daemon-Local-Server.%2").
+       arg(m_local_socket_server_directory_name).
+       arg(QCoreApplication::applicationPid()));
+}
+
 void spot_on_lite_daemon::process_configuration_file(bool *ok)
 {
   m_child_process_file_name.clear();
   m_child_process_ld_library_path.clear();
   m_congestion_control_file_name.clear();
+  m_local_socket_server_directory_name = "/tmp";
   m_log_file_name.clear();
 
   QHash<QString, char> hash;
@@ -217,6 +251,39 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
 	  }
 	else
 	  m_congestion_control_file_name = settings.value(key).toString();
+      }
+    else if(key == "local_socket_server_directory")
+      {
+	QFileInfo fileInfo(settings.value(key).toString());
+
+	if(!fileInfo.isDir())
+	  {
+	    if(ok)
+	      *ok = false;
+
+	    std::cerr << "spot_on_lite_daemon::"
+		      << "process_configuration_file(): "
+		      << "The directory \""
+		      << fileInfo.absoluteFilePath().toStdString()
+		      << "\" is not a directory. "
+		      << "Ignoring entry."
+		      << std::endl;
+	  }
+	else if(!fileInfo.isReadable() || !fileInfo.isWritable())
+	  {
+	    if(ok)
+	      *ok = false;
+
+	    std::cerr << "spot_on_lite_daemon::"
+		      << "process_configuration_file(): "
+		      << "The directory \""
+		      << fileInfo.absoluteFilePath().toStdString()
+		      << "\" is not readable or not writable. "
+		      << "Ignoring entry."
+		      << std::endl;
+	  }
+	else
+	  m_local_socket_server_directory_name = settings.value(key).toString();
       }
     else if(key == "log_file")
       {
@@ -458,6 +525,39 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
       }
 }
 
+void spot_on_lite_daemon::slot_new_local_connection(void)
+{
+  if(!m_local_server)
+    return;
+
+  QLocalSocket *socket = m_local_server->nextPendingConnection();
+
+  if(!socket)
+    return;
+
+  connect(socket,
+	  SIGNAL(readyRead(void)),
+	  this,
+	  SLOT(slot_ready_read(void)));
+}
+
+void spot_on_lite_daemon::slot_ready_read(void)
+{
+  QLocalSocket *socket = qobject_cast<QLocalSocket *> (sender());
+
+  if(!socket)
+    return;
+
+  QByteArray data(socket->readAll());
+
+  foreach(QLocalSocket *s, m_local_server->findChildren<QLocalSocket *> ())
+    if(s != socket)
+      {
+	s->write(data);
+	s->flush();
+      }
+}
+
 void spot_on_lite_daemon::slot_signal_usr1(void)
 {
   if(!m_signal_usr1_socket_notifier)
@@ -478,6 +578,7 @@ void spot_on_lite_daemon::start(void)
   m_listeners_properties.clear();
   process_configuration_file(0);
   prepare_listeners();
+  prepare_local_socket_server();
 }
 
 void spot_on_lite_daemon::validate_configuration_file
