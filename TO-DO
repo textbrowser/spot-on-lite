@@ -6,5 +6,6 @@ Completed Items
 
 Remaining Items
 
-1.  Limit number of processes.
-2.  Remote peers.
+1.  Disable SO_LINGER. Optional.
+2.  Limit number of processes.
+3.  Remote peers.
