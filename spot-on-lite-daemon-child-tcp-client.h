@@ -56,14 +56,13 @@ class spot_on_lite_daemon_child_tcp_client: public QSslSocket
   ~spot_on_lite_daemon_child_tcp_client();
 
  private:
-  QByteArray m_content;
+  QByteArray m_remote_content;
   QLocalSocket *m_local_socket;
   QString m_congestion_control_file_name;
   QString m_local_server_file_name;
   QString m_log_file_name;
   QString m_ssl_control_string;
   QTimer m_keep_alive_timer;
-  bool m_can_use_ssl;
   int m_maximum_accumulated_bytes;
   int m_silence;
   int m_ssl_key_size;

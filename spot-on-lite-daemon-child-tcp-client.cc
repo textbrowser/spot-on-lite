@@ -63,7 +63,6 @@ spot_on_lite_daemon_child_tcp_client
  const int socket_descriptor,
  const int ssl_key_size):QSslSocket()
 {
-  m_can_use_ssl = false;
   m_congestion_control_file_name = congestion_control_file_name;
   m_local_server_file_name = local_server_file_name;
   m_log_file_name = log_file_name;
@@ -128,9 +127,7 @@ spot_on_lite_daemon_child_tcp_client
       OPENSSL_init_ssl(0, NULL);
 #endif
       generate_ssl_tls();
-
-      if(m_can_use_ssl)
-	startServerEncryption();
+      startServerEncryption();
     }
 }
 
@@ -639,7 +636,6 @@ void spot_on_lite_daemon_child_tcp_client::generate_ssl_tls(void)
 
   if(!error.isEmpty())
     {
-      m_can_use_ssl = false;
       certificate.replace
 	(0, certificate.length(), QByteArray(certificate.length(), 0));
       certificate.clear();
@@ -684,7 +680,6 @@ void spot_on_lite_daemon_child_tcp_client::generate_ssl_tls(void)
 		(QSsl::SslOptionDisableSessionSharing, true);
 #endif
 #endif
-	      m_can_use_ssl = true;
 #if QT_VERSION >= 0x050000
 	      set_ssl_ciphers(configuration.supportedCiphers(), configuration);
 #else
@@ -693,16 +688,12 @@ void spot_on_lite_daemon_child_tcp_client::generate_ssl_tls(void)
 	      setSslConfiguration(configuration);
 	    }
 	  else
-	    {
-	      m_can_use_ssl = false;
+	    /*
+	    ** Error!
+	    */
 
-	      /*
-	      ** Error!
-	      */
-
-	      log("spot_on_lite_daemon_child_tcp_client::"
-		  "generate_ssl_tls(): empty private key.");
-	    }
+	    log("spot_on_lite_daemon_child_tcp_client::"
+		"generate_ssl_tls(): empty private key.");
 	}
     }
 
@@ -769,31 +760,26 @@ void spot_on_lite_daemon_child_tcp_client::slot_local_ready_read(void)
 
 void spot_on_lite_daemon_child_tcp_client::slot_ready_read(void)
 {
-  if(!isEncrypted() && m_can_use_ssl)
-    {
-      readAll();
-      return;
-    }
-
   QByteArray data(readAll());
 
   if(!data.isEmpty())
     {
       emit keep_alive();
 
-      if(m_content.length() >= m_maximum_accumulated_bytes)
-	m_content.clear();
+      if(m_remote_content.length() >= m_maximum_accumulated_bytes)
+	m_remote_content.clear();
 
-      m_content.append
-	(data.mid(0, qAbs(m_maximum_accumulated_bytes - m_content.length())));
+      m_remote_content.append
+	(data.
+	 mid(0, qAbs(m_maximum_accumulated_bytes - m_remote_content.length())));
     }
 
   int index = 0;
 
-  if((index = m_content.indexOf(EOM)) > 0)
+  if((index = m_remote_content.indexOf(EOM)) > 0)
     {
-      data = m_content.mid(0, EOM.length() + index);
-      m_content.remove(0, data.length());
+      data = m_remote_content.mid(0, EOM.length() + index);
+      m_remote_content.remove(0, data.length());
 
       if(record_congestion(data))
 	{
