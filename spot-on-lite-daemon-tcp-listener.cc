@@ -27,7 +27,6 @@
 
 extern "C"
 {
-#include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/wait.h>
 #include <unistd.h>
@@ -115,7 +114,7 @@ void spot_on_lite_daemon_tcp_listener::incomingConnection
 
 	  l.l_linger = so_linger;
 	  l.l_onoff = 1;
-	  length = sizeof(l);
+	  length = static_cast<socklen_t> (sizeof(l));
 	  setsockopt(sd, SOL_SOCKET, SO_LINGER, &l, length);
 	}
 
@@ -179,21 +178,5 @@ void spot_on_lite_daemon_tcp_listener::slot_start_timeout(void)
 
   if(listen(QHostAddress(list.value(0)),
 	    static_cast<quint16> (list.value(1).toInt())))
-    {
-      int so_linger = list.value(6).toInt();
-
-      if(so_linger > -1)
-	{
-	  socklen_t length = 0;
-	  struct linger l;
-
-	  l.l_linger = so_linger;
-	  l.l_onoff = 1;
-	  length = sizeof(l);
-	  setsockopt
-	    ((int) socketDescriptor(), SOL_SOCKET, SO_LINGER, &l, length);
-	}
-
-      setMaxPendingConnections(list.value(2).toInt());
-    }
+    setMaxPendingConnections(list.value(2).toInt());
 }
