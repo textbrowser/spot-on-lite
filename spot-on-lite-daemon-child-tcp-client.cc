@@ -54,15 +54,18 @@ static QByteArray EOM = "\r\n\r\n\r\n";
 
 spot_on_lite_daemon_child_tcp_client::
 spot_on_lite_daemon_child_tcp_client
-(const QString &congestion_control_file_name,
+(const QString &certificates_file_name,
+ const QString &congestion_control_file_name,
  const QString &local_server_file_name,
  const QString &log_file_name,
+ const QString &server_identity,
  const QString &ssl_control_string,
  const int maximum_accumulated_bytes,
  const int silence,
  const int socket_descriptor,
  const int ssl_key_size):QSslSocket()
 {
+  m_certificates_file_name = certificates_file_name;
   m_congestion_control_file_name = congestion_control_file_name;
   m_local_server_file_name = local_server_file_name;
   m_log_file_name = log_file_name;
@@ -71,6 +74,7 @@ spot_on_lite_daemon_child_tcp_client
   if(m_maximum_accumulated_bytes < 1024)
     m_maximum_accumulated_bytes = 8 * 1024 * 1024;
 
+  m_server_identity = server_identity;
   m_silence = 1000 * qBound(15, silence, 3600);
   m_ssl_control_string = ssl_control_string.trimmed();
   m_ssl_key_size = ssl_key_size;

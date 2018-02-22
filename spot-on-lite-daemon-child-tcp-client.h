@@ -45,9 +45,11 @@ class spot_on_lite_daemon_child_tcp_client: public QSslSocket
 
  public:
   spot_on_lite_daemon_child_tcp_client
-    (const QString &congestion_control_file_name,
+    (const QString &certificates_file_name,
+     const QString &congestion_control_file_name,
      const QString &local_server_file_name,
      const QString &log_file_name,
+     const QString &server_identity,
      const QString &ssl_control_string,
      const int maximum_accumulated_bytes,
      const int silence,
@@ -58,9 +60,11 @@ class spot_on_lite_daemon_child_tcp_client: public QSslSocket
  private:
   QByteArray m_remote_content;
   QLocalSocket *m_local_socket;
+  QString m_certificates_file_name;
   QString m_congestion_control_file_name;
   QString m_local_server_file_name;
   QString m_log_file_name;
+  QString m_server_identity;
   QString m_ssl_control_string;
   QTimer m_keep_alive_timer;
   int m_maximum_accumulated_bytes;

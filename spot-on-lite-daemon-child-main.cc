@@ -72,10 +72,12 @@ int main(int argc, char *argv[])
   if(prepare_signal_handlers())
     return EXIT_FAILURE;
 
+  QString certificates_file_name("");
   QString congestion_control_file_name("");
   QString local_server_file_name("");
   QString log_file_name("");
   QString protocol("tcp");
+  QString server_identity("");
   QString ssl_control_string("");
   int maximum_accumulated_bytes = -1;
   int rc = EXIT_SUCCESS;
@@ -84,7 +86,24 @@ int main(int argc, char *argv[])
   int ssl_key_size = -1;
 
   for(int i = 0; i < argc; i++)
-    if(argv && argv[i] && strcmp(argv[i], "--congestion-control-file") == 0)
+    if(argv && argv[i] && strcmp(argv[i], "--certificates-file") == 0)
+      {
+	if(certificates_file_name.isEmpty())
+	  {
+	    i += 1;
+
+	    if(argc > i && argv[i])
+	      certificates_file_name = argv[i];
+	    else
+	      {
+		std::cerr << "Invalid certificates-file usage. Exiting."
+			  << std::endl;
+		return EXIT_FAILURE;
+	      }
+	  }
+      }
+    else if(argv && argv[i] &&
+	    strcmp(argv[i], "--congestion-control-file") == 0)
       {
 	if(congestion_control_file_name.isEmpty())
 	  {
@@ -144,6 +163,22 @@ int main(int argc, char *argv[])
 	    else
 	      {
 		std::cerr << "Invalid maximum-accumulated-bytes usage. Exiting."
+			  << std::endl;
+		return EXIT_FAILURE;
+	      }
+	  }
+      }
+    else if(argv && argv[i] && strcmp(argv[i], "--server-identity") == 0)
+      {
+	if(server_identity.isEmpty())
+	  {
+	    i += 1;
+
+	    if(argc > i && argv[i])
+	      server_identity = argv[i];
+	    else
+	      {
+		std::cerr << "Invalid server_identity usage. Exiting."
 			  << std::endl;
 		return EXIT_FAILURE;
 	      }
@@ -226,9 +261,11 @@ int main(int argc, char *argv[])
       if(protocol == "tcp")
 	{
 	  spot_on_lite_daemon_child_tcp_client client
-	    (congestion_control_file_name,
+	    (certificates_file_name,
+	     congestion_control_file_name,
 	     local_server_file_name,
 	     log_file_name,
+	     server_identity,
 	     ssl_control_string,
 	     maximum_accumulated_bytes,
 	     silence,

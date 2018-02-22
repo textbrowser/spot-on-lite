@@ -46,6 +46,7 @@ class spot_on_lite_daemon: public QObject
   spot_on_lite_daemon(const QString &configuration_file_name);
   spot_on_lite_daemon(void);
   ~spot_on_lite_daemon();
+  QString certificates_file_name(void) const;
   QString child_process_file_name(void) const;
   QString child_process_ld_library_path(void) const;
   QString congestion_control_file_name(void) const;
@@ -64,6 +65,7 @@ class spot_on_lite_daemon: public QObject
   QList<spot_on_lite_daemon_tcp_listener *> m_listeners;
   QPointer<QLocalServer> m_local_server;
   QSocketNotifier *m_signal_usr1_socket_notifier;
+  QString m_certificates_file_name;
   QString m_child_process_file_name;
   QString m_child_process_ld_library_path;
   QString m_configuration_file_name;

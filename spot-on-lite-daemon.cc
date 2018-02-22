@@ -99,6 +99,11 @@ spot_on_lite_daemon::~spot_on_lite_daemon()
   s_instance = 0;
 }
 
+QString spot_on_lite_daemon::certificates_file_name(void) const
+{
+  return m_certificates_file_name;
+}
+
 QString spot_on_lite_daemon::child_process_file_name(void) const
 {
   return m_child_process_file_name;
@@ -201,6 +206,7 @@ void spot_on_lite_daemon::prepare_local_socket_server(void)
 
 void spot_on_lite_daemon::process_configuration_file(bool *ok)
 {
+  m_certificates_file_name.clear();
   m_child_process_file_name.clear();
   m_child_process_ld_library_path.clear();
   m_congestion_control_file_name.clear();
@@ -211,7 +217,29 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
   QSettings settings(m_configuration_file_name, QSettings::IniFormat);
 
   foreach(QString key, settings.allKeys())
-    if(key == "child_process_file")
+    if(key == "certificates_file")
+      {
+	QFileInfo fileInfo(settings.value(key).toString());
+
+	fileInfo = QFileInfo(fileInfo.absolutePath());
+
+	if(fileInfo.isFile() && fileInfo.isReadable() && fileInfo.isWritable())
+	  m_certificates_file_name = settings.value(key).toString();
+	else
+	  {
+	    if(ok)
+	      *ok = false;
+
+	    std::cerr << "spot_on_lite_daemon::"
+		      << "process_configuration_file(): "
+		      << "The file \""
+		      << fileInfo.absoluteFilePath().toStdString()
+		      << "\" must be a readable and writable file. "
+		      << "Ignoring entry."
+		      << std::endl;
+	  }
+      }
+    else if(key == "child_process_file")
       {
 	QFileInfo fileInfo(settings.value(key).toString());
 
@@ -224,19 +252,12 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
 	    if(ok)
 	      *ok = false;
 
-	    if(fileInfo.isFile())
-	      std::cerr << "spot_on_lite_daemon::"
-			<< "process_configuration_file(): "
-			<< "The child process file \""
-			<< fileInfo.absoluteFilePath().toStdString()
-			<< "\" must be a readable executable. Ignoring entry."
-			<< std::endl;
-	    else
-	      std::cerr << "spot_on_lite_daemon::"
-			<< "process_configuration_file(): "
-			<< "The child process file "
-			<< "is not a regular file. Ignoring entry."
-			<< std::endl;
+	    std::cerr << "spot_on_lite_daemon::"
+		      << "process_configuration_file(): "
+		      << "The child process file \""
+		      << fileInfo.absoluteFilePath().toStdString()
+		      << "\" must be a readable executable. Ignoring entry."
+		      << std::endl;
 	  }
       }
     else if(key == "child_process_ld_library_path")
@@ -270,8 +291,8 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
 		      << "process_configuration_file(): "
 		      << "The parent directory \""
 		      << fileInfo.absoluteFilePath().toStdString()
-		      << "\" of the congestion control file is not writable. "
-		      << "Ignoring entry."
+		      << "\" of the congestion control file must be "
+		      << "writable. Ignoring entry."
 		      << std::endl;
 	  }
 	else

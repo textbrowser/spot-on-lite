@@ -74,6 +74,8 @@ void spot_on_lite_daemon_tcp_listener::incomingConnection
   int maximum_accumulated_bytes = spot_on_lite_daemon::instance()->
     maximum_accumulated_bytes();
   pid_t pid = 0;
+  std::string certificates_file_name
+    (spot_on_lite_daemon::instance()->certificates_file_name().toStdString());
   std::string command
     (spot_on_lite_daemon::instance()->child_process_file_name().toStdString());
   std::string congestion_control_file_name
@@ -86,6 +88,9 @@ void spot_on_lite_daemon_tcp_listener::incomingConnection
     (spot_on_lite_daemon::instance()->local_server_file_name().toStdString());
   std::string log_file_name
     (spot_on_lite_daemon::instance()->log_file_name().toStdString());
+  std::string server_identity(QString("%1:%2").
+			      arg(serverAddress().toString()).
+			      arg(serverPort()).toStdString());
 
   if((pid = fork()) == 0)
     {
@@ -105,6 +110,8 @@ void spot_on_lite_daemon_tcp_listener::incomingConnection
 
       if(execle(command.data(),
 		command.data(),
+		"--certificates-files",
+		certificates_file_name.data(),
 		"--congestion-control-file",
 		congestion_control_file_name.data(),
 		"--local-server-file",
@@ -113,6 +120,8 @@ void spot_on_lite_daemon_tcp_listener::incomingConnection
 		log_file_name.data(),
 		"--maximum--accumulated-bytes",
 		QString::number(maximum_accumulated_bytes).toStdString().data(),
+		"--server-identity",
+		server_identity.data(),
 		"--silence-timeout",
 		list.value(5).toStdString().data(),
 		"--socket-descriptor",
