@@ -313,6 +313,8 @@ bool spot_on_lite_daemon_child_tcp_client::record_congestion
 	query.exec("CREATE TABLE IF NOT EXISTS congestion_control ("
 		   "date_time_inserted BIGINT NOT NULL, "
 		   "hash TEXT PRIMARY KEY NOT NULL)");
+	query.exec("PRAGMA journal_mode = OFF");
+	query.exec("PRAGMA synchronous = OFF");
 	query.prepare("INSERT INTO congestion_control "
 		      "(date_time_inserted, hash) "
 		      "VALUES (?, ?)");
