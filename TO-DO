@@ -1,12 +1,12 @@
 Completed Items
 
 1.  Congestion control, per child process.
-2.  Echo through child processes.
-3.  Record certificate data.
-4.  Remove local socket server file on exit.
+2.  Disable SO_LINGER. Optional.
+3.  Echo through child processes.
+4.  Record certificate data.
+5.  Remove local socket server file on exit.
 
 Remaining Items
 
-1.  Disable SO_LINGER. Optional.
-2.  Limit number of processes.
-3.  Remote peers.
+1.  Limit number of processes.
+2.  Remote peers.

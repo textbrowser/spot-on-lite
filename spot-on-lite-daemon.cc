@@ -390,9 +390,10 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
 	** 3 - SSL Control String
 	** 4 - SSL Key Size (Bits)
 	** 5 - Silence Timeout (Seconds)
+	** 6 - SO Linger (Seconds)
 	*/
 
-	int expected = 6;
+	int expected = 7;
 
 	if(list.size() != expected)
 	  {
@@ -507,6 +508,24 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
 		      << key.toStdString()
 		      << "\" silence value is invalid. Expecting a value "
 		      << "in the range [15, 3600]. Ignoring entry."
+		      << std::endl;
+	  }
+
+	int so_linger = list.at(6).toInt(&o);
+
+	if(!o || so_linger < -1 || so_linger > 65535)
+	  {
+	    listenerOK = false;
+
+	    if(ok)
+	      *ok = false;
+
+	    std::cerr << "spot_on_lite_daemon::"
+		      << "process_configuration_file(): The "
+		      << "listener \""
+		      << key.toStdString()
+		      << "\" linger value is invalid. Expecting a value "
+		      << "in the range [-1, 65535]. Ignoring entry."
 		      << std::endl;
 	  }
 

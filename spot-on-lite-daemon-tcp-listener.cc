@@ -27,6 +27,8 @@
 
 extern "C"
 {
+#include <sys/types.h>
+#include <sys/socket.h>
 #include <sys/wait.h>
 #include <unistd.h>
 }
@@ -73,6 +75,7 @@ void spot_on_lite_daemon_tcp_listener::incomingConnection
   QStringList list(m_configuration.split(",", QString::KeepEmptyParts));
   int maximum_accumulated_bytes = spot_on_lite_daemon::instance()->
     maximum_accumulated_bytes();
+  int so_linger = list.value(6).toInt();
   pid_t pid = 0;
   std::string certificates_file_name
     (spot_on_lite_daemon::instance()->certificates_file_name().toStdString());
@@ -105,6 +108,16 @@ void spot_on_lite_daemon_tcp_listener::incomingConnection
 
       if(sd == -1)
 	_exit(EXIT_FAILURE);
+      else if(so_linger > -1)
+	{
+	  socklen_t length = 0;
+	  struct linger l;
+
+	  l.l_linger = so_linger;
+	  l.l_onoff = 1;
+	  length = sizeof(l);
+	  setsockopt((int) sd, SOL_SOCKET, SO_LINGER, &l, length);
+	}
 
       const char *envp[] = {ld_library_path.data(), NULL};
 
@@ -159,6 +172,7 @@ void spot_on_lite_daemon_tcp_listener::slot_start_timeout(void)
   ** 3 - SSL Control String
   ** 4 - SSL Key Size (Bits)
   ** 5 - Silence Timeout (Seconds)
+  ** 6 - SO Linger (Seconds)
   */
 
   QStringList list(m_configuration.split(",", QString::KeepEmptyParts));
