@@ -68,6 +68,7 @@ spot_on_lite_daemon_child_tcp_client
   m_certificates_file_name = certificates_file_name;
   m_congestion_control_file_name = congestion_control_file_name;
   m_local_server_file_name = local_server_file_name;
+  m_local_socket = 0;
   m_log_file_name = log_file_name;
   m_maximum_accumulated_bytes = maximum_accumulated_bytes;
 
@@ -100,20 +101,10 @@ spot_on_lite_daemon_child_tcp_client
     }
 
   m_keep_alive_timer.start(m_silence);
-  m_local_socket = new QLocalSocket(this);
-  m_local_socket->connectToServer(m_local_server_file_name);
   connect(&m_keep_alive_timer,
 	  SIGNAL(timeout(void)),
 	  this,
 	  SLOT(slot_disconnected(void)));
-  connect(m_local_socket,
-	  SIGNAL(disconnected(void)),
-	  this,
-	  SLOT(slot_local_socket_disconnected(void)));
-  connect(m_local_socket,
-	  SIGNAL(readyRead(void)),
-	  this,
-	  SLOT(slot_local_socket_ready_read(void)));
   connect(this,
 	  SIGNAL(disconnected(void)),
 	  this,
@@ -122,6 +113,7 @@ spot_on_lite_daemon_child_tcp_client
 	  SIGNAL(readyRead(void)),
 	  this,
 	  SLOT(slot_ready_read(void)));
+  prepare_local_socket();
 
   if(!m_ssl_control_string.isEmpty() && m_ssl_key_size > 0)
     {
@@ -729,6 +721,23 @@ void spot_on_lite_daemon_child_tcp_client::log(const QString &error) const
     }
 }
 
+void spot_on_lite_daemon_child_tcp_client::prepare_local_socket(void)
+{
+  if(m_local_socket)
+    m_local_socket->deleteLater();
+
+  m_local_socket = new QLocalSocket(this);
+  m_local_socket->connectToServer(m_local_server_file_name);
+  connect(m_local_socket,
+	  SIGNAL(disconnected(void)),
+	  this,
+	  SLOT(slot_local_socket_disconnected(void)));
+  connect(m_local_socket,
+	  SIGNAL(readyRead(void)),
+	  this,
+	  SLOT(slot_local_socket_ready_read(void)));
+}
+
 void spot_on_lite_daemon_child_tcp_client::prepare_ssl_tls_configuration
 (const QList<QByteArray> &list)
 {
@@ -838,17 +847,7 @@ void spot_on_lite_daemon_child_tcp_client::slot_disconnected(void)
 
 void spot_on_lite_daemon_child_tcp_client::slot_local_socket_disconnected(void)
 {
-  m_local_socket->deleteLater();
-  m_local_socket = new QLocalSocket(this);
-  m_local_socket->connectToServer(m_local_server_file_name);
-  connect(m_local_socket,
-	  SIGNAL(disconnected(void)),
-	  this,
-	  SLOT(slot_local_socket_disconnected(void)));
-  connect(m_local_socket,
-	  SIGNAL(readyRead(void)),
-	  this,
-	  SLOT(slot_local_socket_ready_read(void)));
+  prepare_local_socket();
 }
 
 void spot_on_lite_daemon_child_tcp_client::slot_local_socket_ready_read(void)
