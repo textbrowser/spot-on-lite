@@ -90,7 +90,7 @@ spot_on_lite_daemon_child_tcp_client
       */
 
       log("spot_on_lite_daemon_child_tcp_client::"
-	  "spot_on_lite_daemon_child_tcp_client(): Invalid socket descriptor.");
+	  "spot_on_lite_daemon_child_tcp_client(): invalid socket descriptor.");
       QTimer::singleShot(2500, this, SLOT(slot_disconnected(void)));
       return;
     }
