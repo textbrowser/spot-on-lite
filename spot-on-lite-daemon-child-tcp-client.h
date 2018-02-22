@@ -70,6 +70,7 @@ class spot_on_lite_daemon_child_tcp_client: public QSslSocket
   int m_maximum_accumulated_bytes;
   int m_silence;
   int m_ssl_key_size;
+  QList<QByteArray> local_certificate_configuration(void) const;
   QList<QSslCipher> default_ssl_ciphers(void) const;
   bool record_congestion(const QByteArray &data) const;
   void generate_certificate(RSA *rsa,
@@ -78,6 +79,10 @@ class spot_on_lite_daemon_child_tcp_client: public QSslSocket
 			    QString &error);
   void generate_ssl_tls(void);
   void log(const QString &error) const;
+  void prepare_ssl_tls_configuration(const QList<QByteArray> &list);
+  void record_certificate(const QByteArray &certificate,
+			  const QByteArray &private_key,
+			  const QByteArray &public_key);
   void set_ssl_ciphers(const QList<QSslCipher> &ciphers,
 		       QSslConfiguration &configuration) const;
 

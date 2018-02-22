@@ -223,21 +223,34 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
 
 	fileInfo = QFileInfo(fileInfo.absolutePath());
 
-	if(fileInfo.isFile() && fileInfo.isReadable() && fileInfo.isWritable())
-	  m_certificates_file_name = settings.value(key).toString();
-	else
+	if(!fileInfo.isDir())
 	  {
 	    if(ok)
 	      *ok = false;
 
 	    std::cerr << "spot_on_lite_daemon::"
 		      << "process_configuration_file(): "
-		      << "The file \""
+		      << "The parent directory \""
 		      << fileInfo.absoluteFilePath().toStdString()
-		      << "\" must be a readable and writable file. "
-		      << "Ignoring entry."
+		      << "\" of the certificates file is "
+		      << "not a directory. Ignoring entry."
 		      << std::endl;
 	  }
+	else if(!fileInfo.isWritable())
+	  {
+	    if(ok)
+	      *ok = false;
+
+	    std::cerr << "spot_on_lite_daemon::"
+		      << "process_configuration_file(): "
+		      << "The parent directory \""
+		      << fileInfo.absoluteFilePath().toStdString()
+		      << "\" of the certificates file must be "
+		      << "writable. Ignoring entry."
+		      << std::endl;
+	  }
+	else
+	  m_certificates_file_name = settings.value(key).toString();
       }
     else if(key == "child_process_file")
       {
@@ -324,8 +337,7 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
 		      << "process_configuration_file(): "
 		      << "The directory \""
 		      << fileInfo.absoluteFilePath().toStdString()
-		      << "\" is not readable or not writable. "
-		      << "Ignoring entry."
+		      << "\" must be readable and writable. Ignoring entry."
 		      << std::endl;
 	  }
 	else

@@ -110,7 +110,7 @@ void spot_on_lite_daemon_tcp_listener::incomingConnection
 
       if(execle(command.data(),
 		command.data(),
-		"--certificates-files",
+		"--certificates-file",
 		certificates_file_name.data(),
 		"--congestion-control-file",
 		congestion_control_file_name.data(),

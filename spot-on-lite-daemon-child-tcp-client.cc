@@ -126,7 +126,14 @@ spot_on_lite_daemon_child_tcp_client
 #else
       OPENSSL_init_ssl(0, NULL);
 #endif
-      generate_ssl_tls();
+
+      QList<QByteArray> list(local_certificate_configuration());
+
+      if(list.isEmpty())
+	generate_ssl_tls();
+      else
+	prepare_ssl_tls_configuration(list);
+
       startServerEncryption();
     }
 }
@@ -134,6 +141,38 @@ spot_on_lite_daemon_child_tcp_client
 spot_on_lite_daemon_child_tcp_client::
 ~spot_on_lite_daemon_child_tcp_client()
 {
+}
+
+QList<QByteArray> spot_on_lite_daemon_child_tcp_client::
+local_certificate_configuration(void) const
+{
+  QList<QByteArray> list;
+
+  {
+    QSqlDatabase db = QSqlDatabase::addDatabase
+      ("QSQLITE", "certificates_database");
+
+    db.setDatabaseName(m_certificates_file_name);
+
+    if(db.open())
+      {
+	QSqlQuery query(db);
+
+	query.setForwardOnly(true);
+	query.prepare("SELECT certificate, private_key FROM certificates "
+		      "WHERE server_identity = ?");
+	query.addBindValue(m_server_identity);
+
+	if(query.exec() && query.next())
+	  list << QByteArray::fromBase64(query.value(0).toByteArray())
+	       << QByteArray::fromBase64(query.value(1).toByteArray());
+      }
+
+    db.close();
+  }
+
+  QSqlDatabase::removeDatabase("certificates_database");
+  return list;
 }
 
 QList<QSslCipher> spot_on_lite_daemon_child_tcp_client::
@@ -541,7 +580,7 @@ void spot_on_lite_daemon_child_tcp_client::generate_ssl_tls(void)
   RSA *rsa = 0;
   char *private_buffer = 0;
   char *public_buffer = 0;
-  long int days = 60L * 60L * 24L * 365L; // One year.
+  long int days = 5L * 24L * 60L * 60L * 365L; // Five years.
 
   if(m_ssl_key_size <= 0)
     {
@@ -652,51 +691,9 @@ void spot_on_lite_daemon_child_tcp_client::generate_ssl_tls(void)
     }
   else
     {
-      QSslConfiguration configuration;
-
-      configuration.setLocalCertificate(QSslCertificate(certificate));
-
-#if QT_VERSION < 0x050000
-      if(configuration.localCertificate().isValid())
-#else
-      if(!configuration.localCertificate().isNull())
-#endif
-	{
-	  configuration.setPrivateKey(QSslKey(private_key, QSsl::Rsa));
-
-	  if(!configuration.privateKey().isNull())
-	    {
-#if QT_VERSION >= 0x040800
-	      configuration.setSslOption
-		(QSsl::SslOptionDisableCompression, true);
-	      configuration.setSslOption
-		(QSsl::SslOptionDisableEmptyFragments, true);
-	      configuration.setSslOption
-		(QSsl::SslOptionDisableLegacyRenegotiation, true);
-	      configuration.setSslOption
-		(QSsl::SslOptionDisableSessionTickets, true);
-#if QT_VERSION >= 0x050200
-	      configuration.setSslOption
-		(QSsl::SslOptionDisableSessionPersistence, true);
-	      configuration.setSslOption
-		(QSsl::SslOptionDisableSessionSharing, true);
-#endif
-#endif
-#if QT_VERSION >= 0x050000
-	      set_ssl_ciphers(configuration.supportedCiphers(), configuration);
-#else
-	      set_ssl_ciphers(supportedCiphers(), configuration);
-#endif
-	      setSslConfiguration(configuration);
-	    }
-	  else
-	    /*
-	    ** Error!
-	    */
-
-	    log("spot_on_lite_daemon_child_tcp_client::"
-		"generate_ssl_tls(): empty private key.");
-	}
+      prepare_ssl_tls_configuration
+	(QList<QByteArray> () << certificate << private_key);
+      record_certificate(certificate, private_key, public_key);
     }
 
   BIO_free(private_memory);
@@ -726,6 +723,92 @@ void spot_on_lite_daemon_child_tcp_client::log(const QString &error) const
       file.write("\n");
       file.close();
     }
+}
+
+void spot_on_lite_daemon_child_tcp_client::prepare_ssl_tls_configuration
+(const QList<QByteArray> &list)
+{
+  QSslConfiguration configuration;
+
+  configuration.setLocalCertificate(QSslCertificate(list.value(0)));
+
+#if QT_VERSION < 0x050000
+  if(configuration.localCertificate().isValid())
+#else
+  if(!configuration.localCertificate().isNull())
+#endif
+    {
+      configuration.setPrivateKey(QSslKey(list.value(1), QSsl::Rsa));
+
+      if(!configuration.privateKey().isNull())
+	{
+#if QT_VERSION >= 0x040800
+	  configuration.setSslOption(QSsl::SslOptionDisableCompression, true);
+	  configuration.setSslOption
+	    (QSsl::SslOptionDisableEmptyFragments, true);
+	  configuration.setSslOption
+	    (QSsl::SslOptionDisableLegacyRenegotiation, true);
+	  configuration.setSslOption
+	    (QSsl::SslOptionDisableSessionTickets, true);
+#if QT_VERSION >= 0x050200
+	  configuration.setSslOption
+	     (QSsl::SslOptionDisableSessionPersistence, true);
+	  configuration.setSslOption
+	     (QSsl::SslOptionDisableSessionSharing, true);
+#endif
+#endif
+#if QT_VERSION >= 0x050000
+	  set_ssl_ciphers(configuration.supportedCiphers(), configuration);
+#else
+	  set_ssl_ciphers(supportedCiphers(), configuration);
+#endif
+	  setSslConfiguration(configuration);
+	}
+      else
+	/*
+	** Error!
+	*/
+
+	log("spot_on_lite_daemon_child_tcp_client::"
+	    "prepare_ssl_tls_configuration(): empty private key.");
+    }
+}
+
+void spot_on_lite_daemon_child_tcp_client::record_certificate
+(const QByteArray &certificate,
+ const QByteArray &private_key,
+ const QByteArray &public_key)
+{
+  {
+    QSqlDatabase db = QSqlDatabase::addDatabase
+      ("QSQLITE", "certificates_database");
+
+    db.setDatabaseName(m_certificates_file_name);
+
+    if(db.open())
+      {
+	QSqlQuery query(db);
+
+	query.exec("CREATE TABLE IF NOT EXISTS certificates ("
+		   "certificate BLOB NOT NULL, "
+		   "private_key BLOB NOT NULL, "
+		   "public_key BLOB NOT NULL, "
+		   "server_identity TEXT PRIMARY KEY NOT NULL)");
+	query.prepare
+	  ("INSERT INTO certificates "
+	   "(certificate, private_key, public_key, server_identity) "
+	   "VALUES (?, ?, ?, ?)");
+	query.addBindValue(certificate.toBase64());
+	query.addBindValue(private_key.toBase64());
+	query.addBindValue(public_key.toBase64());
+	query.addBindValue(m_server_identity);
+	query.exec();
+      }
+
+    db.close();
+  }
+
+  QSqlDatabase::removeDatabase("certificates_database");
 }
 
 void spot_on_lite_daemon_child_tcp_client::
