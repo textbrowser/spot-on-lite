@@ -88,7 +88,8 @@ class spot_on_lite_daemon_child_tcp_client: public QSslSocket
 
  private slots:
   void slot_disconnected(void);
-  void slot_local_ready_read(void);
+  void slot_local_socket_disconnected(void);
+  void slot_local_socket_ready_read(void);
   void slot_ready_read(void);
 };
 
