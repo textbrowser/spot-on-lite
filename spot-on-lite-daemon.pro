@@ -20,7 +20,7 @@ QMAKE_DISTCLEAN += -r temp
 QMAKE_EXTRA_TARGETS = purge
 
 LANGUAGE = C++
-QT += network
+QT += network sql
 TEMPLATE = app
 
 greaterThan(QT_MAJOR_VERSION, 4) {

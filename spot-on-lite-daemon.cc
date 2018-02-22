@@ -43,7 +43,13 @@ extern "C"
 #include <QLocalSocket>
 #include <QSettings>
 #include <QSocketNotifier>
+#include <QSqlDatabase>
+#include <QSqlQuery>
 #include <QStringList>
+#if QT_VERSION >= 0x050000
+#include <QtConcurrent>
+#endif
+#include <QtCore>
 #include <QtDebug>
 
 #include "spot-on-lite-daemon.h"
@@ -63,9 +69,14 @@ spot_on_lite_daemon::spot_on_lite_daemon
 	   "socketpair() failure. Exiting.");
 
   m_configuration_file_name = configuration_file_name;
+  m_congestion_control_timer.start(30000); // 30 Seconds
   m_maximum_accumulated_bytes = 8 * 1024 * 1024; // 8 MiB
   m_signal_usr1_socket_notifier = new QSocketNotifier
     (s_signal_usr1_fd[1], QSocketNotifier::Read, this);
+  connect(&m_congestion_control_timer,
+	  SIGNAL(timeout(void)),
+	  this,
+	  SLOT(slot_purge_congestion_control_timeout(void)));
   connect(m_signal_usr1_socket_notifier,
 	  SIGNAL(activated(int)),
 	  this,
@@ -80,6 +91,8 @@ spot_on_lite_daemon::spot_on_lite_daemon(void):QObject()
 
 spot_on_lite_daemon::~spot_on_lite_daemon()
 {
+  m_congestion_control_future.waitForFinished();
+
   if(m_local_server)
     QLocalServer::removeServer(m_local_server->fullServerName());
 
@@ -537,6 +550,32 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
       }
 }
 
+void spot_on_lite_daemon::purge_congestion_control(void)
+{
+  {
+    QSqlDatabase db = QSqlDatabase::addDatabase
+      ("QSQLITE", "congestion_control_database");
+
+    db.setDatabaseName(m_congestion_control_file_name);
+
+    if(db.open())
+      {
+	QSqlQuery query(db);
+
+	query.exec("PRAGMA journal_mode = OFF");
+	query.exec("PRAGMA synchronous = OFF");
+	query.exec
+	  (QString("DELETE FROM congestion_control WHERE "
+		   "%1 - date_time_inserted > %2").
+	   arg(QDateTime::currentDateTime().toTime_t()).arg(90));
+      }
+
+    db.close();
+  }
+
+  QSqlDatabase::removeDatabase("congestion_control_database");
+}
+
 void spot_on_lite_daemon::slot_new_local_connection(void)
 {
   if(!m_local_server)
@@ -551,6 +590,13 @@ void spot_on_lite_daemon::slot_new_local_connection(void)
 	  SIGNAL(readyRead(void)),
 	  this,
 	  SLOT(slot_ready_read(void)));
+}
+
+void spot_on_lite_daemon::slot_purge_congestion_control_timeout(void)
+{
+  if(m_congestion_control_future.isFinished())
+    m_congestion_control_future = QtConcurrent::run
+      (this, &spot_on_lite_daemon::purge_congestion_control);
 }
 
 void spot_on_lite_daemon::slot_ready_read(void)

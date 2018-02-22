@@ -1,9 +1,9 @@
 Completed Items
 
-1.  Echo through child processes.
-2.  Remove local socket server file on exit.
+1.  Congestion control, per child process.
+2.  Echo through child processes.
+3.  Remove local socket server file on exit.
 
 Remaining Items
 
-1.  Congestion control, per child process.
-2.  Remote peers.
+1.  Remote peers.

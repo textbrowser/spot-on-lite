@@ -28,9 +28,11 @@
 #ifndef _spot_on_lite_daemon_h_
 #define _spot_on_lite_daemon_h_
 
+#include <QFuture>
 #include <QLocalServer>
 #include <QObject>
 #include <QPointer>
+#include <QTimer>
 #include <QVector>
 
 class QSocketNotifier;
@@ -58,6 +60,7 @@ class spot_on_lite_daemon: public QObject
 				   bool *ok);
 
  private:
+  QFuture<void> m_congestion_control_future;
   QList<spot_on_lite_daemon_tcp_listener *> m_listeners;
   QPointer<QLocalServer> m_local_server;
   QSocketNotifier *m_signal_usr1_socket_notifier;
@@ -67,6 +70,7 @@ class spot_on_lite_daemon: public QObject
   QString m_congestion_control_file_name;
   QString m_local_socket_server_directory_name;
   QString m_log_file_name;
+  QTimer m_congestion_control_timer;
   QVector<QString> m_listeners_properties;
   int m_maximum_accumulated_bytes;
   static int s_signal_usr1_fd[2];
@@ -74,9 +78,11 @@ class spot_on_lite_daemon: public QObject
   void prepare_listeners(void);
   void prepare_local_socket_server(void);
   void process_configuration_file(bool *ok);
+  void purge_congestion_control(void);
 
  private slots:
   void slot_new_local_connection(void);
+  void slot_purge_congestion_control_timeout(void);
   void slot_ready_read(void);
   void slot_signal_usr1(void);
 };
