@@ -1,6 +1,9 @@
+QMAKE_CXXFLAGS_RELEASE -= -O2
+
 macx {
 QMAKE_CXXFLAGS_RELEASE += -fPIE -fstack-protector-all -fwrapv \
-                          -mtune=generic \
+                          -mtune=native \
+                          -O3 \
                           -Wall -Wcast-align -Wcast-qual \
                           -Werror -Wextra \
                           -Wno-unused-variable \
@@ -8,7 +11,8 @@ QMAKE_CXXFLAGS_RELEASE += -fPIE -fstack-protector-all -fwrapv \
                           -Wstack-protector
 } else:unix {
 QMAKE_CXXFLAGS_RELEASE += -fPIE -fstack-protector-all -fwrapv \
-                          -mtune=generic -pie \
+                          -mtune=native -pie \
+                          -O3 \
                           -Wall -Wcast-align -Wcast-qual \
                           -Werror -Wextra \
                           -Wno-unused-variable \
