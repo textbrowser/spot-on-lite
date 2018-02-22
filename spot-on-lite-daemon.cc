@@ -695,6 +695,7 @@ void spot_on_lite_daemon::start(void)
       m_local_server->close();
       m_local_server->removeServer(m_local_server->fullServerName());
       m_local_server->deleteLater();
+      QCoreApplication::processEvents();
     }
 
   if(s_local_server_file_name)
