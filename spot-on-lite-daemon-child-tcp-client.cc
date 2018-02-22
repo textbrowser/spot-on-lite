@@ -111,10 +111,6 @@ spot_on_lite_daemon_child_tcp_client
 	  this,
 	  SLOT(slot_disconnected(void)));
   connect(this,
-	  SIGNAL(keep_alive(void)),
-	  this,
-	  SLOT(slot_keep_alive(void)));
-  connect(this,
 	  SIGNAL(readyRead(void)),
 	  this,
 	  SLOT(slot_ready_read(void)));
@@ -749,11 +745,6 @@ void spot_on_lite_daemon_child_tcp_client::slot_disconnected(void)
   QCoreApplication::exit(0);
 }
 
-void spot_on_lite_daemon_child_tcp_client::slot_keep_alive(void)
-{
-  m_keep_alive_timer.start();
-}
-
 void spot_on_lite_daemon_child_tcp_client::slot_local_ready_read(void)
 {
   write(m_local_socket->readAll());
@@ -766,7 +757,7 @@ void spot_on_lite_daemon_child_tcp_client::slot_ready_read(void)
 
   if(!data.isEmpty())
     {
-      emit keep_alive();
+      m_keep_alive_timer.start();
 
       if(m_remote_content.length() >= m_maximum_accumulated_bytes)
 	m_remote_content.clear();
