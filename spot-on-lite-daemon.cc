@@ -195,14 +195,14 @@ void spot_on_lite_daemon::prepare_local_socket_server(void)
 	 arg(QCoreApplication::applicationPid()));
 
       if(m_local_server->isListening())
-	if(!s_local_server_file_name)
-	  {
-	    s_local_server_file_name = new char[2048];
-	    memset(s_local_server_file_name, 0, 2048);
-	    qstrcpy
-	      (s_local_server_file_name,
-	       m_local_server->fullServerName().toStdString().data());
-	  }
+	{
+	  delete []s_local_server_file_name;
+	  s_local_server_file_name = new char[2048];
+	  memset(s_local_server_file_name, 0, 2048);
+	  qstrcpy
+	    (s_local_server_file_name,
+	     m_local_server->fullServerName().toStdString().data());
+	}
     }
 }
 
@@ -729,6 +729,10 @@ void spot_on_lite_daemon::slot_new_local_connection(void)
     return;
 
   connect(socket,
+	  SIGNAL(disconnected(void)),
+	  socket,
+	  SLOT(deleteLater(void)));
+  connect(socket,
 	  SIGNAL(readyRead(void)),
 	  this,
 	  SLOT(slot_ready_read(void)));
@@ -775,13 +779,13 @@ void spot_on_lite_daemon::slot_signal_usr1(void)
   ssize_t rc = ::read(s_signal_usr1_fd[1], &a, sizeof(a));
 
   Q_UNUSED(rc);
-  kill(0, SIGCHLD); // Terminate existing children.
   start();
   m_signal_usr1_socket_notifier->setEnabled(true);
 }
 
 void spot_on_lite_daemon::start(void)
 {
+  kill(0, SIGCHLD); // Terminate existing children.
   m_listeners_properties.clear();
 
   if(m_local_server)
