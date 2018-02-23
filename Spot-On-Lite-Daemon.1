@@ -9,7 +9,7 @@ is an extremely lite version of Spot-On.
 .SH OPTIONS
 .TP
 .BI --configuration-file " file"
-Absolute path of the configuration file. Only the first instance will be considered.
+Absolute path of the configuration file. Only the first instance will be considered. Reprocessing of the configuration file may be performed via the SIGUSR1 signal. Please note that all listeners and peers will be halted if a Spot-On-Lite-Daemon process receives the SIGUSR1 signal.
 .TP
 .BI --help
 Display helpful text.
