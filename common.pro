@@ -10,9 +10,7 @@ QMAKE_CXXFLAGS_RELEASE += -fPIE -fstack-protector-all -fwrapv \
                           -Woverloaded-virtual -Wpointer-arith \
                           -Wstack-protector
 } else:unix {
-QMAKE_CXXFLAGS_RELEASE += -fPIE -fstack-protector-all -fwrapv \
-                          -mtune=native -pie \
-                          -O3 \
+QMAKE_CXXFLAGS_RELEASE += -fPIE -fstack-protector-all -fwrapv -pie -O3 \
                           -Wall -Wcast-align -Wcast-qual \
                           -Werror -Wextra \
                           -Wno-unused-variable \
