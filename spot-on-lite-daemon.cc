@@ -207,8 +207,6 @@ void spot_on_lite_daemon::prepare_local_socket_server(void)
 
 void spot_on_lite_daemon::prepare_peers(void)
 {
-  kill(0, SIGCHLD); // Destroy existing children.
-
   for(int i = 0; i < m_peers_properties.size(); i++)
     {
       QStringList list
@@ -777,6 +775,7 @@ void spot_on_lite_daemon::slot_signal_usr1(void)
   ssize_t rc = ::read(s_signal_usr1_fd[1], &a, sizeof(a));
 
   Q_UNUSED(rc);
+  kill(0, SIGCHLD); // Terminate existing children.
   start();
   m_signal_usr1_socket_notifier->setEnabled(true);
 }

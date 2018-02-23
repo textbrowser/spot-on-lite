@@ -2,8 +2,8 @@ General Requirements
 
 - Child processes should not create local files beyond SSL/TLS certificates.
 - Child processes should self-terminate after a configurable period of silence.
-- Child processes will not re-process a configuration file upon the parent
-  receiving a SIGUSR1 signal.
+- Child processes will be terminated upon the parent receiving
+  the SIGUSR1 signal.
 - Multiple instances of a daemon are allowed.
 - Optional SSL/TLS within child processes.
 - Terminating the daemon should terminate child processes.
