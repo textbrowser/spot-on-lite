@@ -204,6 +204,44 @@ void spot_on_lite_daemon::prepare_local_socket_server(void)
     }
 }
 
+void spot_on_lite_daemon::prepare_peers(void)
+{
+  foreach(QProcess *process, findChildren<QProcess *> ())
+    process->deleteLater();
+
+  for(int i = 0; i < m_peers_properties.size(); i++)
+    {
+      QProcess *process = new QProcess(this);
+      QStringList arguments;
+      QStringList list
+	(m_peers_properties.at(i).split(",", QString::KeepEmptyParts));
+
+      arguments << "--certificates-file"
+		<< m_certificates_file_name
+		<< "--congestion-control-file"
+		<< m_congestion_control_file_name
+		<< "--local-server-file"
+		<< local_server_file_name()
+		<< "--log-file"
+		<< m_log_file_name
+		<< "--maximum--accumulated-bytes"
+		<< QString::number(m_maximum_accumulated_bytes)
+		<< "--server-identity"
+		<< QString("%1:%2").arg(list.value(0)).arg(list.value(1))
+		<< "--silence-timeout"
+		<< list.value(5)
+		<< "--socket-descriptor"
+		<< "-1"
+		<< "--ssl-tls-control-string"
+		<< list.value(3)
+		<< "--ssl-tls-key-size"
+		<< list.value(4)
+		<< "--tcp";
+      process->start(m_child_process_file_name, arguments);
+      process->waitForStarted();
+    }
+}
+
 void spot_on_lite_daemon::process_configuration_file(bool *ok)
 {
   m_certificates_file_name.clear();
@@ -213,7 +251,8 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
   m_local_socket_server_directory_name = "/tmp";
   m_log_file_name.clear();
 
-  QHash<QString, char> hash;
+  QHash<QString, char> listeners;
+  QHash<QString, char> peers;
   QSettings settings(m_configuration_file_name, QSettings::IniFormat);
 
   foreach(QString key, settings.allKeys())
@@ -378,7 +417,7 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
 	else
 	  m_log_file_name = settings.value(key).toString();
       }
-    else if(key.startsWith("listener"))
+    else if(key.startsWith("listener") || key.startsWith("peer"))
       {
 	QStringList list
 	  (settings.value(key).toString().split(",", QString::KeepEmptyParts));
@@ -415,18 +454,18 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
 	  list.replace(i, list.at(i).trimmed());
 
 	QHostAddress hostAddress(list.at(0));
-	bool listenerOK = true;
+	bool entry_ok = true;
 
 	if(hostAddress.isNull())
 	  {
-	    listenerOK = false;
+	    entry_ok = false;
 
 	    if(ok)
 	      *ok = false;
 
 	    std::cerr << "spot_on_lite_daemon::"
 		      << "process_configuration_file(): The "
-		      << "listener \""
+		      << "listener/peer \""
 		      << key.toStdString()
 		      << "\" IP address is invalid. Ignoring entry."
 		      << std::endl;
@@ -437,14 +476,14 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
 
 	if(!o || port < 0 || port > 65535)
 	  {
-	    listenerOK = false;
+	    entry_ok = false;
 
 	    if(ok)
 	      *ok = false;
 
 	    std::cerr << "spot_on_lite_daemon::"
 		      << "process_configuration_file(): The "
-		      << "listener \""
+		      << "listener/peer \""
 		      << key.toStdString()
 		      << "\" port number is invalid. Expecting a port number "
 		      << "in the range [0, 65535]. Ignoring entry."
@@ -455,14 +494,14 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
 
 	if(backlog < 1 || backlog > std::numeric_limits<int>::max() || !o)
 	  {
-	    listenerOK = false;
+	    entry_ok = false;
 
 	    if(ok)
 	      *ok = false;
 
 	    std::cerr << "spot_on_lite_daemon::"
 		      << "process_configuration_file(): The "
-		      << "listener \""
+		      << "listener/peer \""
 		      << key.toStdString()
 		      << "\" backlog is invalid. Expecting a value "
 		      << "in the range [1, "
@@ -477,14 +516,14 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
 
 	    if(!(keySize == 2048 || keySize == 3072 || keySize == 4096) || !o)
 	      {
-		listenerOK = false;
+		entry_ok = false;
 
 		if(ok)
 		  *ok = false;
 
 		std::cerr << "spot_on_lite_daemon::"
 			  << "process_configuration_file(): The "
-			  << "listener \""
+			  << "listener/peer \""
 			  << key.toStdString()
 			  << "\" SSL/TLS key size is invalid. "
 			  << "Expecting a value "
@@ -497,14 +536,14 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
 
 	if(!o || silence < 15 || silence > 3600)
 	  {
-	    listenerOK = false;
+	    entry_ok = false;
 
 	    if(ok)
 	      *ok = false;
 
 	    std::cerr << "spot_on_lite_daemon::"
 		      << "process_configuration_file(): The "
-		      << "listener \""
+		      << "listener/peer \""
 		      << key.toStdString()
 		      << "\" silence value is invalid. Expecting a value "
 		      << "in the range [15, 3600]. Ignoring entry."
@@ -515,39 +554,64 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
 
 	if(!o || so_linger < -1 || so_linger > 65535)
 	  {
-	    listenerOK = false;
+	    entry_ok = false;
 
 	    if(ok)
 	      *ok = false;
 
 	    std::cerr << "spot_on_lite_daemon::"
 		      << "process_configuration_file(): The "
-		      << "listener \""
+		      << "listener/peer \""
 		      << key.toStdString()
 		      << "\" linger value is invalid. Expecting a value "
 		      << "in the range [-1, 65535]. Ignoring entry."
 		      << std::endl;
 	  }
 
-	if(hash.contains(list.at(0) + list.at(1)) && listenerOK)
+	if(key.startsWith("listener"))
 	  {
-	    if(ok)
-	      *ok = false;
+	    if(listeners.contains(list.at(0) + list.at(1)) && entry_ok)
+	      {
+		if(ok)
+		  *ok = false;
 
-	    std::cerr << "spot_on_lite_daemon::"
-		      << "process_configuration_file(): The "
-		      << "listener ("
-		      << list.at(0).toStdString()
-		      << ":"
-		      << list.at(1).toStdString()
-		      << ") is a duplicate. Ignoring entry."
-		      << std::endl;
+		std::cerr << "spot_on_lite_daemon::"
+			  << "process_configuration_file(): The "
+			  << "listener ("
+			  << list.at(0).toStdString()
+			  << ":"
+			  << list.at(1).toStdString()
+			  << ") is a duplicate. Ignoring entry."
+			  << std::endl;
+	      }
+	    else if(entry_ok)
+	      m_listeners_properties << settings.value(key).toString();
+
+	    if(entry_ok)
+	      listeners[list.at(0) + list.at(1)] = 0;
 	  }
-	else if(listenerOK)
-	  m_listeners_properties << settings.value(key).toString();
+	else
+	  {
+	    if(peers.contains(list.at(0) + list.at(1)) && entry_ok)
+	      {
+		if(ok)
+		  *ok = false;
 
-	if(listenerOK)
-	  hash[list.at(0) + list.at(1)] = 0;
+		std::cerr << "spot_on_lite_daemon::"
+			  << "process_configuration_file(): The "
+			  << "listener ("
+			  << list.at(0).toStdString()
+			  << ":"
+			  << list.at(1).toStdString()
+			  << ") is a duplicate. Ignoring entry."
+			  << std::endl;
+	      }
+	    else if(entry_ok)
+	      m_peers_properties << settings.value(key).toString();
+
+	    if(entry_ok)
+	      peers[list.at(0) + list.at(1)] = 0;
+	  }
       }
     else if(key == "maximum_accumulated_bytes")
       {
@@ -698,6 +762,8 @@ void spot_on_lite_daemon::start(void)
       m_local_server = 0;
     }
 
+  m_peers_properties.clear();
+
   if(s_local_server_file_name)
     {
       delete []s_local_server_file_name;
@@ -707,12 +773,14 @@ void spot_on_lite_daemon::start(void)
   process_configuration_file(0);
   prepare_listeners();
   prepare_local_socket_server();
+  prepare_peers();
 }
 
 void spot_on_lite_daemon::validate_configuration_file
 (const QString &configurationFileName, bool *ok)
 {
-  m_listeners_properties.clear();
   m_configuration_file_name = configurationFileName;
+  m_listeners_properties.clear();
+  m_peers_properties.clear();
   process_configuration_file(ok);
 }

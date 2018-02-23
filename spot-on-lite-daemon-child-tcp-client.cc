@@ -31,6 +31,7 @@ extern "C"
 #include <openssl/pem.h>
 #include <openssl/ssl.h>
 #include <openssl/x509v3.h>
+#include <unistd.h>
 }
 
 #include <QCoreApplication>
@@ -66,6 +67,7 @@ spot_on_lite_daemon_child_tcp_client
  const int ssl_key_size):QSslSocket()
 {
   m_certificates_file_name = certificates_file_name;
+  m_client_role = socket_descriptor < 0;
   m_congestion_control_file_name = congestion_control_file_name;
   m_local_server_file_name = local_server_file_name;
   m_local_socket = 0;
@@ -88,7 +90,12 @@ spot_on_lite_daemon_child_tcp_client
       m_ssl_key_size = 0;
     }
 
-  if(!setSocketDescriptor(socket_descriptor))
+  if(socket_descriptor == -1)
+    connect(this,
+	    SIGNAL(connected(void)),
+	    this,
+	    SLOT(slot_connected(void)));
+  else if(!setSocketDescriptor(dup(socket_descriptor)))
     {
       /*
       ** Fatal error!
@@ -104,7 +111,7 @@ spot_on_lite_daemon_child_tcp_client
   connect(&m_keep_alive_timer,
 	  SIGNAL(timeout(void)),
 	  this,
-	  SLOT(slot_disconnected(void)));
+	  SLOT(slot_keep_alive_timer_timeout(void)));
   connect(this,
 	  SIGNAL(disconnected(void)),
 	  this,
@@ -122,15 +129,39 @@ spot_on_lite_daemon_child_tcp_client
 #else
       OPENSSL_init_ssl(0, NULL);
 #endif
+      connect(this,
+	      SIGNAL(sslErrors(const QList<QSslError> &)),
+	      this,
+	      SLOT(slot_ssl_errors(const QList<QSslError> &)));
 
-      QList<QByteArray> list(local_certificate_configuration());
+      if(socket_descriptor == -1)
+	{
+	  generate_ssl_tls();
 
-      if(list.isEmpty())
-	generate_ssl_tls();
+	  QStringList list(m_server_identity.split(":"));
+
+	  connectToHostEncrypted
+	    (list.value(0), static_cast<quint16> (list.value(1).toInt()));
+	}
       else
-	prepare_ssl_tls_configuration(list);
+	{
+	  QList<QByteArray> list(local_certificate_configuration());
 
-      startServerEncryption();
+	  if(list.isEmpty())
+	    generate_ssl_tls();
+	  else
+	    prepare_ssl_tls_configuration(list);
+
+	  startServerEncryption();
+	}
+    }
+  else if(m_client_role)
+    {
+      QStringList list(m_server_identity.split(":"));
+
+      connectToHost
+	(QHostAddress(list.value(0)),
+	 static_cast<quint16> (list.value(1).toInt()));
     }
 }
 
@@ -792,6 +823,9 @@ void spot_on_lite_daemon_child_tcp_client::record_certificate
  const QByteArray &private_key,
  const QByteArray &public_key)
 {
+  if(m_client_role)
+    return;
+
   {
     QSqlDatabase db = QSqlDatabase::addDatabase
       ("QSQLITE", "certificates_database");
@@ -840,7 +874,32 @@ set_ssl_ciphers(const QList<QSslCipher> &ciphers,
     configuration.setCiphers(preferred);
 }
 
+void spot_on_lite_daemon_child_tcp_client::slot_connected(void)
+{
+  if(!m_client_role)
+    return;
+}
+
 void spot_on_lite_daemon_child_tcp_client::slot_disconnected(void)
+{
+  if(m_client_role)
+    {
+      QStringList list(m_server_identity.split(":"));
+
+      if(!m_ssl_control_string.isEmpty() && m_ssl_key_size > 0)
+	connectToHostEncrypted
+	  (list.value(0),
+	   static_cast<quint16> (list.value(1).toInt()));
+      else
+	connectToHost
+	  (QHostAddress(list.value(0)),
+	   static_cast<quint16> (list.value(1).toInt()));
+    }
+  else
+    QCoreApplication::exit(0);
+}
+
+void spot_on_lite_daemon_child_tcp_client::slot_keep_alive_timer_timeout(void)
 {
   QCoreApplication::exit(0);
 }
@@ -885,4 +944,11 @@ void spot_on_lite_daemon_child_tcp_client::slot_ready_read(void)
 	  m_local_socket->flush();
 	}
     }
+}
+
+void spot_on_lite_daemon_child_tcp_client::
+slot_ssl_errors(const QList<QSslError> &errors)
+{
+  Q_UNUSED(errors);
+  ignoreSslErrors();
 }

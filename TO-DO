@@ -4,9 +4,9 @@ Completed Items
 2.  Disable SO_LINGER. Optional.
 3.  Echo through child processes.
 4.  Record certificate data.
-5.  Remove local socket server file on exit.
+5.  Remote peers.
+6.  Remove local socket server file on exit.
 
 Remaining Items
 
 1.  Limit number of processes.
-2.  Remote peers.

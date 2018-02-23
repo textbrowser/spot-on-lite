@@ -74,11 +74,13 @@ class spot_on_lite_daemon: public QObject
   QString m_log_file_name;
   QTimer m_congestion_control_timer;
   QVector<QString> m_listeners_properties;
+  QVector<QString> m_peers_properties;
   int m_maximum_accumulated_bytes;
   static int s_signal_usr1_fd[2];
   static spot_on_lite_daemon *s_instance;
   void prepare_listeners(void);
   void prepare_local_socket_server(void);
+  void prepare_peers(void);
   void process_configuration_file(bool *ok);
   void purge_congestion_control(void);
 
