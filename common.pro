@@ -1,9 +1,15 @@
 QMAKE_CXXFLAGS_RELEASE -= -O2
 
-macx {
+freebsd-* {
 QMAKE_CXXFLAGS_RELEASE += -fPIE -fstack-protector-all -fwrapv \
-                          -mtune=native \
-                          -O3 \
+                          -mtune=native -O3 \
+			  -Wall -Wcast-align -Wcast-qual \
+			  -Wextra \
+			  -Woverloaded-virtual -Wpointer-arith \
+                          -Wstack-protector -Wstrict-overflow=5
+} else:macx {
+QMAKE_CXXFLAGS_RELEASE += -fPIE -fstack-protector-all -fwrapv \
+                          -mtune=native -O3 \
                           -Wall -Wcast-align -Wcast-qual \
                           -Werror -Wextra \
                           -Wno-unused-variable \

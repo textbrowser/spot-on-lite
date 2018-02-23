@@ -667,30 +667,6 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
 	else
 	  m_maximum_accumulated_bytes = maximumAccumulatedBytes;
       }
-    else if(key == "maximum_number_of_child_processes")
-      {
-	bool o = true;
-	int maximumNumberOfChildProcesses = settings.value(key).toInt(&o);
-
-	if(maximumNumberOfChildProcesses < 0 ||
-	   maximumNumberOfChildProcesses > 65535 ||
-	   !o)
-	  {
-	    maximumNumberOfChildProcesses = 128;
-
-	    if(ok)
-	      *ok = false;
-
-	    std::cerr << "spot_on_lite_daemon::"
-		      << "process_configuration_file(): The "
-		      << "maximum_number_of_child_processes value \""
-		      << settings.value(key).toString().toStdString()
-		      << "\" is invalid. "
-		      << "Expecting a value "
-		      << "in the range [1, 65535]. Ignoring entry."
-		      << std::endl;
-	  }
-      }
 }
 
 void spot_on_lite_daemon::purge_congestion_control(void)
