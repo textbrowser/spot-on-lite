@@ -117,7 +117,7 @@ spot_on_lite_daemon_child_tcp_client
 
   if(!m_ssl_control_string.isEmpty() && m_ssl_key_size > 0)
     {
-#if OPENSSL_VERSION_NUMBER < 0x10100000L
+#if OPENSSL_VERSION_NUMBER < 0x10100000L || defined(Q_OS_OPENBSD)
       SSL_library_init(); // Always returns 1.
 #else
       OPENSSL_init_ssl(0, NULL);
