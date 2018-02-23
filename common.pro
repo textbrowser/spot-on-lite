@@ -9,8 +9,16 @@ QMAKE_CXXFLAGS_RELEASE += -fPIE -fstack-protector-all -fwrapv \
                           -Wno-unused-variable \
                           -Woverloaded-virtual -Wpointer-arith \
                           -Wstack-protector
+} else:openbsd {
+QMAKE_CXXFLAGS_RELEASE += -fPIE -fstack-protector-all -fwrapv -pie -O3 \
+                          -Wall -Wcast-qual \
+                          -Werror -Wextra \
+                          -Wno-unused-variable \
+                          -Woverloaded-virtual -Wpointer-arith \
+                          -Wstack-protector                          
 } else:unix {
 QMAKE_CXXFLAGS_RELEASE += -fPIE -fstack-protector-all -fwrapv -pie -O3 \
+                          -mtune=native \
                           -Wall -Wcast-align -Wcast-qual \
                           -Werror -Wextra \
                           -Wno-unused-variable \
