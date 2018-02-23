@@ -163,12 +163,12 @@ static int prepare_signal_handlers(void)
     std::cerr << "sigaction() failure for SIGPIPE. Ignoring." << std::endl;
 
   /*
-  ** Monitor SIGTERM, SIGUSR1.
+  ** Monitor SIGTERM, SIGUSR1, SIGUSR2.
   */
 
   QList<int> list;
 
-  list << SIGTERM << SIGUSR1;
+  list << SIGTERM << SIGUSR1 << SIGUSR2;
 
   while(!list.isEmpty())
     {
