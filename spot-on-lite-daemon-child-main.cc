@@ -38,6 +38,12 @@ extern "C"
 
 #include "spot-on-lite-daemon-child-tcp-client.h"
 
+void handler_signal(int signal_number)
+{
+  Q_UNUSED(signal_number);
+  exit(0);
+}
+
 static int prepare_signal_handlers(void)
 {
   struct sigaction act;
@@ -63,6 +69,13 @@ static int prepare_signal_handlers(void)
 
   if(sigaction(SIGPIPE, &act, 0))
     std::cerr << "sigaction() failure for SIGPIPE. Ignoring." << std::endl;
+
+  act.sa_handler = handler_signal;
+  sigemptyset(&act.sa_mask);
+  act.sa_flags = 0;
+
+  if(sigaction(SIGUSR2, &act, 0))
+    std::cerr << "sigaction() failure for SIGUSR2. Ignoring." << std::endl;
 
   return 0;
 }

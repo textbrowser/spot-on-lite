@@ -785,7 +785,7 @@ void spot_on_lite_daemon::slot_signal_usr1(void)
 
 void spot_on_lite_daemon::start(void)
 {
-  kill(0, SIGCHLD); // Terminate existing children.
+  kill(0, SIGUSR2); // Terminate existing children.
   m_listeners_properties.clear();
 
   if(m_local_server)
