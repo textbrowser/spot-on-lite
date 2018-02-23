@@ -199,9 +199,10 @@ void spot_on_lite_daemon::prepare_local_socket_server(void)
 	  delete []s_local_server_file_name;
 	  s_local_server_file_name = new char[2048];
 	  memset(s_local_server_file_name, 0, 2048);
-	  qstrcpy
+	  qstrncpy
 	    (s_local_server_file_name,
-	     m_local_server->fullServerName().toStdString().data());
+	     m_local_server->fullServerName().toStdString().data(),
+	     2047);
 	}
     }
 }
