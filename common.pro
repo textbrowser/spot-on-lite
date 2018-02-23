@@ -9,7 +9,7 @@ QMAKE_CXXFLAGS_RELEASE += -fPIE -fstack-protector-all -fwrapv \
                           -Wno-unused-variable \
                           -Woverloaded-virtual -Wpointer-arith \
                           -Wstack-protector
-} else:openbsd {
+} else:openbsd-* {
 QMAKE_CXXFLAGS_RELEASE += -fPIE -fstack-protector-all -fwrapv -pie -O3 \
                           -Wall -Wcast-qual \
                           -Werror -Wextra \
