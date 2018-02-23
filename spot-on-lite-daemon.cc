@@ -29,6 +29,7 @@ extern "C"
 {
 #include <sys/resource.h>
 #include <sys/socket.h>
+#include <sys/wait.h>
 #include <unistd.h>
 }
 
@@ -206,39 +207,69 @@ void spot_on_lite_daemon::prepare_local_socket_server(void)
 
 void spot_on_lite_daemon::prepare_peers(void)
 {
-  foreach(QProcess *process, findChildren<QProcess *> ())
-    process->deleteLater();
+  kill(0, SIGCHLD); // Destroy existing children.
 
   for(int i = 0; i < m_peers_properties.size(); i++)
     {
-      QProcess *process = new QProcess(this);
-      QStringList arguments;
       QStringList list
 	(m_peers_properties.at(i).split(",", QString::KeepEmptyParts));
+      int maximum_accumulated_bytes = m_maximum_accumulated_bytes;
+      int so_linger = list.value(6).toInt();
+      pid_t pid = 0;
+      std::string certificates_file_name
+	(m_certificates_file_name.toStdString());
+      std::string command(m_child_process_file_name.toStdString());
+      std::string congestion_control_file_name
+	(m_congestion_control_file_name.toStdString());
+      std::string ld_library_path
+	(m_child_process_ld_library_path.toStdString());
+      std::string local_server_file_name
+	(this->local_server_file_name().toStdString());
+      std::string log_file_name(m_log_file_name.toStdString());
+      std::string server_identity
+	(QString("%1:%2").arg(list.value(0)).arg(list.value(1)).toStdString());
 
-      arguments << "--certificates-file"
-		<< m_certificates_file_name
-		<< "--congestion-control-file"
-		<< m_congestion_control_file_name
-		<< "--local-server-file"
-		<< local_server_file_name()
-		<< "--log-file"
-		<< m_log_file_name
-		<< "--maximum--accumulated-bytes"
-		<< QString::number(m_maximum_accumulated_bytes)
-		<< "--server-identity"
-		<< QString("%1:%2").arg(list.value(0)).arg(list.value(1))
-		<< "--silence-timeout"
-		<< list.value(5)
-		<< "--socket-descriptor"
-		<< "-1"
-		<< "--ssl-tls-control-string"
-		<< list.value(3)
-		<< "--ssl-tls-key-size"
-		<< list.value(4)
-		<< "--tcp";
-      process->start(m_child_process_file_name, arguments);
-      process->waitForStarted();
+      if((pid = fork()) == 0)
+	{
+	  if((pid = fork()) < 0)
+	    _exit(EXIT_FAILURE);
+	  else if(pid > 0)
+	    _exit(EXIT_SUCCESS);
+
+	  const char *envp[] = {ld_library_path.data(), NULL};
+
+	  if(execle(command.data(),
+		    command.data(),
+		    "--certificates-file",
+		    certificates_file_name.data(),
+		    "--congestion-control-file",
+		    congestion_control_file_name.data(),
+		    "--local-server-file",
+		    local_server_file_name.data(),
+		    "--log-file",
+		    log_file_name.data(),
+		    "--maximum--accumulated-bytes",
+		    QString::number(maximum_accumulated_bytes).
+		    toStdString().data(),
+		    "--server-identity",
+		    server_identity.data(),
+		    "--silence-timeout",
+		    list.value(5).toStdString().data(),
+		    "--socket-descriptor",
+		    "-1",
+		    "--ssl-tls-control-string",
+		    list.value(3).toStdString().data(),
+		    "--ssl-tls-key-size",
+		    list.value(4).toStdString().data(),
+		    "--tcp",
+		    NULL,
+		    envp) == -1)
+	    _exit(EXIT_FAILURE);
+
+	  _exit(EXIT_SUCCESS);
+	}
+      else
+	waitpid(pid, NULL, 0);
     }
 }
 

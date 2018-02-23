@@ -49,10 +49,10 @@ void spot_on_lite_daemon::handler_signal(int signal_number)
 {
   switch(signal_number)
     {
+    case SIGCHLD:
+      return;
     case SIGUSR1:
-      {
-	break;
-      }
+      break;
     default:
       {
 	kill(0, signal_number);
