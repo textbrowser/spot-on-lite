@@ -66,6 +66,7 @@ class spot_on_lite_daemon_child_tcp_client: public QSslSocket
   QString m_log_file_name;
   QString m_server_identity;
   QString m_ssl_control_string;
+  QTimer m_attempt_connection_timer;
   QTimer m_keep_alive_timer;
   bool m_client_role;
   int m_maximum_accumulated_bytes;
@@ -89,6 +90,7 @@ class spot_on_lite_daemon_child_tcp_client: public QSslSocket
 		       QSslConfiguration &configuration) const;
 
  private slots:
+  void slot_attempt_connection(void);
   void slot_connected(void);
   void slot_disconnected(void);
   void slot_keep_alive_timer_timeout(void);

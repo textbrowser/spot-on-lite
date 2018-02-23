@@ -66,6 +66,7 @@ spot_on_lite_daemon_child_tcp_client
  const int socket_descriptor,
  const int ssl_key_size):QSslSocket()
 {
+  m_attempt_connection_timer.setInterval(5000);
   m_certificates_file_name = certificates_file_name;
   m_client_role = socket_descriptor < 0;
   m_congestion_control_file_name = congestion_control_file_name;
@@ -90,11 +91,17 @@ spot_on_lite_daemon_child_tcp_client
       m_ssl_key_size = 0;
     }
 
-  if(socket_descriptor == -1)
-    connect(this,
-	    SIGNAL(connected(void)),
-	    this,
-	    SLOT(slot_connected(void)));
+  if(m_client_role)
+    {
+      connect(&m_attempt_connection_timer,
+	      SIGNAL(timeout(void)),
+	      this,
+	      SLOT(slot_attempt_connection(void)));
+      connect(this,
+	      SIGNAL(connected(void)),
+	      this,
+	      SLOT(slot_connected(void)));
+    }
   else if(!setSocketDescriptor(dup(socket_descriptor)))
     {
       /*
@@ -134,7 +141,7 @@ spot_on_lite_daemon_child_tcp_client
 	      this,
 	      SLOT(slot_ssl_errors(const QList<QSslError> &)));
 
-      if(socket_descriptor == -1)
+      if(m_client_role)
 	{
 	  generate_ssl_tls();
 
@@ -874,26 +881,38 @@ set_ssl_ciphers(const QList<QSslCipher> &ciphers,
     configuration.setCiphers(preferred);
 }
 
+void spot_on_lite_daemon_child_tcp_client::slot_attempt_connection(void)
+{
+  /*
+  ** Attempt a client connection.
+  */
+
+  if(state() != QAbstractSocket::UnconnectedState)
+    return;
+
+  QStringList list(m_server_identity.split(":"));
+
+  if(!m_ssl_control_string.isEmpty() && m_ssl_key_size > 0)
+    connectToHostEncrypted
+      (list.value(0),
+       static_cast<quint16> (list.value(1).toInt()));
+  else
+    connectToHost
+      (QHostAddress(list.value(0)),
+       static_cast<quint16> (list.value(1).toInt()));
+}
+
 void spot_on_lite_daemon_child_tcp_client::slot_connected(void)
 {
-  if(!m_client_role)
-    return;
+  m_attempt_connection_timer.stop();
 }
 
 void spot_on_lite_daemon_child_tcp_client::slot_disconnected(void)
 {
   if(m_client_role)
     {
-      QStringList list(m_server_identity.split(":"));
-
-      if(!m_ssl_control_string.isEmpty() && m_ssl_key_size > 0)
-	connectToHostEncrypted
-	  (list.value(0),
-	   static_cast<quint16> (list.value(1).toInt()));
-      else
-	connectToHost
-	  (QHostAddress(list.value(0)),
-	   static_cast<quint16> (list.value(1).toInt()));
+      if(!m_attempt_connection_timer.isActive())
+	m_attempt_connection_timer.start();
     }
   else
     QCoreApplication::exit(0);
