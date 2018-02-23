@@ -27,6 +27,7 @@
 
 extern "C"
 {
+#include <signal.h>
 #include <sys/resource.h>
 #include <sys/socket.h>
 #include <sys/wait.h>
@@ -212,7 +213,6 @@ void spot_on_lite_daemon::prepare_peers(void)
       QStringList list
 	(m_peers_properties.at(i).split(",", QString::KeepEmptyParts));
       int maximum_accumulated_bytes = m_maximum_accumulated_bytes;
-      int so_linger = list.value(6).toInt();
       pid_t pid = 0;
       std::string certificates_file_name
 	(m_certificates_file_name.toStdString());

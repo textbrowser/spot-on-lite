@@ -901,6 +901,7 @@ void spot_on_lite_daemon_child_tcp_client::slot_disconnected(void)
 
 void spot_on_lite_daemon_child_tcp_client::slot_keep_alive_timer_timeout(void)
 {
+  abort();
   QCoreApplication::exit(0);
 }
 
