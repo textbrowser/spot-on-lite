@@ -944,6 +944,8 @@ void spot_on_lite_daemon_child_tcp_client::slot_ready_read(void)
       if(data.isEmpty())
 	return;
 
+      m_keep_alive_timer.start();
+
       if(record_congestion(data))
 	{
 	  m_local_socket->write(data);
