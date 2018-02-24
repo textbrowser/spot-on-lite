@@ -91,6 +91,7 @@ int main(int argc, char *argv[])
 
   QString certificates_file_name("");
   QString congestion_control_file_name("");
+  QString end_of_message_marker("");
   QString local_server_file_name("");
   QString log_file_name("");
   QString protocol("tcp");
@@ -131,6 +132,22 @@ int main(int argc, char *argv[])
 	    else
 	      {
 		std::cerr << "Invalid congestion-control-file usage. Exiting."
+			  << std::endl;
+		return EXIT_FAILURE;
+	      }
+	  }
+      }
+    else if(argv && argv[i] && strcmp(argv[i], "--end-of-message-marker") == 0)
+      {
+	if(end_of_message_marker.isEmpty())
+	  {
+	    i += 1;
+
+	    if(argc > i && argv[i])
+	      end_of_message_marker = argv[i];
+	    else
+	      {
+		std::cerr << "Invalid end-of-message-marker usage. Exiting."
 			  << std::endl;
 		return EXIT_FAILURE;
 	      }
@@ -280,6 +297,7 @@ int main(int argc, char *argv[])
 	  spot_on_lite_daemon_child_tcp_client client
 	    (certificates_file_name,
 	     congestion_control_file_name,
+	     end_of_message_marker,
 	     local_server_file_name,
 	     log_file_name,
 	     server_identity,

@@ -51,12 +51,11 @@ extern "C"
 
 #include "spot-on-lite-daemon-child-tcp-client.h"
 
-static QByteArray EOM = "\r\n\r\n\r\n";
-
 spot_on_lite_daemon_child_tcp_client::
 spot_on_lite_daemon_child_tcp_client
 (const QString &certificates_file_name,
  const QString &congestion_control_file_name,
+ const QString &end_of_message_marker,
  const QString &local_server_file_name,
  const QString &log_file_name,
  const QString &server_identity,
@@ -70,6 +69,7 @@ spot_on_lite_daemon_child_tcp_client
   m_certificates_file_name = certificates_file_name;
   m_client_role = socket_descriptor < 0;
   m_congestion_control_file_name = congestion_control_file_name;
+  m_end_of_message_marker = end_of_message_marker;
   m_local_server_file_name = local_server_file_name;
   m_local_socket = 0;
   m_log_file_name = log_file_name;
@@ -939,6 +939,20 @@ void spot_on_lite_daemon_child_tcp_client::slot_ready_read(void)
 {
   QByteArray data(readAll());
 
+  if(m_end_of_message_marker.isEmpty())
+    {
+      if(data.isEmpty())
+	return;
+
+      if(record_congestion(data))
+	{
+	  m_local_socket->write(data);
+	  m_local_socket->flush();
+	}
+
+      return;
+    }
+
   if(!data.isEmpty())
     {
       m_keep_alive_timer.start();
@@ -953,9 +967,9 @@ void spot_on_lite_daemon_child_tcp_client::slot_ready_read(void)
 
   int index = 0;
 
-  if((index = m_remote_content.indexOf(EOM)) > 0)
+  if((index = m_remote_content.indexOf(m_end_of_message_marker)) > 0)
     {
-      data = m_remote_content.mid(0, EOM.length() + index);
+      data = m_remote_content.mid(0, m_end_of_message_marker.length() + index);
       m_remote_content.remove(0, data.length());
 
       if(record_congestion(data))

@@ -243,6 +243,8 @@ void spot_on_lite_daemon::prepare_peers(void)
 		    certificates_file_name.data(),
 		    "--congestion-control-file",
 		    congestion_control_file_name.data(),
+		    "--end-of-message-marker",
+		    list.value(7).toStdString().data(),
 		    "--local-server-file",
 		    local_server_file_name.data(),
 		    "--log-file",
@@ -460,9 +462,10 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
 	** 4 - SSL Key Size (Bits)
 	** 5 - Silence Timeout (Seconds)
 	** 6 - SO Linger (Seconds)
+	** 7 - End-of-Message-Marker
 	*/
 
-	int expected = 7;
+	int expected = 8;
 
 	if(list.size() != expected)
 	  {

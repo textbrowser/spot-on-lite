@@ -126,6 +126,8 @@ void spot_on_lite_daemon_tcp_listener::incomingConnection
 		certificates_file_name.data(),
 		"--congestion-control-file",
 		congestion_control_file_name.data(),
+		"--end-of-message-marker",
+		list.value(7).toStdString().data(),
 		"--local-server-file",
 		local_server_file_name.data(),
 		"--log-file",
@@ -167,11 +169,7 @@ void spot_on_lite_daemon_tcp_listener::slot_start_timeout(void)
   /*
   ** 0 - IP Address
   ** 1 - Port
-  ** 2 - Backlog
-  ** 3 - SSL Control String
-  ** 4 - SSL Key Size (Bits)
-  ** 5 - Silence Timeout (Seconds)
-  ** 6 - SO Linger (Seconds)
+  ** ...
   */
 
   QStringList list(m_configuration.split(",", QString::KeepEmptyParts));
