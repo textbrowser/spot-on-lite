@@ -127,7 +127,7 @@ void spot_on_lite_daemon_tcp_listener::incomingConnection
 		"--congestion-control-file",
 		congestion_control_file_name.data(),
 		"--end-of-message-marker",
-		list.value(7).toStdString().data(),
+		list.value(7).toUtf8().toBase64().data(),
 		"--local-server-file",
 		local_server_file_name.data(),
 		"--log-file",

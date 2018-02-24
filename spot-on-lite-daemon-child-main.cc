@@ -144,7 +144,8 @@ int main(int argc, char *argv[])
 	    i += 1;
 
 	    if(argc > i && argv[i])
-	      end_of_message_marker = argv[i];
+	      end_of_message_marker = QString::fromUtf8
+		(QByteArray::fromBase64(argv[i]));
 	    else
 	      {
 		std::cerr << "Invalid end-of-message-marker usage. Exiting."
