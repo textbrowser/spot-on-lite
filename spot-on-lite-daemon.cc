@@ -192,7 +192,10 @@ void spot_on_lite_daemon::prepare_local_socket_server(void)
     return;
 
   if(m_local_server)
-    m_local_server->deleteLater();
+    {
+      m_local_server->close();
+      m_local_server->deleteLater();
+    }
 
   m_local_server = new QLocalServer(this);
   m_local_server->listen
