@@ -7,14 +7,6 @@ QMAKE_CXXFLAGS_RELEASE += -fPIE -fstack-protector-all -fwrapv \
 			  -Wextra \
 			  -Woverloaded-virtual -Wpointer-arith \
                           -Wstack-protector -Wstrict-overflow=5
-} else:linux-arm-gnueabi-g++ {
-QMAKE_CXXFLAGS_RELEASE += -fPIE -fstack-protector-all -fwrapv -pie -O3 \
-                          -mtune=native \
-                          -Wall -Wcast-qual \
-                          -Werror -Wextra \
-                          -Wno-unused-variable \
-                          -Woverloaded-virtual -Wpointer-arith \
-                          -Wstack-protector
 } else:macx {
 QMAKE_CXXFLAGS_RELEASE += -fPIE -fstack-protector-all -fwrapv \
                           -mtune=native -O3 \
@@ -33,7 +25,7 @@ QMAKE_CXXFLAGS_RELEASE += -fPIE -fstack-protector-all -fwrapv -pie -O3 \
 } else:unix {
 QMAKE_CXXFLAGS_RELEASE += -fPIE -fstack-protector-all -fwrapv -pie -O3 \
                           -mtune=native \
-                          -Wall -Wcast-align -Wcast-qual \
+                          -Wall -Wcast-qual \
                           -Werror -Wextra \
                           -Wno-unused-variable \
                           -Woverloaded-virtual -Wpointer-arith \
