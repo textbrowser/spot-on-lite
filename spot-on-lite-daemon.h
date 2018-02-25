@@ -73,6 +73,7 @@ class spot_on_lite_daemon: public QObject
   QString m_local_socket_server_directory_name;
   QString m_log_file_name;
   QTimer m_congestion_control_timer;
+  QTimer m_start_timer;
   QVector<QString> m_listeners_properties;
   QVector<QString> m_peers_properties;
   int m_maximum_accumulated_bytes;
@@ -89,6 +90,7 @@ class spot_on_lite_daemon: public QObject
   void slot_purge_congestion_control_timeout(void);
   void slot_ready_read(void);
   void slot_signal_usr1(void);
+  void slot_start_timeout(void);
 };
 
 #endif

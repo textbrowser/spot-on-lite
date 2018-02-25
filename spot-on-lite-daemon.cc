@@ -75,10 +75,15 @@ spot_on_lite_daemon::spot_on_lite_daemon
   m_maximum_accumulated_bytes = 8 * 1024 * 1024; // 8 MiB
   m_signal_usr1_socket_notifier = new QSocketNotifier
     (s_signal_usr1_fd[1], QSocketNotifier::Read, this);
+  m_start_timer.start(5000);
   connect(&m_congestion_control_timer,
 	  SIGNAL(timeout(void)),
 	  this,
 	  SLOT(slot_purge_congestion_control_timeout(void)));
+  connect(&m_start_timer,
+	  SIGNAL(timeout(void)),
+	  this,
+	  SLOT(slot_start_timeout(void)));
   connect(m_signal_usr1_socket_notifier,
 	  SIGNAL(activated(int)),
 	  this,
@@ -178,33 +183,38 @@ void spot_on_lite_daemon::prepare_listeners(void)
 
 void spot_on_lite_daemon::prepare_local_socket_server(void)
 {
-  if(!m_local_server)
-    {
-      m_local_server = new QLocalServer(this);
-      connect(m_local_server,
-	      SIGNAL(newConnection(void)),
-	      this,
-	      SLOT(slot_new_local_connection(void)));
-    }
+  QFileInfo file_info(QString("%1/Spot-On-Lite-Daemon-Local-Server.%2").
+		      arg(m_local_socket_server_directory_name).
+		      arg(QCoreApplication::applicationPid()));
 
-  if(!m_local_server->isListening())
-    {
-      m_local_server->listen
-	(QString("%1/Spot-On-Lite-Daemon-Local-Server.%2").
-	 arg(m_local_socket_server_directory_name).
-	 arg(QCoreApplication::applicationPid()));
+  if(file_info.exists() && file_info.isReadable() && file_info.isWritable() &&
+     m_local_server && m_local_server->isListening())
+    return;
 
-      if(m_local_server->isListening())
-	{
-	  delete []s_local_server_file_name;
-	  s_local_server_file_name = new char[2048];
-	  memset(s_local_server_file_name, 0, 2048);
-	  qstrncpy
-	    (s_local_server_file_name,
-	     m_local_server->fullServerName().toStdString().data(),
-	     2047);
-	}
+  if(m_local_server)
+    m_local_server->deleteLater();
+
+  m_local_server = new QLocalServer(this);
+  m_local_server->listen
+    (QString("%1/Spot-On-Lite-Daemon-Local-Server.%2").
+     arg(m_local_socket_server_directory_name).
+     arg(QCoreApplication::applicationPid()));
+  connect(m_local_server,
+	  SIGNAL(newConnection(void)),
+	  this,
+	  SLOT(slot_new_local_connection(void)));
+
+  if(m_local_server->isListening())
+    {
+      delete []s_local_server_file_name;
+      s_local_server_file_name = new char[2048];
+      memset(s_local_server_file_name, 0, 2048);
+      qstrncpy(s_local_server_file_name,
+	       m_local_server->fullServerName().toStdString().data(),
+	       2047);
     }
+  else
+    m_local_server->deleteLater();
 }
 
 void spot_on_lite_daemon::prepare_peers(void)
@@ -290,11 +300,11 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
   foreach(QString key, settings.allKeys())
     if(key == "certificates_file")
       {
-	QFileInfo fileInfo(settings.value(key).toString());
+	QFileInfo file_info(settings.value(key).toString());
 
-	fileInfo = QFileInfo(fileInfo.absolutePath());
+	file_info = QFileInfo(file_info.absolutePath());
 
-	if(!fileInfo.isDir())
+	if(!file_info.isDir())
 	  {
 	    if(ok)
 	      *ok = false;
@@ -302,12 +312,12 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
 	    std::cerr << "spot_on_lite_daemon::"
 		      << "process_configuration_file(): "
 		      << "The parent directory \""
-		      << fileInfo.absoluteFilePath().toStdString()
+		      << file_info.absoluteFilePath().toStdString()
 		      << "\" of the certificates file is "
 		      << "not a directory. Ignoring entry."
 		      << std::endl;
 	  }
-	else if(!fileInfo.isWritable())
+	else if(!file_info.isWritable())
 	  {
 	    if(ok)
 	      *ok = false;
@@ -315,7 +325,7 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
 	    std::cerr << "spot_on_lite_daemon::"
 		      << "process_configuration_file(): "
 		      << "The parent directory \""
-		      << fileInfo.absoluteFilePath().toStdString()
+		      << file_info.absoluteFilePath().toStdString()
 		      << "\" of the certificates file must be "
 		      << "writable. Ignoring entry."
 		      << std::endl;
@@ -325,12 +335,12 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
       }
     else if(key == "child_process_file")
       {
-	QFileInfo fileInfo(settings.value(key).toString());
+	QFileInfo file_info(settings.value(key).toString());
 
-	if(fileInfo.isExecutable() &&
-	   fileInfo.isFile() &&
-	   fileInfo.isReadable())
-	  m_child_process_file_name = fileInfo.absoluteFilePath();
+	if(file_info.isExecutable() &&
+	   file_info.isFile() &&
+	   file_info.isReadable())
+	  m_child_process_file_name = file_info.absoluteFilePath();
 	else
 	  {
 	    if(ok)
@@ -339,7 +349,7 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
 	    std::cerr << "spot_on_lite_daemon::"
 		      << "process_configuration_file(): "
 		      << "The child process file \""
-		      << fileInfo.absoluteFilePath().toStdString()
+		      << file_info.absoluteFilePath().toStdString()
 		      << "\" must be a readable executable. Ignoring entry."
 		      << std::endl;
 	  }
@@ -349,11 +359,11 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
 	settings.value(key).toString().trimmed();
     else if(key == "congestion_control_file")
       {
-	QFileInfo fileInfo(settings.value(key).toString());
+	QFileInfo file_info(settings.value(key).toString());
 
-	fileInfo = QFileInfo(fileInfo.absolutePath());
+	file_info = QFileInfo(file_info.absolutePath());
 
-	if(!fileInfo.isDir())
+	if(!file_info.isDir())
 	  {
 	    if(ok)
 	      *ok = false;
@@ -361,12 +371,12 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
 	    std::cerr << "spot_on_lite_daemon::"
 		      << "process_configuration_file(): "
 		      << "The parent directory \""
-		      << fileInfo.absoluteFilePath().toStdString()
+		      << file_info.absoluteFilePath().toStdString()
 		      << "\" of the congestion control file is "
 		      << "not a directory. Ignoring entry."
 		      << std::endl;
 	  }
-	else if(!fileInfo.isWritable())
+	else if(!file_info.isWritable())
 	  {
 	    if(ok)
 	      *ok = false;
@@ -374,7 +384,7 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
 	    std::cerr << "spot_on_lite_daemon::"
 		      << "process_configuration_file(): "
 		      << "The parent directory \""
-		      << fileInfo.absoluteFilePath().toStdString()
+		      << file_info.absoluteFilePath().toStdString()
 		      << "\" of the congestion control file must be "
 		      << "writable. Ignoring entry."
 		      << std::endl;
@@ -384,9 +394,9 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
       }
     else if(key == "local_socket_server_directory")
       {
-	QFileInfo fileInfo(settings.value(key).toString());
+	QFileInfo file_info(settings.value(key).toString());
 
-	if(!fileInfo.isDir())
+	if(!file_info.isDir())
 	  {
 	    if(ok)
 	      *ok = false;
@@ -394,12 +404,12 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
 	    std::cerr << "spot_on_lite_daemon::"
 		      << "process_configuration_file(): "
 		      << "The directory \""
-		      << fileInfo.absoluteFilePath().toStdString()
+		      << file_info.absoluteFilePath().toStdString()
 		      << "\" is not a directory. "
 		      << "Ignoring entry."
 		      << std::endl;
 	  }
-	else if(!fileInfo.isReadable() || !fileInfo.isWritable())
+	else if(!file_info.isReadable() || !file_info.isWritable())
 	  {
 	    if(ok)
 	      *ok = false;
@@ -407,7 +417,7 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
 	    std::cerr << "spot_on_lite_daemon::"
 		      << "process_configuration_file(): "
 		      << "The directory \""
-		      << fileInfo.absoluteFilePath().toStdString()
+		      << file_info.absoluteFilePath().toStdString()
 		      << "\" must be readable and writable. Ignoring entry."
 		      << std::endl;
 	  }
@@ -416,11 +426,11 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
       }
     else if(key == "log_file")
       {
-	QFileInfo fileInfo(settings.value(key).toString());
+	QFileInfo file_info(settings.value(key).toString());
 
-	fileInfo = QFileInfo(fileInfo.absolutePath());
+	file_info = QFileInfo(file_info.absolutePath());
 
-	if(!fileInfo.isDir())
+	if(!file_info.isDir())
 	  {
 	    if(ok)
 	      *ok = false;
@@ -428,12 +438,12 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
 	    std::cerr << "spot_on_lite_daemon::"
 		      << "process_configuration_file(): "
 		      << "The parent directory \""
-		      << fileInfo.absoluteFilePath().toStdString()
+		      << file_info.absoluteFilePath().toStdString()
 		      << "\" of the log file is not a directory. "
 		      << "Ignoring entry."
 		      << std::endl;
 	  }
-	else if(!fileInfo.isWritable())
+	else if(!file_info.isWritable())
 	  {
 	    if(ok)
 	      *ok = false;
@@ -441,7 +451,7 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
 	    std::cerr << "spot_on_lite_daemon::"
 		      << "process_configuration_file(): "
 		      << "The parent directory \""
-		      << fileInfo.absoluteFilePath().toStdString()
+		      << file_info.absoluteFilePath().toStdString()
 		      << "\" of the log file is not writable. "
 		      << "Ignoring entry."
 		      << std::endl;
@@ -761,6 +771,11 @@ void spot_on_lite_daemon::slot_signal_usr1(void)
   Q_UNUSED(rc);
   start();
   m_signal_usr1_socket_notifier->setEnabled(true);
+}
+
+void spot_on_lite_daemon::slot_start_timeout(void)
+{
+  prepare_local_socket_server();
 }
 
 void spot_on_lite_daemon::start(void)

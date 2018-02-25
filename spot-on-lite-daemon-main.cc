@@ -253,9 +253,9 @@ int main(int argc, char *argv[])
 	  }
       }
 
-  QFileInfo fileInfo(configuration_file_name);
+  QFileInfo file_info(configuration_file_name);
 
-  if(!fileInfo.isReadable())
+  if(!file_info.isReadable())
     {
       qDebug() << "The configuration file \""
 	       << configuration_file_name
