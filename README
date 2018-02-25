@@ -1,6 +1,10 @@
 Spot-On-Lite supports Qt 4.8.7 and Qt 5.x. It has been tested on Debian. It compiles
 on Debian, Mac OS X, and OpenBSD.
 
+On Linux, limiting the number of processes via /etc/security/limits.conf.
+
+spot-on-lite-daemon		hard	nproc		64
+
 The LD_LIBRARY_PATH may require adjusting.
 
 export LD_LIBRARY_PATH=/usr/local/Trolltech/Qt-4.8.7/lib
