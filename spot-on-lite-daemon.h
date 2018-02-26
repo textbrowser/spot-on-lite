@@ -28,6 +28,7 @@
 #ifndef _spot_on_lite_daemon_h_
 #define _spot_on_lite_daemon_h_
 
+#include <QAtomicInt>
 #include <QFuture>
 #include <QLocalServer>
 #include <QObject>
@@ -61,6 +62,7 @@ class spot_on_lite_daemon: public QObject
 				   bool *ok);
 
  private:
+  QAtomicInt m_congestion_control_lifetime;
   QFuture<void> m_congestion_control_future;
   QList<spot_on_lite_daemon_tcp_listener *> m_listeners;
   QPointer<QLocalServer> m_local_server;

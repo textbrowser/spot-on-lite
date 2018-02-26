@@ -71,7 +71,9 @@ spot_on_lite_daemon::spot_on_lite_daemon
 	   "socketpair() failure. Exiting.");
 
   m_configuration_file_name = configuration_file_name;
-  m_congestion_control_timer.start(30000); // 30 Seconds
+  m_congestion_control_lifetime = 90; // Seconds
+  m_congestion_control_timer.start(15000); // 15 Seconds
+  m_local_socket_server_directory_name = "/tmp";
   m_maximum_accumulated_bytes = 8 * 1024 * 1024; // 8 MiB
   m_signal_usr1_socket_notifier = new QSocketNotifier
     (s_signal_usr1_fd[1], QSocketNotifier::Read, this);
@@ -289,13 +291,6 @@ void spot_on_lite_daemon::prepare_peers(void)
 
 void spot_on_lite_daemon::process_configuration_file(bool *ok)
 {
-  m_certificates_file_name.clear();
-  m_child_process_file_name.clear();
-  m_child_process_ld_library_path.clear();
-  m_congestion_control_file_name.clear();
-  m_local_socket_server_directory_name = "/tmp";
-  m_log_file_name.clear();
-
   QHash<QString, char> listeners;
   QHash<QString, char> peers;
   QSettings settings(m_configuration_file_name, QSettings::IniFormat);
@@ -394,6 +389,31 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
 	  }
 	else
 	  m_congestion_control_file_name = settings.value(key).toString();
+      }
+    else if(key == "congestion_control_lifetime")
+      {
+	bool o = true;
+	int congestion_control_lifetime = settings.value(key).toLongLong(&o);
+
+	if(congestion_control_lifetime < 1 || !o)
+	  {
+	    if(ok)
+	      *ok = false;
+
+	    std::cerr << "spot_on_lite_daemon::"
+		      << "process_configuration_file(): The "
+		      << "congestion_control_lifetime value \""
+		      << settings.value(key).toString().toStdString()
+		      << "\" is invalid. "
+		      << "Expecting a value "
+		      << "in the range [1, "
+		      << std::numeric_limits<int>::max()
+		      << "]. Ignoring entry."
+		      << std::endl;
+	  }
+	else
+	  m_congestion_control_lifetime.fetchAndStoreAcquire
+	    (congestion_control_lifetime);
       }
     else if(key == "local_socket_server_directory")
       {
@@ -662,9 +682,9 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
     else if(key == "maximum_accumulated_bytes")
       {
 	bool o = true;
-	int maximumAccumulatedBytes = settings.value(key).toLongLong(&o);
+	int maximum_accumulated_bytes = settings.value(key).toLongLong(&o);
 
-	if(maximumAccumulatedBytes < 1024 || !o)
+	if(maximum_accumulated_bytes < 1024 || !o)
 	  {
 	    if(ok)
 	      *ok = false;
@@ -681,7 +701,7 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
 		      << std::endl;
 	  }
 	else
-	  m_maximum_accumulated_bytes = maximumAccumulatedBytes;
+	  m_maximum_accumulated_bytes = maximum_accumulated_bytes;
       }
 }
 
@@ -702,7 +722,8 @@ void spot_on_lite_daemon::purge_congestion_control(void)
 	query.exec
 	  (QString("DELETE FROM congestion_control WHERE "
 		   "%1 - date_time_inserted > %2").
-	   arg(QDateTime::currentDateTime().toTime_t()).arg(90));
+	   arg(QDateTime::currentDateTime().toTime_t()).
+	   arg(m_congestion_control_lifetime.fetchAndAddAcquire(0)));
       }
 
     db.close();
