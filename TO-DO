@@ -9,3 +9,4 @@ Completed Items
 6.  Remove local socket server file on exit.
 
 Remaining Items
+1.  Cryptographic Discovery. Requires SHA-512.
