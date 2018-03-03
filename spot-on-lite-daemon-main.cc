@@ -42,6 +42,9 @@ extern "C"
 #include <iostream>
 
 #include "spot-on-lite-daemon.h"
+#ifdef SPOT_ON_LITE_DAEMON_SHA_TEST
+#include "spot-on-lite-daemon-sha.h"
+#endif
 
 char *s_local_server_file_name = 0;
 
@@ -194,6 +197,21 @@ static int prepare_signal_handlers(void)
 
 int main(int argc, char *argv[])
 {
+#ifdef SPOT_ON_LITE_DAEMON_SHA_TEST
+  spot_on_lite_daemon_sha s;
+
+  qDebug() << (s.sha_512("abc").toHex() ==
+	       "ddaf35a193617abacc417349ae204131"
+	       "12e6fa4e89a97ea20a9eeee64b55d39a2192992a274fc1a8"
+	       "36ba3c23a3feebbd454d4423643ce80e2a9ac94fa54ca49f");
+  qDebug() << (s.sha_512("abcdefghbcdefghicdefghijdefghijkefghijklfghijklmg"
+			 "hijklmnhijklmnoijklmnopjklmnopqklmnopqrlmnopqrsmn"
+			 "opqrstnopqrstu").toHex() ==
+	       "8e959b75dae313da8cf4f72814fc143f"
+	       "8f7779c6eb9f7fa17299aeadb6889018501d289e4900f7e4"
+	       "331b99dec4b5433ac7d329eeb6dd26545e96e55b874be909");
+#endif
+
   for(int i = 0; i < argc; i++)
     if(argv && argv[i] && strcmp(argv[i], "--help") == 0)
       {
