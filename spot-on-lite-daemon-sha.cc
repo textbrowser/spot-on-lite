@@ -119,7 +119,7 @@ QByteArray spot_on_lite_daemon_sha::sha_512(const QByteArray &data) const
 	M << qFromBigEndian<quint64>
 	  (reinterpret_cast<const uchar *> (message.mid(128 * i + j, 8).
 					    constData()));
-	
+
       QVector<quint64> W;
 
       for(size_t t = 0; t <= 79; t++)
@@ -168,7 +168,7 @@ QByteArray spot_on_lite_daemon_sha::sha_512(const QByteArray &data) const
 
   message.clear();
 
-  for(int i = 0; i < 8; i++)
+  for(size_t i = 0; i < 8; i++)
     {
       QByteArray h(8, 0);
 
