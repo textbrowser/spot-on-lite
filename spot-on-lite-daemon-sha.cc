@@ -95,10 +95,18 @@ spot_on_lite_daemon_sha::spot_on_lite_daemon_sha(void)
 
 QByteArray spot_on_lite_daemon_sha::sha_512(const QByteArray &data) const
 {
+  /*
+  ** Please read the NIST.FIPS.180-4.pdf publication.
+  */
+
   QByteArray message;
   QByteArray number(8, 0);
   QVector<quint64> H;
   int N = qCeil(static_cast<double> (data.size() + 17) / 128.0);
+
+  /*
+  ** Padding the message (5.1.2).
+  */
 
   qToBigEndian(static_cast<quint64> (8 * data.length()),
 	       reinterpret_cast<uchar *> (number.data()));
@@ -107,9 +115,17 @@ QByteArray spot_on_lite_daemon_sha::sha_512(const QByteArray &data) const
   message.replace(data.length(), 1, QByteArray::fromHex("80"));
   message.replace(message.length() - number.length(), number.length(), number);
 
+  /*
+  ** Initializing H (5.3.5).
+  */
+
   for(int i = 0; i < 8; i++)
     H << qFromBigEndian<quint64>
       (reinterpret_cast<const uchar *> (s_sha_512_h[i].constData()));
+
+  /*
+  ** Computing the hash (6.4.2).
+  */
 
   for(int i = 0; i < N; i++)
     {
