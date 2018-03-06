@@ -865,6 +865,17 @@ void spot_on_lite_daemon_child_tcp_client::record_certificate
   QSqlDatabase::removeDatabase("certificates_database");
 }
 
+void spot_on_lite_daemon_child_tcp_client::record_identity
+(const QByteArray &data)
+{
+  int indexOf = data.indexOf("content=");
+
+  if(indexOf >= 0)
+    m_remote_identity = data.mid(indexOf + 8).trimmed();
+  else
+    m_remote_identity = data.trimmed();
+}
+
 void spot_on_lite_daemon_child_tcp_client::
 set_ssl_ciphers(const QList<QSslCipher> &ciphers,
 		QSslConfiguration &configuration) const
@@ -977,6 +988,10 @@ void spot_on_lite_daemon_child_tcp_client::slot_ready_read(void)
   if((index = m_remote_content.indexOf(m_end_of_message_marker)) > 0)
     {
       data = m_remote_content.mid(0, m_end_of_message_marker.length() + index);
+
+      if(data.contains("type=0095a&content"))
+	record_identity(data);
+
       m_remote_content.remove(0, data.length());
 
       if(record_congestion(data))

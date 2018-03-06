@@ -60,6 +60,7 @@ class spot_on_lite_daemon_child_tcp_client: public QSslSocket
 
  private:
   QByteArray m_remote_content;
+  QByteArray m_remote_identity;
   QLocalSocket *m_local_socket;
   QString m_certificates_file_name;
   QString m_congestion_control_file_name;
@@ -88,6 +89,7 @@ class spot_on_lite_daemon_child_tcp_client: public QSslSocket
   void record_certificate(const QByteArray &certificate,
 			  const QByteArray &private_key,
 			  const QByteArray &public_key);
+  void record_identity(const QByteArray &data);
   void set_ssl_ciphers(const QList<QSslCipher> &ciphers,
 		       QSslConfiguration &configuration) const;
 
