@@ -99,21 +99,21 @@ QByteArray spot_on_lite_daemon_sha::sha_512(const QByteArray &data) const
   ** Please read the NIST.FIPS.180-4.pdf publication.
   */
 
-  QByteArray message;
+  QByteArray hash;
   QByteArray number(8, 0);
   QVector<quint64> H;
   int N = qCeil(static_cast<double> (data.size() + 17) / 128.0);
 
   /*
-  ** Padding the message (5.1.2).
+  ** Padding the hash (5.1.2).
   */
 
   qToBigEndian(static_cast<quint64> (8 * data.length()),
 	       reinterpret_cast<uchar *> (number.data()));
-  message = QByteArray(128 * N, 0);
-  message.replace(0, data.length(), data);
-  message.replace(data.length(), 1, QByteArray::fromHex("80"));
-  message.replace(message.length() - number.length(), number.length(), number);
+  hash = QByteArray(128 * N, 0);
+  hash.replace(0, data.length(), data);
+  hash.replace(data.length(), 1, QByteArray::fromHex("80"));
+  hash.replace(hash.length() - number.length(), number.length(), number);
 
   /*
   ** Initializing H (5.3.5).
@@ -133,7 +133,7 @@ QByteArray spot_on_lite_daemon_sha::sha_512(const QByteArray &data) const
 
       for(int j = 0; j < 128; j += 8)
 	M << qFromBigEndian<quint64>
-	  (reinterpret_cast<const uchar *> (message.mid(128 * i + j, 8).
+	  (reinterpret_cast<const uchar *> (hash.mid(128 * i + j, 8).
 					    constData()));
 
       QVector<quint64> W;
@@ -182,15 +182,49 @@ QByteArray spot_on_lite_daemon_sha::sha_512(const QByteArray &data) const
       H[7] += h;
     }
 
-  message.clear();
+  hash.clear();
 
   for(size_t i = 0; i < 8; i++)
     {
       QByteArray h(8, 0);
 
       qToBigEndian(H[i], reinterpret_cast<uchar *> (h.data()));
-      message.append(h);
+      hash.append(h);
     }
 
-  return message;
+  return hash;
+}
+
+QByteArray spot_on_lite_daemon_sha::sha_512_hmac(const QByteArray &data,
+						 const QByteArray &key) const
+{
+  /*
+  ** Block length is 1024 bits.
+  ** Please read https://en.wikipedia.org/wiki/SHA-2.
+  */
+
+  QByteArray hmac;
+  QByteArray k(key);
+  static int block_length = 1024 / CHAR_BIT;
+
+  if(block_length < k.length())
+    k = sha_512(k);
+
+  if(block_length > k.length())
+    k.append(QByteArray(block_length - k.length(), 0));
+
+  static QByteArray ipad(block_length, 0x36);
+  static QByteArray opad(block_length, 0x5c);
+
+  QByteArray left(block_length, 0);
+
+  for(int i = 0; i < block_length; i++)
+    left[i] = k.at(i) ^ opad.at(i);
+
+  QByteArray right(block_length, 0);
+
+  for(int i = 0; i < block_length; i++)
+    right[i] = k.at(i) ^ ipad.at(i);
+
+  return sha_512(left.append(sha_512(right.append(data))));
 }

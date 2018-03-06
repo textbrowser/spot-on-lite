@@ -1,12 +1,14 @@
 Completed Items
 
 1.  Congestion control, per child process.
-2.  Disable socket linger. Optional.
-3.  Echo through child processes.
-4.  Limit number of processes via /etc/security/limits.conf.
-4.  Record certificate data.
-5.  Remote peers.
-6.  Remove local socket server file on exit.
+2.  Cryptographic Discovery. Requires SHA-512.
+3.  Disable socket linger. Optional.
+4.  Echo through child processes.
+5.  Limit number of processes via /etc/security/limits.conf.
+6.  Record certificate data.
+7.  Remote peers.
+8.  Remove local socket server file on exit.
 
 Remaining Items
-1.  Cryptographic Discovery. Requires SHA-512.
+
+1.  Distribute identities.

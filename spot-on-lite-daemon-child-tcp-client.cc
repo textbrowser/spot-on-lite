@@ -50,6 +50,7 @@ extern "C"
 #include <limits>
 
 #include "spot-on-lite-daemon-child-tcp-client.h"
+#include "spot-on-lite-daemon-sha.h"
 
 spot_on_lite_daemon_child_tcp_client::
 spot_on_lite_daemon_child_tcp_client
@@ -865,15 +866,20 @@ void spot_on_lite_daemon_child_tcp_client::record_certificate
   QSqlDatabase::removeDatabase("certificates_database");
 }
 
-void spot_on_lite_daemon_child_tcp_client::record_identity
+void spot_on_lite_daemon_child_tcp_client::record_remote_identity
 (const QByteArray &data)
 {
-  int indexOf = data.indexOf("content=");
+  int index = data.indexOf("content=");
 
-  if(indexOf >= 0)
-    m_remote_identity = data.mid(indexOf + 8).trimmed();
+  if(index >= 0)
+    m_remote_identity = data.mid(8 + index).trimmed();
   else
     m_remote_identity = data.trimmed();
+
+  if((index = m_remote_identity.indexOf(";")) > 0)
+    m_remote_identity = m_remote_identity.mid(0, index);
+
+  m_remote_identity = QByteArray::fromBase64(m_remote_identity);
 }
 
 void spot_on_lite_daemon_child_tcp_client::
@@ -947,7 +953,45 @@ void spot_on_lite_daemon_child_tcp_client::slot_local_socket_disconnected(void)
 
 void spot_on_lite_daemon_child_tcp_client::slot_local_socket_ready_read(void)
 {
-  write(m_local_socket->readAll());
+  QByteArray data(m_local_socket->readAll());
+
+  if(data.isEmpty())
+    return;
+
+  if(!m_end_of_message_marker.isEmpty() && !m_remote_identity.isEmpty())
+    {
+      if(m_local_content.length() >= m_maximum_accumulated_bytes)
+	m_local_content.clear();
+
+      m_local_content.append
+	(data.
+	 mid(0, qAbs(m_maximum_accumulated_bytes - m_local_content.length())));
+
+      int index = 0;
+
+      while((index = m_local_content.indexOf(m_end_of_message_marker)) > 0)
+	{
+	  data = m_local_content.mid
+	    (0, index + m_end_of_message_marker.length());
+
+	  QByteArray d
+	    (QByteArray::
+	     fromBase64(data.mid(8 + data.indexOf("content=")).trimmed()));
+	  QByteArray hmac;
+	  spot_on_lite_daemon_sha sha_512;
+
+	  hmac = sha_512.sha_512_hmac
+	    (d.mid(0, d.length() - 64), m_remote_identity);
+
+	  if(d.mid(d.length() - 64) == hmac)
+	    write(data);
+
+	  m_local_content.remove(0, data.length());
+	}
+    }
+  else
+    write(data);
+
   flush();
 }
 
@@ -985,12 +1029,12 @@ void spot_on_lite_daemon_child_tcp_client::slot_ready_read(void)
 
   int index = 0;
 
-  if((index = m_remote_content.indexOf(m_end_of_message_marker)) > 0)
+  while((index = m_remote_content.indexOf(m_end_of_message_marker)) > 0)
     {
-      data = m_remote_content.mid(0, m_end_of_message_marker.length() + index);
+      data = m_remote_content.mid(0, index + m_end_of_message_marker.length());
 
       if(data.contains("type=0095a&content"))
-	record_identity(data);
+	record_remote_identity(data);
 
       m_remote_content.remove(0, data.length());
 
