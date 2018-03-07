@@ -869,17 +869,21 @@ void spot_on_lite_daemon_child_tcp_client::record_certificate
 void spot_on_lite_daemon_child_tcp_client::record_remote_identity
 (const QByteArray &data)
 {
+  QByteArray identity;
   int index = data.indexOf("content=");
 
   if(index >= 0)
-    m_remote_identity = data.mid(8 + index).trimmed();
+    identity = data.mid(8 + index).trimmed();
   else
-    m_remote_identity = data.trimmed();
+    identity = data.trimmed();
 
-  if((index = m_remote_identity.indexOf(";")) > 0)
-    m_remote_identity = m_remote_identity.mid(0, index);
+  if((index = identity.indexOf(";")) > 0)
+    identity = identity.mid(0, index);
 
-  m_remote_identity = QByteArray::fromBase64(m_remote_identity);
+  identity = QByteArray::fromBase64(identity);
+
+  if(!identity.isEmpty() && !m_remote_identities.contains(identity))
+    m_remote_identities[identity] = 0;
 }
 
 void spot_on_lite_daemon_child_tcp_client::
@@ -958,7 +962,7 @@ void spot_on_lite_daemon_child_tcp_client::slot_local_socket_ready_read(void)
   if(data.isEmpty())
     return;
 
-  if(!m_end_of_message_marker.isEmpty() && !m_remote_identity.isEmpty())
+  if(!m_end_of_message_marker.isEmpty() && !m_remote_identities.isEmpty())
     {
       if(m_local_content.length() >= m_maximum_accumulated_bytes)
 	m_local_content.clear();
@@ -975,16 +979,23 @@ void spot_on_lite_daemon_child_tcp_client::slot_local_socket_ready_read(void)
 	    (0, index + m_end_of_message_marker.length());
 
 	  QByteArray d
-	    (QByteArray::
-	     fromBase64(data.mid(8 + data.indexOf("content=")).trimmed()));
+	    (QByteArray::fromBase64(data.mid(8 + data.indexOf("content=")).
+				    trimmed()));
 	  QByteArray hmac;
+	  QHashIterator<QByteArray, char> it(m_remote_identities);
 	  spot_on_lite_daemon_sha sha_512;
 
-	  hmac = sha_512.sha_512_hmac
-	    (d.mid(0, d.length() - 64), m_remote_identity);
+	  while(it.hasNext())
+	    {
+	      it.next();
+	      hmac = sha_512.sha_512_hmac(d.mid(0, d.length() - 64), it.key());
 
-	  if(d.mid(d.length() - 64) == hmac)
-	    write(data);
+	      if(d.mid(d.length() - 64) == hmac)
+		{
+		  write(data);
+		  break;
+		}
+	    }
 
 	  m_local_content.remove(0, data.length());
 	}
