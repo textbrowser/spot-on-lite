@@ -369,6 +369,18 @@ default_ssl_ciphers(void) const
   return list;
 }
 
+bool spot_on_lite_daemon_child_tcp_client::memcmp(const QByteArray &a,
+						  const QByteArray &b)
+{
+  int length = qMax(a.length(), b.length());
+  int rc = 0;
+
+  for(int i = 0; i < length; i++)
+    rc |= a.mid(i, 1)[0] ^ b.mid(i, 1)[0];
+
+  return rc == 0;
+}
+
 bool spot_on_lite_daemon_child_tcp_client::record_congestion
 (const QByteArray &data) const
 {
@@ -872,7 +884,7 @@ void spot_on_lite_daemon_child_tcp_client::record_remote_identity
   QByteArray identity;
   int index = data.indexOf("content=");
 
-  if(index >= 0)
+  if(index > 0)
     identity = data.mid(8 + index).trimmed();
   else
     identity = data.trimmed();
@@ -990,7 +1002,7 @@ void spot_on_lite_daemon_child_tcp_client::slot_local_socket_ready_read(void)
 	      it.next();
 	      hmac = sha_512.sha_512_hmac(d.mid(0, d.length() - 64), it.key());
 
-	      if(d.mid(d.length() - 64) == hmac)
+	      if(memcmp(d.mid(d.length() - 64), hmac))
 		{
 		  write(data);
 		  break;

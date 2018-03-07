@@ -57,6 +57,7 @@ class spot_on_lite_daemon_child_tcp_client: public QSslSocket
      const int socket_descriptor,
      const int ssl_key_size);
   ~spot_on_lite_daemon_child_tcp_client();
+  static bool memcmp(const QByteArray &a, const QByteArray &b);
 
  private:
   QByteArray m_local_content;
