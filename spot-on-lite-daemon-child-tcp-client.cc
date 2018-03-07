@@ -1005,6 +1005,7 @@ void spot_on_lite_daemon_child_tcp_client::slot_local_socket_ready_read(void)
 	      if(memcmp(d.mid(d.length() - 64), hmac))
 		{
 		  write(data);
+		  flush();
 		  break;
 		}
 	    }
@@ -1013,9 +1014,10 @@ void spot_on_lite_daemon_child_tcp_client::slot_local_socket_ready_read(void)
 	}
     }
   else
-    write(data);
-
-  flush();
+    {
+      write(data);
+      flush();
+    }
 }
 
 void spot_on_lite_daemon_child_tcp_client::slot_ready_read(void)

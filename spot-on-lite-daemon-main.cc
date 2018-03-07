@@ -225,13 +225,19 @@ int main(int argc, char *argv[])
         string += "Spot-On-Lite-Daemon\n\n";
 	string += "  --configuration-file          file\n";
         string += "  --help                        display helpful text\n";
+	string += "  --keep-terminal               do not become a daemon\n";
 	string += "  --validate-configuration-file file\n";
         std::cout << string << std::endl;
         return EXIT_SUCCESS;
       }
 
+  bool keep_terminal = false;
+
   for(int i = 0; i < argc; i++)
-    if(argv && argv[i] && strcmp(argv[i], "--validate-configuration-file") == 0)
+    if(argv && argv[i] && strcmp(argv[i], "--keep-terminal") == 0)
+      keep_terminal = true;
+    else if(argv && argv[i] &&
+	    strcmp(argv[i], "--validate-configuration-file") == 0)
       {
 	i += 1;
 
@@ -285,8 +291,9 @@ int main(int argc, char *argv[])
       return EXIT_FAILURE;
     }
 
-  if(make_daemon())
-    return EXIT_FAILURE;
+  if(!keep_terminal)
+    if(make_daemon())
+      return EXIT_FAILURE;
 
   if(prepare_signal_handlers())
     return EXIT_FAILURE;
