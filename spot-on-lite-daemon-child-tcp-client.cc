@@ -990,9 +990,24 @@ void spot_on_lite_daemon_child_tcp_client::slot_local_socket_ready_read(void)
 	  data = m_local_content.mid
 	    (0, index + m_end_of_message_marker.length());
 
-	  QByteArray d
-	    (QByteArray::fromBase64(data.mid(8 + data.indexOf("content=")).
-				    trimmed()));
+	  QByteArray d(data.mid(8 + data.indexOf("content=")).trimmed());
+	  QByteArray h;
+
+	  if(d.contains("\n")) // Spot-On
+	    {
+	      QList<QByteArray> list(d.split('\n'));
+
+	      d = QByteArray::fromBase64(list.value(0)) +
+		QByteArray::fromBase64(list.value(1));
+	      h = QByteArray::fromBase64(list.value(2)); // Destination.
+	    }
+	  else
+	    {
+	      d = QByteArray::fromBase64(d);
+	      h = d.mid(d.length() - 64);
+	      d = d.mid(0, d.length() - h.length());
+	    }
+
 	  QByteArray hmac;
 	  QHashIterator<QByteArray, char> it(m_remote_identities);
 	  spot_on_lite_daemon_sha sha_512;
@@ -1000,9 +1015,9 @@ void spot_on_lite_daemon_child_tcp_client::slot_local_socket_ready_read(void)
 	  while(it.hasNext())
 	    {
 	      it.next();
-	      hmac = sha_512.sha_512_hmac(d.mid(0, d.length() - 64), it.key());
+	      hmac = sha_512.sha_512_hmac(d, it.key());
 
-	      if(memcmp(d.mid(d.length() - 64), hmac))
+	      if(memcmp(h, hmac))
 		{
 		  write(data);
 		  flush();
