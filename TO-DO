@@ -7,9 +7,9 @@ Completed Items
 5.  Limit number of processes via /etc/security/limits.conf.
 6.  Record certificate data.
 7.  Remote peers.
-8.  Remove local socket server file on exit.
+8.  Remove expired identities.
+9.  Remove local socket server file on exit.
 
 Remaining Items
 
 1.  Distribute identities.
-2.  Remove expired identities.

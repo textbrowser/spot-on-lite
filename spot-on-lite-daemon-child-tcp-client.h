@@ -62,7 +62,7 @@ class spot_on_lite_daemon_child_tcp_client: public QSslSocket
  private:
   QByteArray m_local_content;
   QByteArray m_remote_content;
-  QHash<QByteArray, char> m_remote_identities;
+  QHash<QByteArray, qint64> m_remote_identities;
   QLocalSocket *m_local_socket;
   QString m_certificates_file_name;
   QString m_congestion_control_file_name;
@@ -72,6 +72,7 @@ class spot_on_lite_daemon_child_tcp_client: public QSslSocket
   QString m_server_identity;
   QString m_ssl_control_string;
   QTimer m_attempt_connection_timer;
+  QTimer m_expired_identities_timer;
   QTimer m_keep_alive_timer;
   bool m_client_role;
   int m_maximum_accumulated_bytes;
@@ -103,6 +104,7 @@ class spot_on_lite_daemon_child_tcp_client: public QSslSocket
   void slot_local_socket_disconnected(void);
   void slot_local_socket_ready_read(void);
   void slot_ready_read(void);
+  void slot_remove_expired_identities(void);
   void slot_ssl_errors(const QList<QSslError> &errors);
 };
 

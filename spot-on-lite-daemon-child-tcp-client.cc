@@ -52,6 +52,9 @@ extern "C"
 #include "spot-on-lite-daemon-child-tcp-client.h"
 #include "spot-on-lite-daemon-sha.h"
 
+static int s_maximum_identities = 2048;
+static qint64 s_identity_lifetime = 30000; // 30 Seconds
+
 spot_on_lite_daemon_child_tcp_client::
 spot_on_lite_daemon_child_tcp_client
 (const QString &certificates_file_name,
@@ -115,7 +118,12 @@ spot_on_lite_daemon_child_tcp_client
       return;
     }
 
+  m_expired_identities_timer.setInterval(30000);
   m_keep_alive_timer.start(m_silence);
+  connect(&m_expired_identities_timer,
+	  SIGNAL(timeout(void)),
+	  this,
+	  SLOT(slot_remove_expired_identities(void)));
   connect(&m_keep_alive_timer,
 	  SIGNAL(timeout(void)),
 	  this,
@@ -894,8 +902,14 @@ void spot_on_lite_daemon_child_tcp_client::record_remote_identity
 
   identity = QByteArray::fromBase64(identity);
 
-  if(!identity.isEmpty() && !m_remote_identities.contains(identity))
-    m_remote_identities[identity] = 0;
+  if(!identity.isEmpty())
+    if(m_remote_identities.size() < s_maximum_identities)
+      {
+	m_remote_identities[identity] = QDateTime::currentMSecsSinceEpoch();
+
+	if(!m_expired_identities_timer.isActive())
+	  m_expired_identities_timer.start();
+      }
 }
 
 void spot_on_lite_daemon_child_tcp_client::
@@ -1009,7 +1023,7 @@ void spot_on_lite_daemon_child_tcp_client::slot_local_socket_ready_read(void)
 	    }
 
 	  QByteArray hmac;
-	  QHashIterator<QByteArray, char> it(m_remote_identities);
+	  QHashIterator<QByteArray, qint64> it(m_remote_identities);
 	  spot_on_lite_daemon_sha sha_512;
 
 	  while(it.hasNext())
@@ -1084,6 +1098,23 @@ void spot_on_lite_daemon_child_tcp_client::slot_ready_read(void)
 	  m_local_socket->flush();
 	}
     }
+}
+
+void spot_on_lite_daemon_child_tcp_client::slot_remove_expired_identities(void)
+{
+  QMutableHashIterator<QByteArray, qint64> it(m_remote_identities);
+
+  while(it.hasNext())
+    {
+      it.next();
+
+      if(qAbs(QDateTime::currentMSecsSinceEpoch() - it.value()) >
+	 s_identity_lifetime)
+	it.remove();
+    }
+
+  if(m_remote_identities.isEmpty())
+    m_expired_identities_timer.stop();
 }
 
 void spot_on_lite_daemon_child_tcp_client::
