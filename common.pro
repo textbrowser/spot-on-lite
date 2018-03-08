@@ -1,3 +1,4 @@
+CONFIG -= app_bundle
 QMAKE_CXXFLAGS_RELEASE -= -O2
 
 freebsd-* {
