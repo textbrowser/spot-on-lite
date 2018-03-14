@@ -89,6 +89,7 @@ class spot_on_lite_daemon_child_tcp_client: public QSslSocket
   void log(const QString &error) const;
   void prepare_local_socket(void);
   void prepare_ssl_tls_configuration(const QList<QByteArray> &list);
+  void purge_objects(void);
   void record_certificate(const QByteArray &certificate,
 			  const QByteArray &private_key,
 			  const QByteArray &public_key);
