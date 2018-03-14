@@ -782,6 +782,8 @@ void spot_on_lite_daemon_child_tcp_client::log(const QString &error) const
 
 void spot_on_lite_daemon_child_tcp_client::prepare_local_socket(void)
 {
+  m_local_content.clear();
+
   if(m_local_socket)
     m_local_socket->deleteLater();
 
@@ -992,6 +994,12 @@ void spot_on_lite_daemon_child_tcp_client::slot_local_socket_disconnected(void)
 
 void spot_on_lite_daemon_child_tcp_client::slot_local_socket_ready_read(void)
 {
+  if(state() != QAbstractSocket::ConnectedState)
+    {
+      m_local_socket->readAll();
+      return;
+    }
+
   QByteArray data(m_local_socket->readAll());
 
   if(data.isEmpty())
