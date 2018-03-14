@@ -136,6 +136,7 @@ spot_on_lite_daemon_child_tcp_client
 	  SIGNAL(readyRead(void)),
 	  this,
 	  SLOT(slot_ready_read(void)));
+  prepare_local_socket();
 
   if(!m_ssl_control_string.isEmpty() && m_ssl_key_size > 0)
     {
@@ -784,10 +785,7 @@ void spot_on_lite_daemon_child_tcp_client::prepare_local_socket(void)
   m_local_content.clear();
 
   if(m_local_socket)
-    {
-      m_local_socket->abort();
-      m_local_socket->deleteLater();
-    }
+    m_local_socket->deleteLater();
 
   m_local_socket = new QLocalSocket(this);
   m_local_socket->connectToServer(m_local_server_file_name);
@@ -850,17 +848,9 @@ void spot_on_lite_daemon_child_tcp_client::prepare_ssl_tls_configuration
     }
 }
 
-void spot_on_lite_daemon_child_tcp_client::purge_objects(void)
+void spot_on_lite_daemon_child_tcp_client::purge_containers(void)
 {
   m_local_content.clear();
-
-  if(m_local_socket)
-    {
-      m_local_socket->abort();
-      m_local_socket->deleteLater();
-    }
-
-  m_local_socket = 0;
   m_remote_identities.clear();
   m_remote_content.clear();
 }
@@ -971,7 +961,6 @@ void spot_on_lite_daemon_child_tcp_client::slot_attempt_connection(void)
 void spot_on_lite_daemon_child_tcp_client::slot_connected(void)
 {
   m_attempt_connection_timer.stop();
-  prepare_local_socket();
 }
 
 void spot_on_lite_daemon_child_tcp_client::slot_disconnected(void)
@@ -981,7 +970,7 @@ void spot_on_lite_daemon_child_tcp_client::slot_disconnected(void)
       if(!m_attempt_connection_timer.isActive())
 	m_attempt_connection_timer.start();
 
-      purge_objects();
+      purge_containers();
     }
   else
     QCoreApplication::exit(0);
@@ -996,7 +985,7 @@ void spot_on_lite_daemon_child_tcp_client::slot_keep_alive_timer_timeout(void)
       if(!m_attempt_connection_timer.isActive())
 	m_attempt_connection_timer.start();
 
-      purge_objects();
+      purge_containers();
     }
   else
     {
