@@ -46,6 +46,7 @@ extern "C"
 #include <QSslKey>
 #include <QStringList>
 #include <QTimer>
+#include <QUuid>
 
 #include <limits>
 
@@ -123,6 +124,7 @@ spot_on_lite_daemon_child_tcp_client
 	}
 
       m_attempt_local_connection_timer.start();
+      m_capabilities_timer.start(m_silence / 2);
     }
 
   m_expired_identities_timer.setInterval(30000);
@@ -131,6 +133,10 @@ spot_on_lite_daemon_child_tcp_client
 	  SIGNAL(timeout(void)),
 	  this,
 	  SLOT(slot_attempt_local_connection(void)));
+  connect(&m_capabilities_timer,
+	  SIGNAL(timeout(void)),
+	  this,
+	  SLOT(slot_broadcast_capabilities(void)));
   connect(&m_expired_identities_timer,
 	  SIGNAL(timeout(void)),
 	  this,
@@ -982,10 +988,37 @@ void spot_on_lite_daemon_child_tcp_client::slot_attempt_remote_connection(void)
        static_cast<quint16> (list.value(1).toInt()));
 }
 
+void spot_on_lite_daemon_child_tcp_client::slot_broadcast_capabilities(void)
+{
+  QByteArray data;
+  QByteArray results;
+  static QUuid uuid(QUuid::createUuid());
+
+  data.append(uuid.toString());
+  data.append("\n");
+  data.append(QByteArray::number(m_maximum_accumulated_bytes / 4));
+  data.append("\n");
+  data.append("full");
+  results.append("POST HTTP/1.1\r\n"
+		 "Content-Type: application/x-www-form-urlencoded\r\n"
+		 "Content-Length: %1\r\n"
+		 "\r\n"
+		 "type=0014&content=%2\r\n"
+		 "\r\n\r\n");
+  results.replace
+    ("%1",
+     QByteArray::number(data.toBase64().length() +
+			QString("type=0014&content=\r\n\r\n\r\n").length()));
+  results.replace("%2", data.toBase64());
+  write(results);
+  flush();
+}
+
 void spot_on_lite_daemon_child_tcp_client::slot_connected(void)
 {
   m_attempt_local_connection_timer.start();
   m_attempt_remote_connection_timer.stop();
+  m_capabilities_timer.start(m_silence / 2);
 }
 
 void spot_on_lite_daemon_child_tcp_client::slot_disconnected(void)
@@ -995,6 +1028,7 @@ void spot_on_lite_daemon_child_tcp_client::slot_disconnected(void)
       if(!m_attempt_remote_connection_timer.isActive())
 	m_attempt_remote_connection_timer.start();
 
+      m_capabilities_timer.stop();
       purge_containers();
     }
   else

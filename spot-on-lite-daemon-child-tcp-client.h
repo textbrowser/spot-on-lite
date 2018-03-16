@@ -73,6 +73,7 @@ class spot_on_lite_daemon_child_tcp_client: public QSslSocket
   QString m_ssl_control_string;
   QTimer m_attempt_local_connection_timer;
   QTimer m_attempt_remote_connection_timer;
+  QTimer m_capabilities_timer;
   QTimer m_expired_identities_timer;
   QTimer m_keep_alive_timer;
   bool m_client_role;
@@ -101,6 +102,7 @@ class spot_on_lite_daemon_child_tcp_client: public QSslSocket
  private slots:
   void slot_attempt_local_connection(void);
   void slot_attempt_remote_connection(void);
+  void slot_broadcast_capabilities(void);
   void slot_connected(void);
   void slot_disconnected(void);
   void slot_keep_alive_timer_timeout(void);
