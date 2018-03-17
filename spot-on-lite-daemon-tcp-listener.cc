@@ -94,6 +94,10 @@ void spot_on_lite_daemon_tcp_listener::incomingConnection
 			      arg(serverAddress().toString()).
 			      arg(serverPort()).toStdString());
 
+  /*
+  ** Call fork() twice and avoid zombie processes.
+  */
+
   if((pid = fork()) == 0)
     {
       if((pid = fork()) < 0)
