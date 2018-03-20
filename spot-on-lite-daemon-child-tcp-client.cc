@@ -1037,6 +1037,9 @@ void spot_on_lite_daemon_child_tcp_client::slot_disconnected(void)
 
 void spot_on_lite_daemon_child_tcp_client::slot_keep_alive_timer_timeout(void)
 {
+  log("spot_on_lite_daemon_child_tcp_client::slot_keep_alive_timer_timeout(): "
+      "aborting!");
+
   if(m_client_role)
     {
       abort();
