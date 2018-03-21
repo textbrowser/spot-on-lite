@@ -10,8 +10,8 @@ Completed Items
 8.  Remote peers.
 9.  Remove expired identities.
 10. Remove local socket server file on exit.
+11. Restart dead peers.
 
 Remaining Items
 
 1.  Distribute identities.
-2.  Restart dead local clients.
