@@ -100,6 +100,14 @@ spot_on_lite_daemon::spot_on_lite_daemon(void):QObject()
 
 spot_on_lite_daemon::~spot_on_lite_daemon()
 {
+  foreach(QProcess *process, findChildren<QProcess *> ())
+    {
+      disconnect(process,
+		 SIGNAL(finished(int, QProcess::ExitStatus)));
+      process->terminate();
+    }
+
+  m_congestion_control_future.cancel();
   m_congestion_control_future.waitForFinished();
 
   if(m_local_server)
@@ -226,66 +234,56 @@ void spot_on_lite_daemon::prepare_peers(void)
 {
   for(int i = 0; i < m_peers_properties.size(); i++)
     {
+      QProcessEnvironment process_environment
+	(QProcessEnvironment::systemEnvironment());
+      QString server_identity;
+      QStringList arguments;
       QStringList list
 	(m_peers_properties.at(i).split(",", QString::KeepEmptyParts));
-      int maximum_accumulated_bytes = m_maximum_accumulated_bytes;
-      pid_t pid = 0;
-      std::string certificates_file_name
-	(m_certificates_file_name.toStdString());
-      std::string command(m_child_process_file_name.toStdString());
-      std::string congestion_control_file_name
-	(m_congestion_control_file_name.toStdString());
-      std::string ld_library_path
-	(m_child_process_ld_library_path.toStdString());
-      std::string local_server_file_name
-	(this->local_server_file_name().toStdString());
-      std::string log_file_name(m_log_file_name.toStdString());
-      std::string server_identity
-	(QString("%1:%2").arg(list.value(0)).arg(list.value(1)).toStdString());
 
-      if((pid = fork()) == 0)
-	{
-	  if((pid = fork()) < 0)
-	    _exit(EXIT_FAILURE);
-	  else if(pid > 0)
-	    _exit(EXIT_SUCCESS);
+#ifdef Q_OS_MAC
+      process_environment.insert
+	("DYLD_LIBRARY_PATH",
+	 m_child_process_ld_library_path.remove("DYLD_LIBRARY_PATH="));
+#else
+      process_environment.insert
+	("LD_LIBRARY_PATH",
+	 m_child_process_ld_library_path.remove("LD_LIBRARY_PATH"));
+#endif
+      server_identity = QString("%1:%2").arg(list.value(0)).arg(list.value(1));
+      arguments << "--certificates-file"
+		<< m_certificates_file_name
+		<< "--congestion-control-file"
+		<< m_congestion_control_file_name
+		<< "--end-of-message-marker"
+		<< list.value(7).toUtf8().toBase64()
+		<< "--local-server-file"
+		<< local_server_file_name()
+		<< "--log-file"
+		<< m_log_file_name
+		<< "--maximum--accumulated-bytes"
+		<< QString::number(m_maximum_accumulated_bytes)
+		<< "--server-identity"
+		<< server_identity
+		<< "--silence-timeout"
+		<< list.value(5)
+		<< "--socket-descriptor"
+		<< "-1"
+		<< "--ssl-tls-control-string"
+		<< list.value(3)
+		<< "--ssl-tls-key-size"
+		<< list.value(4)
+		<< "--tcp";
 
-	  const char *envp[] = {ld_library_path.data(), NULL};
+      QProcess *process = new QProcess(this);
 
-	  if(execle(command.data(),
-		    command.data(),
-		    "--certificates-file",
-		    certificates_file_name.data(),
-		    "--congestion-control-file",
-		    congestion_control_file_name.data(),
-		    "--end-of-message-marker",
-		    list.value(7).toUtf8().toBase64().data(),
-		    "--local-server-file",
-		    local_server_file_name.data(),
-		    "--log-file",
-		    log_file_name.data(),
-		    "--maximum--accumulated-bytes",
-		    QString::number(maximum_accumulated_bytes).
-		    toStdString().data(),
-		    "--server-identity",
-		    server_identity.data(),
-		    "--silence-timeout",
-		    list.value(5).toStdString().data(),
-		    "--socket-descriptor",
-		    "-1",
-		    "--ssl-tls-control-string",
-		    list.value(3).toStdString().data(),
-		    "--ssl-tls-key-size",
-		    list.value(4).toStdString().data(),
-		    "--tcp",
-		    NULL,
-		    envp) == -1)
-	    _exit(EXIT_FAILURE);
-
-	  _exit(EXIT_SUCCESS);
-	}
-      else
-	waitpid(pid, NULL, 0);
+      process->setProcessEnvironment(process_environment);
+      process->setProperty("arguments", arguments);
+      connect(process,
+	      SIGNAL(finished(int, QProcess::ExitStatus)),
+	      this,
+	      SLOT(slot_process_finished(int, QProcess::ExitStatus)));
+      process->start(m_child_process_file_name, arguments);
     }
 }
 
@@ -665,7 +663,7 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
 
 		std::cerr << "spot_on_lite_daemon::"
 			  << "process_configuration_file(): The "
-			  << "listener ("
+			  << "peer ("
 			  << list.at(0).toStdString()
 			  << ":"
 			  << list.at(1).toStdString()
@@ -750,6 +748,35 @@ void spot_on_lite_daemon::slot_new_local_connection(void)
 	  SIGNAL(readyRead(void)),
 	  this,
 	  SLOT(slot_ready_read(void)));
+}
+
+void spot_on_lite_daemon::slot_process_finished
+(int exit_code, QProcess::ExitStatus exit_status)
+{
+  /*
+  ** A brief pause may be necessary.
+  */
+
+  Q_UNUSED(exit_code);
+  Q_UNUSED(exit_status);
+
+  QProcess *process = qobject_cast<QProcess *> (sender());
+
+  if(!process)
+    return;
+
+  QProcessEnvironment process_environment(process->processEnvironment());
+  QStringList arguments(process->property("arguments").toStringList());
+
+  process->deleteLater();
+  process = new QProcess(this);
+  process->setProcessEnvironment(process_environment);
+  process->setProperty("arguments", arguments);
+  connect(process,
+	  SIGNAL(finished(int, QProcess::ExitStatus)),
+	  this,
+	  SLOT(slot_process_finished(int, QProcess::ExitStatus)));
+  process->start(m_child_process_file_name, arguments);
 }
 
 void spot_on_lite_daemon::slot_purge_congestion_control_timeout(void)
