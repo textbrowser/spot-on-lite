@@ -2,10 +2,12 @@ all: Makefile.daemon Makefile.daemon_child
 	$(MAKE) -f Makefile.daemon
 	$(MAKE) -f Makefile.daemon_child
 
+QMAKE=qmake
+
 Makefile.daemon: spot-on-lite-daemon.pro
 Makefile.daemon_child: spot-on-lite-daemon-child.pro
-	qmake -o Makefile.daemon spot-on-lite-daemon.pro
-	qmake -o Makefile.daemon_child spot-on-lite-daemon-child.pro
+	$(QMAKE) -o Makefile.daemon spot-on-lite-daemon.pro
+	$(QMAKE) -o Makefile.daemon_child spot-on-lite-daemon-child.pro
 
 clean: Makefile.daemon Makefile.daemon_child
 	$(MAKE) -f Makefile.daemon clean
