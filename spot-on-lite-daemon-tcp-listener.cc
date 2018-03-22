@@ -71,6 +71,13 @@ void spot_on_lite_daemon_tcp_listener::incomingConnection
       return;
     }
 
+  int sd = dup(static_cast<int> (socket_descriptor));
+
+  ::close(static_cast<int> (socket_descriptor));
+
+  if(sd == -1)
+    return;
+
   QStringList list(m_configuration.split(",", QString::KeepEmptyParts));
   int maximum_accumulated_bytes = spot_on_lite_daemon::instance()->
     maximum_accumulated_bytes();
@@ -101,17 +108,17 @@ void spot_on_lite_daemon_tcp_listener::incomingConnection
   if((pid = fork()) == 0)
     {
       if((pid = fork()) < 0)
-	_exit(EXIT_FAILURE);
+	{
+	  ::close(sd);
+	  _exit(EXIT_FAILURE);
+	}
       else if(pid > 0)
-	_exit(EXIT_SUCCESS);
+	{
+	  ::close(sd);
+	  _exit(EXIT_SUCCESS);
+	}
 
-      int sd = dup(static_cast<int> (socket_descriptor));
-
-      ::close(static_cast<int> (socket_descriptor));
-
-      if(sd == -1)
-	_exit(EXIT_FAILURE);
-      else if(so_linger > -1)
+      if(so_linger > -1)
 	{
 	  socklen_t length = 0;
 	  struct linger l;
@@ -160,7 +167,7 @@ void spot_on_lite_daemon_tcp_listener::incomingConnection
     }
   else
     {
-      ::close(static_cast<int> (socket_descriptor));
+      ::close(sd);
       waitpid(pid, NULL, 0);
     }
 }
