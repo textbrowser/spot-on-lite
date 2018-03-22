@@ -79,6 +79,7 @@ void spot_on_lite_daemon_tcp_listener::incomingConnection
     return;
 
   QStringList list(m_configuration.split(",", QString::KeepEmptyParts));
+  int listener_sd = static_cast<int> (socketDescriptor());
   int maximum_accumulated_bytes = spot_on_lite_daemon::instance()->
     maximum_accumulated_bytes();
   int so_linger = list.value(6).toInt();
@@ -107,6 +108,8 @@ void spot_on_lite_daemon_tcp_listener::incomingConnection
 
   if((pid = fork()) == 0)
     {
+      ::close(listener_sd);
+
       if((pid = fork()) < 0)
 	{
 	  ::close(sd);
