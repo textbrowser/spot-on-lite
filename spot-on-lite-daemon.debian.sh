@@ -1,6 +1,6 @@
 #!/bin/sh
 ### BEGIN INIT INFO
-# Provides:          spot-on-lite-daemon.sh
+# Provides:          spot-on-lite-daemon.debian.sh
 # Required-Start:    $network $remote_fs $time
 # Required-Stop:     $remote_fs
 # Default-Start:     2 3 4 5
@@ -19,7 +19,7 @@ case "$1" in
       killall -u spot-on-lite-daemon Spot-On-Lite-Daemon
       ;;
   *)
-      echo "Usage: /etc/init.d/spot-on-lite-daemon.sh {start|stop}"
+      echo "Usage: /etc/init.d/spot-on-lite-daemon.debian.sh {start|stop}"
       exit 1
       ;;
 esac
