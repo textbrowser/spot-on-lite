@@ -1,15 +1,15 @@
 include (common.pro)
 
-INCLUDEPATH += .
+INCLUDEPATH += Source
 
-HEADERS = spot-on-lite-daemon.h \
-          spot-on-lite-daemon-tcp-listener.h
+HEADERS = Source/spot-on-lite-daemon.h \
+          Source/spot-on-lite-daemon-tcp-listener.h
 
 RESOURCES =
 
-SOURCES = spot-on-lite-daemon.cc \
-          spot-on-lite-daemon-main.cc \
-          spot-on-lite-daemon-tcp-listener.cc
+SOURCES = Source/spot-on-lite-daemon.cc \
+          Source/spot-on-lite-daemon-main.cc \
+          Source/spot-on-lite-daemon-tcp-listener.cc
 
 PROJECTNAME = Spot-On-Lite-Daemon
 TARGET = Spot-On-Lite-Daemon
