@@ -94,6 +94,9 @@ spot_on_lite_daemon::spot_on_lite_daemon
 
 spot_on_lite_daemon::spot_on_lite_daemon(void):QObject()
 {
+  m_congestion_control_lifetime = 90; // Seconds
+  m_local_socket_server_directory_name = "/tmp";
+  m_maximum_accumulated_bytes = 0;
   m_signal_usr1_socket_notifier = 0;
   s_instance = this;
 }

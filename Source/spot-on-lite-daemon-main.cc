@@ -64,7 +64,6 @@ void spot_on_lite_daemon::handler_signal(int signal_number)
 	  unlink(s_local_server_file_name);
 
 	exit(0);
-	return;
       }
     }
 
