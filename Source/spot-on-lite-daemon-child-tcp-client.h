@@ -96,6 +96,7 @@ class spot_on_lite_daemon_child_tcp_client: public QSslSocket
 			  const QByteArray &private_key,
 			  const QByteArray &public_key);
   void record_remote_identity(const QByteArray &data);
+  void send_identity(const QByteArray &data);
   void set_ssl_ciphers(const QList<QSslCipher> &ciphers,
 		       QSslConfiguration &configuration) const;
 

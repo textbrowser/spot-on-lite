@@ -948,6 +948,25 @@ void spot_on_lite_daemon_child_tcp_client::record_remote_identity
       }
 }
 
+void spot_on_lite_daemon_child_tcp_client::send_identity(const QByteArray &data)
+{
+  QByteArray results;
+
+  results.append("POST HTTP/1.1\r\n"
+		 "Content-Type: application/x-www-form-urlencoded\r\n"
+		 "Content-Length: %1\r\n"
+		 "\r\n"
+		 "type=0095a&content=%2\r\n"
+		 "\r\n\r\n");
+  results.replace
+    ("%1",
+     QByteArray::number(data.toBase64().length() +
+			QString("type=0095a&content=\r\n\r\n\r\n").length()));
+  results.replace("%2", data.toBase64());
+  write(results);
+  flush();
+}
+
 void spot_on_lite_daemon_child_tcp_client::
 set_ssl_ciphers(const QList<QSslCipher> &ciphers,
 		QSslConfiguration &configuration) const
@@ -1025,33 +1044,17 @@ void spot_on_lite_daemon_child_tcp_client::slot_broadcast_capabilities(void)
   ** Identities
   */
 
-  {
-    QHashIterator<QByteArray, QPair<QByteArray, qint64> > it
-      (m_remote_identities);
+  if(m_client_role)
+    {
+      QHashIterator<QByteArray, QPair<QByteArray, qint64> > it
+	(m_remote_identities);
 
-    while(it.hasNext())
-      {
-	it.next();
-
-	QByteArray data(it.value().first);
-	QByteArray results;
-
-	results.append("POST HTTP/1.1\r\n"
-		       "Content-Type: application/x-www-form-urlencoded\r\n"
-		       "Content-Length: %1\r\n"
-		       "\r\n"
-		       "type=0095a&content=%2\r\n"
-		       "\r\n\r\n");
-	results.replace
-	  ("%1",
-	   QByteArray::number(data.toBase64().length() +
-			      QString("type=0095a&content=\r\n\r\n\r\n").
-			      length()));
-	results.replace("%2", data.toBase64());
-	write(results);
-	flush();
-      }
-  }
+      while(it.hasNext())
+	{
+	  it.next();
+	  send_identity(it.value().first);
+	}
+    }
 }
 
 void spot_on_lite_daemon_child_tcp_client::slot_connected(void)
@@ -1210,7 +1213,12 @@ void spot_on_lite_daemon_child_tcp_client::slot_ready_read(void)
       data = m_remote_content.mid(0, index + m_end_of_message_marker.length());
 
       if(data.contains("type=0095a&content"))
-	record_remote_identity(data);
+	if(!m_client_role)
+	  /*
+	  ** We're a server socket!
+	  */
+
+	  record_remote_identity(data);
 
       m_remote_content.remove(0, data.length());
 
