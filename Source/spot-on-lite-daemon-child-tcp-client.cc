@@ -1107,6 +1107,9 @@ void spot_on_lite_daemon_child_tcp_client::slot_local_socket_disconnected(void)
 
 void spot_on_lite_daemon_child_tcp_client::slot_local_socket_ready_read(void)
 {
+  if(!m_local_socket)
+    return;
+
   QByteArray data(m_local_socket->readAll());
 
   if(data.isEmpty())
@@ -1186,10 +1189,11 @@ void spot_on_lite_daemon_child_tcp_client::slot_ready_read(void)
       m_keep_alive_timer.start();
 
       if(record_congestion(data))
-	{
-	  m_local_socket->write(data);
-	  m_local_socket->flush();
-	}
+	if(m_local_socket)
+	  {
+	    m_local_socket->write(data);
+	    m_local_socket->flush();
+	  }
 
       return;
     }
@@ -1223,10 +1227,11 @@ void spot_on_lite_daemon_child_tcp_client::slot_ready_read(void)
       m_remote_content.remove(0, data.length());
 
       if(record_congestion(data))
-	{
-	  m_local_socket->write(data);
-	  m_local_socket->flush();
-	}
+	if(m_local_socket)
+	  {
+	    m_local_socket->write(data);
+	    m_local_socket->flush();
+	  }
     }
 }
 
