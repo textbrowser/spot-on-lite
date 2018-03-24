@@ -923,13 +923,14 @@ void spot_on_lite_daemon_child_tcp_client::record_certificate
 void spot_on_lite_daemon_child_tcp_client::record_remote_identity
 (const QByteArray &data)
 {
+  QByteArray full_identity;
   QByteArray identity;
   int index = data.indexOf("content=");
 
   if(index > 0)
-    identity = data.mid(8 + index).trimmed();
+    full_identity = identity = data.mid(8 + index).trimmed();
   else
-    identity = data.trimmed();
+    full_identity = identity = data.trimmed();
 
   if((index = identity.indexOf(";")) > 0)
     identity = identity.mid(0, index);
@@ -939,7 +940,8 @@ void spot_on_lite_daemon_child_tcp_client::record_remote_identity
   if(!identity.isEmpty())
     if(m_remote_identities.size() < s_maximum_identities)
       {
-	m_remote_identities[identity] = QDateTime::currentMSecsSinceEpoch();
+	m_remote_identities[identity] = QPair<QByteArray, qint64>
+	  (full_identity, QDateTime::currentMSecsSinceEpoch());
 
 	if(!m_expired_identities_timer.isActive())
 	  m_expired_identities_timer.start();
@@ -990,28 +992,66 @@ void spot_on_lite_daemon_child_tcp_client::slot_attempt_remote_connection(void)
 
 void spot_on_lite_daemon_child_tcp_client::slot_broadcast_capabilities(void)
 {
-  QByteArray data;
-  QByteArray results;
-  static QUuid uuid(QUuid::createUuid());
+  /*
+  ** Capabilities
+  */
 
-  data.append(uuid.toString());
-  data.append("\n");
-  data.append(QByteArray::number(m_maximum_accumulated_bytes / 4));
-  data.append("\n");
-  data.append("full");
-  results.append("POST HTTP/1.1\r\n"
-		 "Content-Type: application/x-www-form-urlencoded\r\n"
-		 "Content-Length: %1\r\n"
-		 "\r\n"
-		 "type=0014&content=%2\r\n"
-		 "\r\n\r\n");
-  results.replace
-    ("%1",
-     QByteArray::number(data.toBase64().length() +
-			QString("type=0014&content=\r\n\r\n\r\n").length()));
-  results.replace("%2", data.toBase64());
-  write(results);
-  flush();
+  {
+    QByteArray data;
+    QByteArray results;
+    static QUuid uuid(QUuid::createUuid());
+
+    data.append(uuid.toString());
+    data.append("\n");
+    data.append(QByteArray::number(m_maximum_accumulated_bytes / 4));
+    data.append("\n");
+    data.append("full");
+    results.append("POST HTTP/1.1\r\n"
+		   "Content-Type: application/x-www-form-urlencoded\r\n"
+		   "Content-Length: %1\r\n"
+		   "\r\n"
+		   "type=0014&content=%2\r\n"
+		   "\r\n\r\n");
+    results.replace
+      ("%1",
+       QByteArray::number(data.toBase64().length() +
+			  QString("type=0014&content=\r\n\r\n\r\n").length()));
+    results.replace("%2", data.toBase64());
+    write(results);
+    flush();
+  }
+
+  /*
+  ** Identities
+  */
+
+  {
+    QHashIterator<QByteArray, QPair<QByteArray, qint64> > it
+      (m_remote_identities);
+
+    while(it.hasNext())
+      {
+	it.next();
+
+	QByteArray data(it.value().first);
+	QByteArray results;
+
+	results.append("POST HTTP/1.1\r\n"
+		       "Content-Type: application/x-www-form-urlencoded\r\n"
+		       "Content-Length: %1\r\n"
+		       "\r\n"
+		       "type=0095a&content=%2\r\n"
+		       "\r\n\r\n");
+	results.replace
+	  ("%1",
+	   QByteArray::number(data.toBase64().length() +
+			      QString("type=0095a&content=\r\n\r\n\r\n").
+			      length()));
+	results.replace("%2", data.toBase64());
+	write(results);
+	flush();
+      }
+  }
 }
 
 void spot_on_lite_daemon_child_tcp_client::slot_connected(void)
@@ -1104,7 +1144,8 @@ void spot_on_lite_daemon_child_tcp_client::slot_local_socket_ready_read(void)
 	    }
 
 	  QByteArray hmac;
-	  QHashIterator<QByteArray, qint64> it(m_remote_identities);
+	  QHashIterator<QByteArray, QPair<QByteArray, qint64> > it
+	    (m_remote_identities);
 	  spot_on_lite_daemon_sha sha_512;
 
 	  while(it.hasNext())
@@ -1183,13 +1224,14 @@ void spot_on_lite_daemon_child_tcp_client::slot_ready_read(void)
 
 void spot_on_lite_daemon_child_tcp_client::slot_remove_expired_identities(void)
 {
-  QMutableHashIterator<QByteArray, qint64> it(m_remote_identities);
+  QMutableHashIterator<QByteArray, QPair<QByteArray, qint64> > it
+    (m_remote_identities);
 
   while(it.hasNext())
     {
       it.next();
 
-      if(qAbs(QDateTime::currentMSecsSinceEpoch() - it.value()) >
+      if(qAbs(QDateTime::currentMSecsSinceEpoch() - it.value().second) >
 	 s_identity_lifetime)
 	it.remove();
     }

@@ -62,7 +62,7 @@ class spot_on_lite_daemon_child_tcp_client: public QSslSocket
  private:
   QByteArray m_local_content;
   QByteArray m_remote_content;
-  QHash<QByteArray, qint64> m_remote_identities;
+  QHash<QByteArray, QPair<QByteArray, qint64> > m_remote_identities;
   QLocalSocket *m_local_socket;
   QString m_certificates_file_name;
   QString m_congestion_control_file_name;
