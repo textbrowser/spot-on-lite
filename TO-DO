@@ -4,14 +4,13 @@ Completed Items
 2.  Cryptographic Discovery. Requires SHA-512.
 3.  Disable socket linger. Optional.
 4.  Distribute capabilities.
-5.  Echo through child processes.
-6.  Limit number of processes via /etc/security/limits.conf.
-7.  Record certificate data.
-8.  Remote peers.
-9.  Remove expired identities.
-10. Remove local socket server file on exit.
-11. Restart dead peers.
+5.  Distribute identities.
+6.  Echo through child processes.
+7.  Limit number of processes via /etc/security/limits.conf.
+8.  Record certificate data.
+9.  Remote peers.
+10.  Remove expired identities.
+11. Remove local socket server file on exit.
+12. Restart dead peers.
 
 Remaining Items
-
-1.  Distribute identities.

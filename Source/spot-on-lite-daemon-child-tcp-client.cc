@@ -923,6 +923,13 @@ void spot_on_lite_daemon_child_tcp_client::record_certificate
 void spot_on_lite_daemon_child_tcp_client::record_remote_identity
 (const QByteArray &data)
 {
+  if(!m_client_role)
+    /*
+    ** Only server sockets should record identities.
+    */
+
+    return;
+
   QByteArray full_identity;
   QByteArray identity;
   int index = data.indexOf("content=");
@@ -1015,30 +1022,28 @@ void spot_on_lite_daemon_child_tcp_client::slot_broadcast_capabilities(void)
   ** Capabilities
   */
 
-  {
-    QByteArray data;
-    QByteArray results;
-    static QUuid uuid(QUuid::createUuid());
+  QByteArray data;
+  QByteArray results;
+  static QUuid uuid(QUuid::createUuid());
 
-    data.append(uuid.toString());
-    data.append("\n");
-    data.append(QByteArray::number(m_maximum_accumulated_bytes / 4));
-    data.append("\n");
-    data.append("full");
-    results.append("POST HTTP/1.1\r\n"
-		   "Content-Type: application/x-www-form-urlencoded\r\n"
-		   "Content-Length: %1\r\n"
-		   "\r\n"
-		   "type=0014&content=%2\r\n"
-		   "\r\n\r\n");
-    results.replace
-      ("%1",
-       QByteArray::number(data.toBase64().length() +
-			  QString("type=0014&content=\r\n\r\n\r\n").length()));
-    results.replace("%2", data.toBase64());
-    write(results);
-    flush();
-  }
+  data.append(uuid.toString());
+  data.append("\n");
+  data.append(QByteArray::number(m_maximum_accumulated_bytes / 4));
+  data.append("\n");
+  data.append("full");
+  results.append("POST HTTP/1.1\r\n"
+		 "Content-Type: application/x-www-form-urlencoded\r\n"
+		 "Content-Length: %1\r\n"
+		 "\r\n"
+		 "type=0014&content=%2\r\n"
+		 "\r\n\r\n");
+  results.replace
+    ("%1",
+     QByteArray::number(data.toBase64().length() +
+			QString("type=0014&content=\r\n\r\n\r\n").length()));
+  results.replace("%2", data.toBase64());
+  write(results);
+  flush();
 
   /*
   ** Identities
