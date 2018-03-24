@@ -923,7 +923,7 @@ void spot_on_lite_daemon_child_tcp_client::record_certificate
 void spot_on_lite_daemon_child_tcp_client::record_remote_identity
 (const QByteArray &data)
 {
-  if(!m_client_role)
+  if(m_client_role)
     /*
     ** Only server sockets should record identities.
     */
