@@ -930,25 +930,35 @@ void spot_on_lite_daemon_child_tcp_client::record_remote_identity
 
     return;
 
-  QByteArray full_identity;
+  QByteArray algorithm;
   QByteArray identity;
   int index = data.indexOf("content=");
 
   if(index > 0)
-    full_identity = identity = data.mid(8 + index).trimmed();
+    identity = data.mid(8 + index).trimmed();
   else
-    full_identity = identity = data.trimmed();
+    identity = data.trimmed();
 
   if((index = identity.indexOf(";")) > 0)
-    identity = identity.mid(0, index);
+    {
+      algorithm = identity.mid(index + 1).toLower().trimmed();
+
+      if(!(algorithm == "sha-512"))
+	algorithm = "sha-512";
+
+      identity = identity.mid(0, index);
+    }
+  else
+    algorithm = "sha-512";
 
   identity = QByteArray::fromBase64(identity);
 
-  if(!identity.isEmpty())
+  if(identity.length() == 64)
     if(m_remote_identities.size() < s_maximum_identities)
       {
 	m_remote_identities[identity] = QPair<QByteArray, qint64>
-	  (full_identity, QDateTime::currentMSecsSinceEpoch());
+	  (identity.toBase64().append(";").append(algorithm),
+	   QDateTime::currentMSecsSinceEpoch());
 
 	if(!m_expired_identities_timer.isActive())
 	  m_expired_identities_timer.start();
@@ -967,9 +977,9 @@ void spot_on_lite_daemon_child_tcp_client::send_identity(const QByteArray &data)
 		 "\r\n\r\n");
   results.replace
     ("%1",
-     QByteArray::number(data.toBase64().length() +
+     QByteArray::number(data.length() +
 			QString("type=0095a&content=\r\n\r\n\r\n").length()));
-  results.replace("%2", data.toBase64());
+  results.replace("%2", data);
   write(results);
   flush();
 }
