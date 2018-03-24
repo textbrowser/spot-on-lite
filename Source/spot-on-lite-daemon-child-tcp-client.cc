@@ -56,6 +56,14 @@ extern "C"
 static int s_maximum_identities = 2048;
 static qint64 s_identity_lifetime = 30000; // 30 Seconds
 
+static int hash_algorithm_key_length(const QByteArray &algorithm)
+{
+  if(algorithm == "sha-512")
+    return 64;
+  else
+    return 0;
+}
+
 spot_on_lite_daemon_child_tcp_client::
 spot_on_lite_daemon_child_tcp_client
 (const QString &certificates_file_name,
@@ -953,7 +961,7 @@ void spot_on_lite_daemon_child_tcp_client::record_remote_identity
 
   identity = QByteArray::fromBase64(identity);
 
-  if(identity.length() == 64)
+  if(hash_algorithm_key_length(algorithm) == identity.length())
     if(m_remote_identities.size() < s_maximum_identities)
       {
 	m_remote_identities[identity] = QPair<QByteArray, qint64>
