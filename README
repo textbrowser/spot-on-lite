@@ -4,7 +4,7 @@ Debian and OpenBSD. It compiles on Debian, Mac OS X, and OpenBSD.
 On Linux, limiting the number of processes may be achieved
 via /etc/security/limits.conf.
 
-spot-on-lite-daemon		hard	nproc		64
+spot-on-lite-daemon		hard	nproc		256
 
 The LD_LIBRARY_PATH may require adjusting.
 
