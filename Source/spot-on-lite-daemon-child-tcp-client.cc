@@ -812,7 +812,6 @@ void spot_on_lite_daemon_child_tcp_client::prepare_local_socket(void)
     m_local_socket->deleteLater();
 
   m_local_socket = new QLocalSocket(this);
-  m_local_socket->connectToServer(m_local_server_file_name);
   connect(m_local_socket,
 	  SIGNAL(connected(void)),
 	  &m_attempt_local_connection_timer,
@@ -825,6 +824,7 @@ void spot_on_lite_daemon_child_tcp_client::prepare_local_socket(void)
 	  SIGNAL(readyRead(void)),
 	  this,
 	  SLOT(slot_local_socket_ready_read(void)));
+  m_local_socket->connectToServer(m_local_server_file_name);
 }
 
 void spot_on_lite_daemon_child_tcp_client::prepare_ssl_tls_configuration

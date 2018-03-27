@@ -761,7 +761,7 @@ void spot_on_lite_daemon::slot_new_local_connection(void)
   m_local_sockets[socket] = 0;
   connect(socket,
 	  SIGNAL(disconnected(void)),
-	  socket,
+	  this,
 	  SLOT(slot_local_socket_disconnected(void)));
   connect(socket,
 	  SIGNAL(readyRead(void)),
