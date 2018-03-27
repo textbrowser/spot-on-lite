@@ -733,6 +733,17 @@ void spot_on_lite_daemon::purge_congestion_control(void)
   QSqlDatabase::removeDatabase("congestion_control_database");
 }
 
+void spot_on_lite_daemon::slot_local_socket_disconnected(void)
+{
+  QLocalSocket *socket = qobject_cast<QLocalSocket *> (sender());
+
+  if(!socket)
+    return;
+
+  m_local_sockets.remove(socket);
+  socket->deleteLater();
+}
+
 void spot_on_lite_daemon::slot_new_local_connection(void)
 {
   if(!m_local_server)
@@ -743,10 +754,11 @@ void spot_on_lite_daemon::slot_new_local_connection(void)
   if(!socket)
     return;
 
+  m_local_sockets[socket] = 0;
   connect(socket,
 	  SIGNAL(disconnected(void)),
 	  socket,
-	  SLOT(deleteLater(void)));
+	  SLOT(slot_local_socket_disconnected(void)));
   connect(socket,
 	  SIGNAL(readyRead(void)),
 	  this,
@@ -796,20 +808,19 @@ void spot_on_lite_daemon::slot_ready_read(void)
   if(!socket)
     return;
 
-  if(!m_local_server)
-    {
-      socket->readAll();
-      return;
-    }
-
   QByteArray data(socket->readAll());
+  QHashIterator<QLocalSocket *, char> it(m_local_sockets);
 
-  foreach(QLocalSocket *s, m_local_server->findChildren<QLocalSocket *> ())
-    if(s != socket)
-      {
-	s->write(data);
-	s->flush();
-      }
+  while(it.hasNext())
+    {
+      it.next();
+
+      if(it.key() != socket)
+	{
+	  it.key()->write(data);
+	  it.key()->flush();
+	}
+    }
 }
 
 void spot_on_lite_daemon::slot_signal_usr1(void)
