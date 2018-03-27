@@ -208,6 +208,7 @@ void spot_on_lite_daemon::prepare_local_socket_server(void)
     {
       m_local_server->close();
       m_local_server->deleteLater();
+      m_local_sockets.clear();
     }
 
   m_local_server = new QLocalServer(this);
@@ -230,7 +231,10 @@ void spot_on_lite_daemon::prepare_local_socket_server(void)
 	       2047);
     }
   else
-    m_local_server->deleteLater();
+    {
+      m_local_server->deleteLater();
+      m_local_sockets.clear();
+    }
 }
 
 void spot_on_lite_daemon::prepare_peers(void)
@@ -854,6 +858,7 @@ void spot_on_lite_daemon::start(void)
       m_local_server->removeServer(m_local_server->fullServerName());
       m_local_server->deleteLater();
       m_local_server = 0;
+      m_local_sockets.clear();
     }
 
   m_peers_properties.clear();
