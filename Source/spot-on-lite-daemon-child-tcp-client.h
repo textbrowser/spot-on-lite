@@ -33,9 +33,12 @@ extern "C"
 #include <openssl/rsa.h>
 }
 
+#include <QFuture>
+#include <QReadWriteLock>
 #include <QSslCipher>
 #include <QSslSocket>
 #include <QTimer>
+#include <QWaitCondition>
 
 class QLocalSocket;
 
@@ -62,8 +65,12 @@ class spot_on_lite_daemon_child_tcp_client: public QSslSocket
  private:
   QByteArray m_local_content;
   QByteArray m_remote_content;
+  QFuture<void> m_process_data_future;
   QHash<QByteArray, QPair<QByteArray, qint64> > m_remote_identities;
   QLocalSocket *m_local_socket;
+  QMutex m_wait_condition_mutex;
+  QReadWriteLock m_local_content_mutex;
+  QReadWriteLock m_remote_identities_mutex;
   QString m_certificates_file_name;
   QString m_congestion_control_file_name;
   QString m_end_of_message_marker;
@@ -76,6 +83,7 @@ class spot_on_lite_daemon_child_tcp_client: public QSslSocket
   QTimer m_capabilities_timer;
   QTimer m_expired_identities_timer;
   QTimer m_keep_alive_timer;
+  QWaitCondition m_wait_condition;
   bool m_client_role;
   int m_maximum_accumulated_bytes;
   int m_silence;
@@ -91,6 +99,7 @@ class spot_on_lite_daemon_child_tcp_client: public QSslSocket
   void log(const QString &error) const;
   void prepare_local_socket(void);
   void prepare_ssl_tls_configuration(const QList<QByteArray> &list);
+  void process_data(void);
   void purge_containers(void);
   void record_certificate(const QByteArray &certificate,
 			  const QByteArray &private_key,
@@ -112,6 +121,10 @@ class spot_on_lite_daemon_child_tcp_client: public QSslSocket
   void slot_ready_read(void);
   void slot_remove_expired_identities(void);
   void slot_ssl_errors(const QList<QSslError> &errors);
+  void slot_write_data(const QByteArray &data);
+
+ signals:
+  void write_signal(const QByteArray &data);
 };
 
 #endif

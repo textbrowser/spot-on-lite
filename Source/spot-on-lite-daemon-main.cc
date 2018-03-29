@@ -46,10 +46,10 @@ extern "C"
 #include "spot-on-lite-daemon-sha.h"
 #endif
 
-char *s_local_server_file_name = 0;
-
 void spot_on_lite_daemon::handler_signal(int signal_number)
 {
+  char a = 1;
+
   switch(signal_number)
     {
     case SIGUSR1:
@@ -57,17 +57,9 @@ void spot_on_lite_daemon::handler_signal(int signal_number)
     case SIGUSR2:
       return;
     default:
-      {
-	kill(0, signal_number);
-
-	if(s_local_server_file_name)
-	  unlink(s_local_server_file_name);
-
-	exit(0);
-      }
+      a = 0;
     }
 
-  char a = 1;
   ssize_t rc = ::write(s_signal_usr1_fd[0], &a, sizeof(a));
 
   (void) rc;
@@ -306,6 +298,7 @@ int main(int argc, char *argv[])
 
       daemon.start();
       rc = qapplication.exec();
+      kill(0, SIGTERM);
     }
   catch(const std::bad_alloc &)
     {

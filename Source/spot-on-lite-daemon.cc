@@ -57,7 +57,6 @@ extern "C"
 #include "spot-on-lite-daemon.h"
 #include "spot-on-lite-daemon-tcp-listener.h"
 
-extern char *s_local_server_file_name;
 int spot_on_lite_daemon::s_signal_usr1_fd[2];
 spot_on_lite_daemon *spot_on_lite_daemon::s_instance = 0;
 
@@ -105,8 +104,8 @@ spot_on_lite_daemon::~spot_on_lite_daemon()
 {
   foreach(QProcess *process, findChildren<QProcess *> ())
     {
-      disconnect(process,
-		 SIGNAL(finished(int, QProcess::ExitStatus)));
+      disconnect(process, SIGNAL(finished(int, QProcess::ExitStatus)));
+      process->setParent(0);
       process->terminate();
     }
 
@@ -210,27 +209,18 @@ void spot_on_lite_daemon::prepare_local_socket_server(void)
       m_local_server->deleteLater();
     }
 
-  m_local_sockets.clear();
   m_local_server = new QLocalServer(this);
   m_local_server->listen
     (QString("%1/Spot-On-Lite-Daemon-Local-Server.%2").
      arg(m_local_socket_server_directory_name).
      arg(QCoreApplication::applicationPid()));
+  m_local_sockets.clear();
   connect(m_local_server,
 	  SIGNAL(newConnection(void)),
 	  this,
 	  SLOT(slot_new_local_connection(void)));
 
-  if(m_local_server->isListening())
-    {
-      delete []s_local_server_file_name;
-      s_local_server_file_name = new char[2048];
-      memset(s_local_server_file_name, 0, 2048);
-      qstrncpy(s_local_server_file_name,
-	       m_local_server->fullServerName().toStdString().data(),
-	       2047);
-    }
-  else
+  if(!m_local_server->isListening())
     {
       m_local_server->deleteLater();
       m_local_sockets.clear();
@@ -838,8 +828,14 @@ void spot_on_lite_daemon::slot_signal_usr1(void)
   ssize_t rc = ::read(s_signal_usr1_fd[1], &a, sizeof(a));
 
   Q_UNUSED(rc);
-  start();
-  m_signal_usr1_socket_notifier->setEnabled(true);
+
+  if(a == 1)
+    {
+      start();
+      m_signal_usr1_socket_notifier->setEnabled(true);
+    }
+  else
+    QCoreApplication::exit(0);
 }
 
 void spot_on_lite_daemon::slot_start_timeout(void)
@@ -862,13 +858,6 @@ void spot_on_lite_daemon::start(void)
 
   m_local_sockets.clear();
   m_peers_properties.clear();
-
-  if(s_local_server_file_name)
-    {
-      delete []s_local_server_file_name;
-      s_local_server_file_name = 0;
-    }
-
   process_configuration_file(0);
   prepare_listeners();
   prepare_local_socket_server();
