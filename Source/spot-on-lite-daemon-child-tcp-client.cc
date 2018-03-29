@@ -1133,7 +1133,7 @@ void spot_on_lite_daemon_child_tcp_client::slot_local_socket_ready_read(void)
   if(!m_local_socket)
     return;
 
-  QByteArray data(m_local_socket->readAll());
+  QByteArray data(qUncompress(m_local_socket->readAll()));
 
   if(data.isEmpty())
     return;
@@ -1214,7 +1214,7 @@ void spot_on_lite_daemon_child_tcp_client::slot_ready_read(void)
       if(record_congestion(data))
 	if(m_local_socket)
 	  {
-	    m_local_socket->write(data);
+	    m_local_socket->write(qCompress(data, 9));
 	    m_local_socket->flush();
 	  }
 
@@ -1252,7 +1252,7 @@ void spot_on_lite_daemon_child_tcp_client::slot_ready_read(void)
       if(record_congestion(data))
 	if(m_local_socket)
 	  {
-	    m_local_socket->write(data);
+	    m_local_socket->write(qCompress(data, 9));
 	    m_local_socket->flush();
 	  }
     }
