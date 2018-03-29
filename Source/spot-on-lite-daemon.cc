@@ -208,9 +208,9 @@ void spot_on_lite_daemon::prepare_local_socket_server(void)
     {
       m_local_server->close();
       m_local_server->deleteLater();
-      m_local_sockets.clear();
     }
 
+  m_local_sockets.clear();
   m_local_server = new QLocalServer(this);
   m_local_server->listen
     (QString("%1/Spot-On-Lite-Daemon-Local-Server.%2").
@@ -858,9 +858,9 @@ void spot_on_lite_daemon::start(void)
       m_local_server->removeServer(m_local_server->fullServerName());
       m_local_server->deleteLater();
       m_local_server = 0;
-      m_local_sockets.clear();
     }
 
+  m_local_sockets.clear();
   m_peers_properties.clear();
 
   if(s_local_server_file_name)
