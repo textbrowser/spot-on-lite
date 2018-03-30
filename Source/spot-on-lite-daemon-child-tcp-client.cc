@@ -911,22 +911,24 @@ void spot_on_lite_daemon_child_tcp_client::process_data(void)
 	break;
 
       QByteArray data;
-
-      {
-	QWriteLocker lock(&m_local_content_mutex);
-
-	data = m_local_content;
-	m_local_content.clear();
-      }
-
-      if(data.isEmpty())
-	continue;
-
       int index = 0;
 
-      while((index = data.indexOf(m_end_of_message_marker)) > 0)
+      do
 	{
-	  data = data.mid(0, index + m_end_of_message_marker.length());
+	  {
+	    QWriteLocker lock(&m_local_content_mutex);
+
+	    index = m_local_content.indexOf(m_end_of_message_marker);
+
+	    if(index > 0)
+	      {
+		data = m_local_content.
+		  mid(0, index + m_end_of_message_marker.length());
+		m_local_content.remove(0, data.length());
+	      }
+	    else
+	      break;
+	  }
 
 	  QByteArray d(data.mid(8 + data.indexOf("content=")).trimmed());
 	  QByteArray h;
@@ -969,9 +971,8 @@ void spot_on_lite_daemon_child_tcp_client::process_data(void)
 		  break;
 		}
 	    }
-
-	  data.remove(0, data.length());
 	}
+      while(true);
 
       lock.relock();
     }
@@ -1257,7 +1258,12 @@ void spot_on_lite_daemon_child_tcp_client::slot_local_socket_ready_read(void)
       {
 	QWriteLocker lock(&m_local_content_mutex);
 
-	m_local_content.append(data);
+	if(m_local_content.length() >= m_maximum_accumulated_bytes)
+	  m_local_content.clear();
+
+	m_local_content.append
+	  (data.mid(0, qAbs(m_maximum_accumulated_bytes -
+			    m_local_content.length())));
       }
 
       m_wait_condition.wakeAll();
