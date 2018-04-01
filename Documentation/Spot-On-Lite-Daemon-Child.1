@@ -1,4 +1,4 @@
-.TH Spot-On-Lite-Daemon-Child 1 "March 08, 2018"
+.TH Spot-On-Lite-Daemon-Child 1 "April 01, 2018"
 .SH NAME
 Spot-On-Lite-Daemon-Child
 .SH SYNOPSIS
@@ -19,6 +19,9 @@ Messages may be separated via the end-of-message-marker. Assumed to be correct. 
 .TP
 .BI --local-server-file " file"
 Absolute path of the parent daemon's local server file. Assumed to be correct. Only the first instance will be considered.
+.TP
+.BI --local-so-sndbuf " bytes"
+The local-socket SO_SNDBUF value. The bytes parameter must be in the range [4096, 65536]. Only the first instance will be considered.
 .TP
 .BI --log-file " file"
 Absolute path of the log file. Assumed to be correct. Only the first instance will be considered.

@@ -78,6 +78,7 @@ spot_on_lite_daemon_child_tcp_client
  const QString &log_file_name,
  const QString &server_identity,
  const QString &ssl_control_string,
+ const int local_so_sndbuf,
  const int maximum_accumulated_bytes,
  const int silence,
  const int socket_descriptor,
@@ -90,6 +91,7 @@ spot_on_lite_daemon_child_tcp_client
   m_congestion_control_file_name = congestion_control_file_name;
   m_end_of_message_marker = end_of_message_marker;
   m_local_server_file_name = local_server_file_name;
+  m_local_so_sndbuf = qBound(4096, local_so_sndbuf, 65536);
   m_local_socket = 0;
   m_log_file_name = log_file_name;
   m_maximum_accumulated_bytes = maximum_accumulated_bytes;
@@ -1247,11 +1249,10 @@ void spot_on_lite_daemon_child_tcp_client::slot_local_socket_connected(void)
   if(!m_local_socket)
     return;
 
-  int optval = 32 * 1024;
   int sockfd = static_cast<int> (m_local_socket->socketDescriptor());
-  socklen_t optlen = sizeof(optval);
+  socklen_t optlen = sizeof(m_local_so_sndbuf);
 
-  setsockopt(sockfd, SOL_SOCKET, SO_SNDBUF, &optval, optlen);
+  setsockopt(sockfd, SOL_SOCKET, SO_SNDBUF, &m_local_so_sndbuf, optlen);
 }
 
 void spot_on_lite_daemon_child_tcp_client::slot_local_socket_disconnected(void)

@@ -55,6 +55,7 @@ class spot_on_lite_daemon_child_tcp_client: public QSslSocket
      const QString &log_file_name,
      const QString &server_identity,
      const QString &ssl_control_string,
+     const int local_so_sndbuf,
      const int maximum_accumulated_bytes,
      const int silence,
      const int socket_descriptor,
@@ -85,6 +86,7 @@ class spot_on_lite_daemon_child_tcp_client: public QSslSocket
   QTimer m_keep_alive_timer;
   QWaitCondition m_wait_condition;
   bool m_client_role;
+  int m_local_so_sndbuf;
   int m_maximum_accumulated_bytes;
   int m_silence;
   int m_ssl_key_size;

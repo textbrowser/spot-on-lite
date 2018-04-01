@@ -72,6 +72,7 @@ spot_on_lite_daemon::spot_on_lite_daemon
   m_configuration_file_name = configuration_file_name;
   m_congestion_control_lifetime = 90; // Seconds
   m_congestion_control_timer.start(15000); // 15 Seconds
+  m_local_so_sndbuf = 32768; // 32 KiB
   m_local_socket_server_directory_name = "/tmp";
   m_maximum_accumulated_bytes = 8 * 1024 * 1024; // 8 MiB
   m_signal_usr1_socket_notifier = new QSocketNotifier
@@ -94,6 +95,7 @@ spot_on_lite_daemon::spot_on_lite_daemon
 spot_on_lite_daemon::spot_on_lite_daemon(void):QObject()
 {
   m_congestion_control_lifetime = 90; // Seconds
+  m_local_so_sndbuf = 0;
   m_local_socket_server_directory_name = "/tmp";
   m_maximum_accumulated_bytes = 0;
   m_signal_usr1_socket_notifier = 0;
@@ -256,6 +258,8 @@ void spot_on_lite_daemon::prepare_peers(void)
 		<< list.value(7).toUtf8().toBase64()
 		<< "--local-server-file"
 		<< local_server_file_name()
+		<< "--local-so-sndbuf"
+		<< list.value(8)
 		<< "--log-file"
 		<< m_log_file_name
 		<< "--maximum--accumulated-bytes"
@@ -388,7 +392,7 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
     else if(key == "congestion_control_lifetime")
       {
 	bool o = true;
-	int congestion_control_lifetime = settings.value(key).toLongLong(&o);
+	int congestion_control_lifetime = settings.value(key).toInt(&o);
 
 	if(congestion_control_lifetime < 1 || !o)
 	  {
@@ -409,6 +413,28 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
 	else
 	  m_congestion_control_lifetime.fetchAndStoreAcquire
 	    (congestion_control_lifetime);
+      }
+    else if(key == "local_so_sndbuf")
+      {
+	bool o = true;
+	int so_sndbuf = settings.value(key).toInt(&o);
+
+	if(so_sndbuf < 4096 || so_sndbuf > 65536 || !o)
+	  {
+	    if(ok)
+	      *ok = false;
+
+	    std::cerr << "spot_on_lite_daemon::"
+		      << "process_configuration_file(): The "
+		      << "local_so_sndbuf value \""
+		      << settings.value(key).toString().toStdString()
+		      << "\" is invalid. "
+		      << "Expecting a value in the range [4096, 65536]. "
+		      << "Ignoring entry."
+		      << std::endl;
+	  }
+	else
+	  m_local_so_sndbuf = so_sndbuf;
       }
     else if(key == "local_socket_server_directory")
       {
@@ -477,6 +503,30 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
 	else
 	  m_log_file_name = settings.value(key).toString();
       }
+    else if(key == "maximum_accumulated_bytes")
+      {
+	bool o = true;
+	int maximum_accumulated_bytes = settings.value(key).toInt(&o);
+
+	if(maximum_accumulated_bytes < 1024 || !o)
+	  {
+	    if(ok)
+	      *ok = false;
+
+	    std::cerr << "spot_on_lite_daemon::"
+		      << "process_configuration_file(): The "
+		      << "maximum_accumulated_bytes value \""
+		      << settings.value(key).toString().toStdString()
+		      << "\" is invalid. "
+		      << "Expecting a value "
+		      << "in the range [1024, "
+		      << std::numeric_limits<int>::max()
+		      << "]. Ignoring entry."
+		      << std::endl;
+	  }
+	else
+	  m_maximum_accumulated_bytes = maximum_accumulated_bytes;
+      }
     else if(key.startsWith("listener") || key.startsWith("peer"))
       {
 	QStringList list
@@ -491,9 +541,10 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
 	** 5 - Silence Timeout (Seconds)
 	** 6 - SO Linger (Seconds)
 	** 7 - End-of-Message-Marker
+	** 8 - Local SO_SNDBUF
 	*/
 
-	int expected = 8;
+	int expected = 9;
 
 	if(list.size() != expected)
 	  {
@@ -629,9 +680,28 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
 		      << std::endl;
 	  }
 
+	int so_sndbuf = list.at(8).toInt(&o);
+
+	if(!o || so_sndbuf < 4096 || so_sndbuf > 65536)
+	  {
+	    entry_ok = false;
+
+	    if(ok)
+	      *ok = false;
+
+	    std::cerr << "spot_on_lite_daemon::"
+		      << "process_configuration_file(): The "
+		      << "listener/peer \""
+		      << key.toStdString()
+		      << "\" local so_sndbuf value is invalid. "
+		      << "Expecting a value "
+		      << "in the range [4096, 65536]. Ignoring entry."
+		      << std::endl;
+	  }
+
 	if(key.startsWith("listener"))
 	  {
-	    if(listeners.contains(list.at(0) + list.at(1)) && entry_ok)
+	    if(entry_ok && listeners.contains(list.at(0) + list.at(1)))
 	      {
 		if(ok)
 		  *ok = false;
@@ -653,7 +723,7 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
 	  }
 	else
 	  {
-	    if(peers.contains(list.at(0) + list.at(1)) && entry_ok)
+	    if(entry_ok && peers.contains(list.at(0) + list.at(1)))
 	      {
 		if(ok)
 		  *ok = false;
@@ -673,30 +743,6 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
 	    if(entry_ok)
 	      peers[list.at(0) + list.at(1)] = 0;
 	  }
-      }
-    else if(key == "maximum_accumulated_bytes")
-      {
-	bool o = true;
-	int maximum_accumulated_bytes = settings.value(key).toLongLong(&o);
-
-	if(maximum_accumulated_bytes < 1024 || !o)
-	  {
-	    if(ok)
-	      *ok = false;
-
-	    std::cerr << "spot_on_lite_daemon::"
-		      << "process_configuration_file(): The "
-		      << "maximum_accumulated_bytes value \""
-		      << settings.value(key).toString().toStdString()
-		      << "\" is invalid. "
-		      << "Expecting a value "
-		      << "in the range [1024, "
-		      << std::numeric_limits<int>::max()
-		      << "]. Ignoring entry."
-		      << std::endl;
-	  }
-	else
-	  m_maximum_accumulated_bytes = maximum_accumulated_bytes;
       }
 }
 
@@ -748,6 +794,10 @@ void spot_on_lite_daemon::slot_new_local_connection(void)
   if(!socket)
     return;
 
+  int sockfd = static_cast<int> (socket->socketDescriptor());
+  socklen_t optlen = sizeof(m_local_so_sndbuf);
+
+  setsockopt(sockfd, SOL_SOCKET, SO_SNDBUF, &m_local_so_sndbuf, optlen);
   m_local_sockets[socket] = 0;
   connect(socket,
 	  SIGNAL(disconnected(void)),

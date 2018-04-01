@@ -144,6 +144,8 @@ void spot_on_lite_daemon_tcp_listener::incomingConnection
 		list.value(7).toUtf8().toBase64().data(),
 		"--local-server-file",
 		local_server_file_name.data(),
+		"--local-so-sndbuf",
+		list.value(8).toStdString().data(),
 		"--log-file",
 		log_file_name.data(),
 		"--maximum--accumulated-bytes",

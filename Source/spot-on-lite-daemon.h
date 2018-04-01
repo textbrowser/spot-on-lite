@@ -80,6 +80,7 @@ class spot_on_lite_daemon: public QObject
   QTimer m_start_timer;
   QVector<QString> m_listeners_properties;
   QVector<QString> m_peers_properties;
+  int m_local_so_sndbuf;
   int m_maximum_accumulated_bytes;
   static int s_signal_usr1_fd[2];
   static spot_on_lite_daemon *s_instance;
