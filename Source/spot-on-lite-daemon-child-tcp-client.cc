@@ -31,6 +31,7 @@ extern "C"
 #include <openssl/pem.h>
 #include <openssl/ssl.h>
 #include <openssl/x509v3.h>
+#include <sys/socket.h>
 #include <unistd.h>
 }
 
@@ -839,6 +840,10 @@ void spot_on_lite_daemon_child_tcp_client::prepare_local_socket(void)
 	  &m_attempt_local_connection_timer,
 	  SLOT(stop(void)));
   connect(m_local_socket,
+	  SIGNAL(connected(void)),
+	  this,
+	  SLOT(slot_local_socket_connected(void)));
+  connect(m_local_socket,
 	  SIGNAL(disconnected(void)),
 	  this,
 	  SLOT(slot_local_socket_disconnected(void)));
@@ -1235,6 +1240,18 @@ void spot_on_lite_daemon_child_tcp_client::slot_keep_alive_timer_timeout(void)
       abort();
       QCoreApplication::exit(0);
     }
+}
+
+void spot_on_lite_daemon_child_tcp_client::slot_local_socket_connected(void)
+{
+  if(!m_local_socket)
+    return;
+
+  int optval = 32 * 1024;
+  int sockfd = static_cast<int> (m_local_socket->socketDescriptor());
+  socklen_t optlen = sizeof(optval);
+
+  setsockopt(sockfd, SOL_SOCKET, SO_SNDBUF, &optval, optlen);
 }
 
 void spot_on_lite_daemon_child_tcp_client::slot_local_socket_disconnected(void)
