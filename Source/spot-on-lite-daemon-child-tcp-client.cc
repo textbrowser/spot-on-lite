@@ -937,6 +937,16 @@ void spot_on_lite_daemon_child_tcp_client::process_data(void)
 	      break;
 	  }
 
+	  {
+	    QReadLocker lock(&m_remote_identities_mutex);
+
+	    if(m_remote_identities.isEmpty())
+	      {
+		emit write_signal(data);
+		continue;
+	      }
+	  }
+
 	  QByteArray d(data.mid(8 + data.indexOf("content=")).trimmed());
 	  QByteArray h;
 
@@ -974,7 +984,7 @@ void spot_on_lite_daemon_child_tcp_client::process_data(void)
 
 	      if(memcmp(h, hmac))
 		{
-		  emit write(data);
+		  emit write_signal(data);
 		  break;
 		}
 	    }
@@ -1225,8 +1235,9 @@ void spot_on_lite_daemon_child_tcp_client::slot_disconnected(void)
 
 void spot_on_lite_daemon_child_tcp_client::slot_keep_alive_timer_timeout(void)
 {
-  log("spot_on_lite_daemon_child_tcp_client::slot_keep_alive_timer_timeout(): "
-      "aborting!");
+  log(QString("spot_on_lite_daemon_child_tcp_client::"
+	      "slot_keep_alive_timer_timeout(): peer %1:%2 "
+	      "aborting!").arg(peerAddress().toString()).arg(peerPort()));
 
   if(m_client_role)
     {
