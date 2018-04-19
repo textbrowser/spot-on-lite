@@ -915,7 +915,7 @@ void spot_on_lite_daemon_child_tcp_client::process_data(void)
 
   while(!m_abort.fetchAndAddOrdered(0))
     {
-      m_wait_condition.wait(lock.mutex(), 1500);
+      m_wait_condition.wait(lock.mutex());
       lock.unlock();
 
       if(m_abort.fetchAndAddOrdered(0))
