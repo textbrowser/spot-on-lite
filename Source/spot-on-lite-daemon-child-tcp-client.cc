@@ -227,6 +227,9 @@ spot_on_lite_daemon_child_tcp_client
 spot_on_lite_daemon_child_tcp_client::
 ~spot_on_lite_daemon_child_tcp_client()
 {
+  m_abort.fetchAndStoreOrdered(1);
+  m_process_data_future.cancel();
+  m_process_data_future.waitForFinished();
 }
 
 QList<QByteArray> spot_on_lite_daemon_child_tcp_client::
@@ -905,92 +908,79 @@ void spot_on_lite_daemon_child_tcp_client::prepare_ssl_tls_configuration
 
 void spot_on_lite_daemon_child_tcp_client::process_data(void)
 {
-  QMutexLocker lock(&m_wait_condition_mutex);
+  QByteArray data;
+  int index = 0;
 
-  while(!m_abort.fetchAndAddOrdered(0))
+  do
     {
-      m_wait_condition.wait(lock.mutex());
-      lock.unlock();
+      {
+	QWriteLocker lock(&m_local_content_mutex);
 
-      if(m_abort.fetchAndAddOrdered(0))
-	break;
+	index = m_local_content.indexOf(m_end_of_message_marker);
 
-      QByteArray data;
-      int index = 0;
+	if(index > 0)
+	  {
+	    data = m_local_content.
+	      mid(0, index + m_end_of_message_marker.length());
+	    m_local_content.remove(0, data.length());
+	  }
+	else
+	  return;
+      }
 
-      do
+      {
+	QReadLocker lock(&m_remote_identities_mutex);
+
+	if(m_remote_identities.isEmpty())
+	  {
+	    emit write_signal(data);
+	    continue;
+	  }
+      }
+
+      QByteArray d(data.mid(8 + data.indexOf("content=")).trimmed());
+      QByteArray h;
+
+      if(d.contains("\n")) // Spot-On
 	{
-	  {
-	    QWriteLocker lock(&m_local_content_mutex);
+	  QList<QByteArray> list(d.split('\n'));
 
-	    index = m_local_content.indexOf(m_end_of_message_marker);
+	  d = QByteArray::fromBase64(list.value(0)) +
+	    QByteArray::fromBase64(list.value(1));
+	  h = QByteArray::fromBase64(list.value(2)); // Destination.
+	}
+      else
+	{
+	  d = QByteArray::fromBase64(d);
+	  h = d.mid(d.length() - 64);
+	  d = d.mid(0, d.length() - h.length());
+	}
 
-	    if(index > 0)
-	      {
-		data = m_local_content.
-		  mid(0, index + m_end_of_message_marker.length());
-		m_local_content.remove(0, data.length());
-	      }
-	    else
+      QHash<QByteArray, QPair<QByteArray, qint64> > hash;
+
+      {
+	QReadLocker lock(&m_remote_identities_mutex);
+
+	hash = m_remote_identities;
+      }
+
+      QByteArray hmac;
+      QHashIterator<QByteArray, QPair<QByteArray, qint64> > it(hash);
+      spot_on_lite_daemon_sha sha_512;
+
+      while(it.hasNext())
+	{
+	  it.next();
+	  hmac = sha_512.sha_512_hmac(d, it.key());
+
+	  if(memcmp(h, hmac))
+	    {
+	      emit write_signal(data);
 	      break;
-	  }
-
-	  {
-	    QReadLocker lock(&m_remote_identities_mutex);
-
-	    if(m_remote_identities.isEmpty())
-	      {
-		emit write_signal(data);
-		continue;
-	      }
-	  }
-
-	  QByteArray d(data.mid(8 + data.indexOf("content=")).trimmed());
-	  QByteArray h;
-
-	  if(d.contains("\n")) // Spot-On
-	    {
-	      QList<QByteArray> list(d.split('\n'));
-
-	      d = QByteArray::fromBase64(list.value(0)) +
-		QByteArray::fromBase64(list.value(1));
-	      h = QByteArray::fromBase64(list.value(2)); // Destination.
-	    }
-	  else
-	    {
-	      d = QByteArray::fromBase64(d);
-	      h = d.mid(d.length() - 64);
-	      d = d.mid(0, d.length() - h.length());
-	    }
-
-	  QHash<QByteArray, QPair<QByteArray, qint64> > hash;
-
-	  {
-	    QReadLocker lock(&m_remote_identities_mutex);
-
-	    hash = m_remote_identities;
-	  }
-
-	  QByteArray hmac;
-	  QHashIterator<QByteArray, QPair<QByteArray, qint64> > it(hash);
-	  spot_on_lite_daemon_sha sha_512;
-
-	  while(it.hasNext())
-	    {
-	      it.next();
-	      hmac = sha_512.sha_512_hmac(d, it.key());
-
-	      if(memcmp(h, hmac))
-		{
-		  emit write_signal(data);
-		  break;
-		}
 	    }
 	}
-      while(true);
-
-      lock.relock();
     }
+  while(true);
 }
 
 void spot_on_lite_daemon_child_tcp_client::purge_containers(void)
@@ -1296,12 +1286,10 @@ void spot_on_lite_daemon_child_tcp_client::slot_local_socket_ready_read(void)
 	m_local_content.append
 	  (data.mid(0, qAbs(m_maximum_accumulated_bytes -
 			    m_local_content.length())));
-      }
 
-      {
-	QMutexLocker lock(&m_wait_condition_mutex);
-
-	m_wait_condition.wakeAll();
+	if(m_process_data_future.isFinished())
+	  m_process_data_future = QtConcurrent::run
+	    (this, &spot_on_lite_daemon_child_tcp_client::process_data);
       }
     }
   else
@@ -1402,14 +1390,4 @@ slot_write_data(const QByteArray &data)
 {
   write(data);
   flush();
-}
-
-void spot_on_lite_daemon_child_tcp_client::stop(void)
-{
-  m_abort.fetchAndStoreOrdered(1);
-  m_process_data_future.cancel();
-  m_wait_condition_mutex.lock();
-  m_wait_condition.wakeAll();
-  m_wait_condition_mutex.unlock();
-  m_process_data_future.waitForFinished();
 }
