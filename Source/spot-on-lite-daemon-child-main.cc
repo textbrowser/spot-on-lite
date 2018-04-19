@@ -328,6 +328,7 @@ int main(int argc, char *argv[])
 	     ssl_key_size);
 
 	  rc = qapplication.exec();
+	  client.stop();
 	}
     }
   catch(const std::bad_alloc &)

@@ -227,12 +227,6 @@ spot_on_lite_daemon_child_tcp_client
 spot_on_lite_daemon_child_tcp_client::
 ~spot_on_lite_daemon_child_tcp_client()
 {
-  m_abort.fetchAndStoreOrdered(1);
-  m_process_data_future.cancel();
-  m_wait_condition_mutex.lock();
-  m_wait_condition.wakeAll();
-  m_wait_condition_mutex.unlock();
-  m_process_data_future.waitForFinished();
 }
 
 QList<QByteArray> spot_on_lite_daemon_child_tcp_client::
@@ -1408,4 +1402,14 @@ slot_write_data(const QByteArray &data)
 {
   write(data);
   flush();
+}
+
+void spot_on_lite_daemon_child_tcp_client::stop(void)
+{
+  m_abort.fetchAndStoreOrdered(1);
+  m_process_data_future.cancel();
+  m_wait_condition_mutex.lock();
+  m_wait_condition.wakeAll();
+  m_wait_condition_mutex.unlock();
+  m_process_data_future.waitForFinished();
 }
