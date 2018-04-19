@@ -84,6 +84,7 @@ spot_on_lite_daemon_child_tcp_client
  const int socket_descriptor,
  const int ssl_key_size):QSslSocket()
 {
+  m_abort = 0;
   m_attempt_local_connection_timer.setInterval(2500);
   m_attempt_remote_connection_timer.setInterval(2500);
   m_certificates_file_name = certificates_file_name;
@@ -226,6 +227,7 @@ spot_on_lite_daemon_child_tcp_client
 spot_on_lite_daemon_child_tcp_client::
 ~spot_on_lite_daemon_child_tcp_client()
 {
+  m_abort.fetchAndStoreOrdered(1);
   m_process_data_future.cancel();
   m_wait_condition.wakeAll();
   m_wait_condition_mutex.unlock();
@@ -910,12 +912,12 @@ void spot_on_lite_daemon_child_tcp_client::process_data(void)
 {
   QMutexLocker lock(&m_wait_condition_mutex);
 
-  while(!m_process_data_future.isCanceled())
+  while(!m_abort.fetchAndAddOrdered(0))
     {
       m_wait_condition.wait(lock.mutex());
       lock.unlock();
 
-      if(m_process_data_future.isCanceled())
+      if(m_abort.fetchAndAddOrdered(0))
 	break;
 
       QByteArray data;
