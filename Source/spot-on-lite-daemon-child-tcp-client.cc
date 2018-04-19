@@ -229,6 +229,7 @@ spot_on_lite_daemon_child_tcp_client::
 {
   m_abort.fetchAndStoreOrdered(1);
   m_process_data_future.cancel();
+  m_wait_condition_mutex.lock();
   m_wait_condition.wakeAll();
   m_wait_condition_mutex.unlock();
   m_process_data_future.waitForFinished();
@@ -1303,8 +1304,11 @@ void spot_on_lite_daemon_child_tcp_client::slot_local_socket_ready_read(void)
 			    m_local_content.length())));
       }
 
-      m_wait_condition.wakeAll();
-      m_wait_condition_mutex.unlock();
+      {
+	QMutexLocker lock(&m_wait_condition_mutex);
+
+	m_wait_condition.wakeAll();
+      }
     }
   else
     {
