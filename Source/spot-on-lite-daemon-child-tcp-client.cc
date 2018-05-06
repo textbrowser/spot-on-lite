@@ -1277,20 +1277,19 @@ void spot_on_lite_daemon_child_tcp_client::slot_local_socket_ready_read(void)
 
   if(!m_end_of_message_marker.isEmpty() && !m_remote_identities.isEmpty())
     {
-      {
-	QWriteLocker lock(&m_local_content_mutex);
+      QWriteLocker lock(&m_local_content_mutex);
 
-	if(m_local_content.length() >= m_maximum_accumulated_bytes)
-	  m_local_content.clear();
+      if(m_local_content.length() >= m_maximum_accumulated_bytes)
+	m_local_content.clear();
 
-	m_local_content.append
-	  (data.mid(0, qAbs(m_maximum_accumulated_bytes -
-			    m_local_content.length())));
+      m_local_content.append
+	(data.mid(0, qAbs(m_maximum_accumulated_bytes -
+			  m_local_content.length())));
+      lock.unlock();
 
-	if(m_process_data_future.isFinished())
-	  m_process_data_future = QtConcurrent::run
-	    (this, &spot_on_lite_daemon_child_tcp_client::process_data);
-      }
+      if(m_process_data_future.isFinished())
+	m_process_data_future = QtConcurrent::run
+	  (this, &spot_on_lite_daemon_child_tcp_client::process_data);
     }
   else
     {
