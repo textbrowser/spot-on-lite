@@ -1095,6 +1095,9 @@ void spot_on_lite_daemon_child_tcp_client::record_remote_identity
 
 void spot_on_lite_daemon_child_tcp_client::send_identity(const QByteArray &data)
 {
+  if(m_client_role || !m_local_socket)
+    return;
+
   QByteArray results;
 
   results.append("POST HTTP/1.1\r\n"
@@ -1108,8 +1111,8 @@ void spot_on_lite_daemon_child_tcp_client::send_identity(const QByteArray &data)
      QByteArray::number(data.length() +
 			QString("type=0095a&content=\r\n\r\n\r\n").length()));
   results.replace("%2", data);
-  write(results);
-  flush();
+  m_local_socket->write(results);
+  m_local_socket->flush();
 }
 
 void spot_on_lite_daemon_child_tcp_client::
@@ -1184,10 +1187,10 @@ void spot_on_lite_daemon_child_tcp_client::slot_broadcast_capabilities(void)
   flush();
 
   /*
-  ** Identities
+  ** Send identities to other local processes.
   */
 
-  if(m_client_role)
+  if(!m_client_role)
     {
       QHashIterator<QByteArray, QPair<QByteArray, qint64> > it
 	(m_remote_identities);
