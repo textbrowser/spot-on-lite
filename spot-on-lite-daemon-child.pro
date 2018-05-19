@@ -1,5 +1,9 @@
 include (common.pro)
 
+exists(/usr/bin/ecl) {
+DEFINES += SPOTON_LITE_DAEMON_CHILD_ECL_SUPPORTED
+}
+
 macx {
 INCLUDEPATH += /usr/local/opt/openssl/include
 LIBS += -L/usr/local/opt/openssl/lib
