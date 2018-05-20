@@ -21,3 +21,14 @@
 
 (defun s1_512 (x)
   (logxor (ROTR 19 x) (ROTR 61 x) (SHR 6 x)))
+
+(setf s_sha_512_h (make-array 8))
+
+(setf (aref s_sha_512_h 0) (parse-integer "6a09e667f3bcc908" :radix 16))
+(setf (aref s_sha_512_h 1) (parse-integer "bb67ae8584caa73b" :radix 16))
+(setf (aref s_sha_512_h 2) (parse-integer "3c6ef372fe94f82b" :radix 16))
+(setf (aref s_sha_512_h 3) (parse-integer "a54ff53a5f1d36f1" :radix 16))
+(setf (aref s_sha_512_h 4) (parse-integer "510e527fade682d1" :radix 16))
+(setf (aref s_sha_512_h 5) (parse-integer "9b05688c2b3e6c1f" :radix 16))
+(setf (aref s_sha_512_h 6) (parse-integer "1f83d9abfb41bd6b" :radix 16))
+(setf (aref s_sha_512_h 7) (parse-integer "5be0cd19137e2179" :radix 16))
