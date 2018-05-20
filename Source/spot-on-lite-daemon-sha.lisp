@@ -47,7 +47,7 @@
 (defun s1_512 (x)
   (logxor (ROTR 19 x) (ROTR 61 x) (SHR 6 x)))
 
-(setf s_sha_512_h (make-array 8))
+(defparameter s_sha_512_h (setf s_sha_512_h (make-array 8)))
 
 (setf (aref s_sha_512_h 0) (parse-integer "6a09e667f3bcc908" :radix 16))
 (setf (aref s_sha_512_h 1) (parse-integer "bb67ae8584caa73b" :radix 16))
@@ -58,7 +58,7 @@
 (setf (aref s_sha_512_h 6) (parse-integer "1f83d9abfb41bd6b" :radix 16))
 (setf (aref s_sha_512_h 7) (parse-integer "5be0cd19137e2179" :radix 16))
 
-(setf s_sha_512_k (make-array 80))
+(defparameter s_sha_512_k (setf s_sha_512_k (make-array 80)))
 
 (setf (aref s_sha_512_k 0) (parse-integer "428a2f98d728ae22" :radix 16))
 (setf (aref s_sha_512_k 1) (parse-integer "7137449123ef65cd" :radix 16))
@@ -142,5 +142,15 @@
 (setf (aref s_sha_512_k 79) (parse-integer "428a2f98d728ae22" :radix 16))
 
 (defun sha_512 (data)
-  (setf hash (make-array 64))
-  (setf number (make-array 8 :initial-element 0)))
+  (setf H (make-array 8
+		      :element-type '(unsigned-byte 8)
+		      :initial-element 0))
+  (setf N (ceiling (/ (+ (length data) 17.0) 128.0)))
+  (setf hash (make-array 64
+			 :initial-element 0))
+  (setf number (make-array 8
+			   :element-type '(unsigned-byte 8)
+			   :initial-element N))
+  (print H)
+  (print N)
+  (print number))
