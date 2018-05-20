@@ -145,11 +145,19 @@
   (setf H (make-array 8
 		      :element-type '(unsigned-byte 8)
 		      :initial-element 0))
-  (setf N (ceiling (/ (+ (length data) 17.0) 128.0)))
+  (setf N (ceiling (/ (+ (array-total-size data) 17.0) 128.0)))
   (setf number (make-array 8
 			   :element-type '(unsigned-byte 8)
 			   :initial-element N))
-  ;;
+  ;; Padding the hash object (5.1.2).
   (setf hash (make-array (* 128 N)
 			 :element-type '(unsigned-byte 8)
-			 :initial-element 0)))
+			 :initial-element 0))
+  ;; Place the contents of data into the hash container.
+  (dotimes (i (array-total-size data))
+    (setf (aref hash i) (aref data i)))
+  ;; Place 0x80 at hash[data.length()].
+  (setf (aref hash (array-total-size data)) (parse-integer "80" :radix 16))
+  ;; Place the number at the end of the hash container.
+  (print hash)
+)
