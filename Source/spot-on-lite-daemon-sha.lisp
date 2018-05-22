@@ -143,6 +143,31 @@
 (setf (aref s_sha_512_k 78) #x5fcb6fab3ad6faec)
 (setf (aref s_sha_512_k 79) #x6c44198c4a475817)
 
+(defun bytes_to_number (data start)
+  (setf number (logior (logand (aref data (+ start 7)) #xff)
+		       (ash (logand (aref data (+ start 6)) #xff) 8)
+		       (ash (logand (aref data (+ start 5)) #xff) 16)
+		       (ash (logand (aref data (+ start 4)) #xff) 24)
+		       (ash (logand (aref data (+ start 3)) #xff) 32)
+		       (ash (logand (aref data (+ start 2)) #xff) 40)
+		       (ash (logand (aref data (+ start 1)) #xff) 48)
+		       (ash (logand (aref data start) #xff) 56)))
+  number)
+
+(defun number_to_bytes (number)
+  (setf bytes (make-array 8
+			  :element-type '(unsigned-byte 8)
+			  :initial-element 0))
+  (setf (aref bytes 0) (logand (ash number (- 56)) #xff))
+  (setf (aref bytes 1) (logand (ash number (- 48)) #xff))
+  (setf (aref bytes 2) (logand (ash number (- 40)) #xff))
+  (setf (aref bytes 3) (logand (ash number (- 32)) #xff))
+  (setf (aref bytes 4) (logand (ash number (- 24)) #xff))
+  (setf (aref bytes 5) (logand (ash number (- 16)) #xff))
+  (setf (aref bytes 6) (logand (ash number (- 8)) #xff))
+  (setf (aref bytes 7) (logand number #xff))
+  bytes)
+
 (defun sha_512 (data)
   (setf H (make-array 8
 		      :element-type '(unsigned-byte 64)
@@ -152,24 +177,25 @@
   (setf number (make-array 8
 			   :element-type '(unsigned-byte 8)
 			   :initial-element 0))
+
   ;; Padding the hash object (5.1.2).
+
   (setf hash (make-array (* 128 N)
 			 :element-type '(unsigned-byte 8)
 			 :initial-element 0))
-  (setf (aref number 0) (logand (ash d8 (- 56)) #xff))
-  (setf (aref number 1) (logand (ash d8 (- 48)) #xff))
-  (setf (aref number 2) (logand (ash d8 (- 40)) #xff))
-  (setf (aref number 3) (logand (ash d8 (- 32)) #xff))
-  (setf (aref number 4) (logand (ash d8 (- 24)) #xff))
-  (setf (aref number 5) (logand (ash d8 (- 16)) #xff))
-  (setf (aref number 6) (logand (ash d8 (- 8)) #xff))
-  (setf (aref number 7) (logand d8 #xff))
+  (setf number (word_to_bytes d8))
+
   ;; Place the contents of the data container into the hash container.
+
   (dotimes (i (array-total-size data))
     (setf (aref hash i) (aref data i)))
+
   ;; Place 0x80 at hash[data.length()].
+
   (setf (aref hash (array-total-size data)) #x80)
+
   ;; Place the number at the end of the hash container.
+
   (setf (aref hash (- (array-total-size hash) 8)) (aref number 0))
   (setf (aref hash (- (array-total-size hash) 7)) (aref number 1))
   (setf (aref hash (- (array-total-size hash) 6)) (aref number 2))
@@ -178,7 +204,20 @@
   (setf (aref hash (- (array-total-size hash) 3)) (aref number 5))
   (setf (aref hash (- (array-total-size hash) 2)) (aref number 6))
   (setf (aref hash (- (array-total-size hash) 1)) (aref number 7))
+
   ;; Initialize H (5.3.5).
+
   (dotimes (i 8)
     (setf (aref H i) (aref s_sha_512_h i)))
+
+  ;; Let's compute the hash (6.4.2).
+
+  (dotimes (i N)
+    (setf M (make-array 16
+			:element-type '(unsigned-byte 64)
+			:initial-element 0))
+    (setf n 0)
+    (dotimes (j 16)
+      (setf n (bytes_to_number hash (+ (* 128 i) j)))
+      (setf (aref M j) n)))
 )
