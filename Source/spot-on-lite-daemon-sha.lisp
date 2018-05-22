@@ -47,101 +47,101 @@
 (defun s1_512 (x)
   (logxor (ROTR 19 x) (ROTR 61 x) (SHR 6 x)))
 
-(defparameter s_sha_512_h
-  (setf s_sha_512_h (make-array 8 :element-type '(unsigned-byte 64))))
+(defvar s_sha_512_h
+  (setf s_sha_512_h (make-array 8
+				:element-type '(unsigned-byte 64)
+				:initial-contents '(#x6a09e667f3bcc908
+						    #xbb67ae8584caa73b
+						    #x3c6ef372fe94f82b
+						    #xa54ff53a5f1d36f1
+						    #x510e527fade682d1
+						    #x9b05688c2b3e6c1f
+						    #x1f83d9abfb41bd6b
+						    #x5be0cd19137e2179))))
 
-(setf (aref s_sha_512_h 0) #x6a09e667f3bcc908)
-(setf (aref s_sha_512_h 1) #xbb67ae8584caa73b)
-(setf (aref s_sha_512_h 2) #x3c6ef372fe94f82b)
-(setf (aref s_sha_512_h 3) #xa54ff53a5f1d36f1)
-(setf (aref s_sha_512_h 4) #x510e527fade682d1)
-(setf (aref s_sha_512_h 5) #x9b05688c2b3e6c1f)
-(setf (aref s_sha_512_h 6) #x1f83d9abfb41bd6b)
-(setf (aref s_sha_512_h 7) #x5be0cd19137e2179)
-
-(defparameter s_sha_512_k
-  (setf s_sha_512_k (make-array 80 :element-type '(unsigned-byte 64))))
-
-(setf (aref s_sha_512_k 0) #x428a2f98d728ae22)
-(setf (aref s_sha_512_k 1) #x7137449123ef65cd)
-(setf (aref s_sha_512_k 2) #xb5c0fbcfec4d3b2f)
-(setf (aref s_sha_512_k 3) #xe9b5dba58189dbbc)
-(setf (aref s_sha_512_k 4) #x3956c25bf348b538)
-(setf (aref s_sha_512_k 5) #x59f111f1b605d019)
-(setf (aref s_sha_512_k 6) #x923f82a4af194f9b)
-(setf (aref s_sha_512_k 7) #xab1c5ed5da6d8118)
-(setf (aref s_sha_512_k 8) #xd807aa98a3030242)
-(setf (aref s_sha_512_k 9) #x12835b0145706fbe)
-(setf (aref s_sha_512_k 10) #x243185be4ee4b28c)
-(setf (aref s_sha_512_k 11) #x550c7dc3d5ffb4e2)
-(setf (aref s_sha_512_k 12) #x72be5d74f27b896f)
-(setf (aref s_sha_512_k 13) #x80deb1fe3b1696b1)
-(setf (aref s_sha_512_k 14) #x9bdc06a725c71235)
-(setf (aref s_sha_512_k 15) #xc19bf174cf692694)
-(setf (aref s_sha_512_k 16) #xe49b69c19ef14ad2)
-(setf (aref s_sha_512_k 17) #xefbe4786384f25e3)
-(setf (aref s_sha_512_k 18) #x0fc19dc68b8cd5b5)
-(setf (aref s_sha_512_k 19) #x240ca1cc77ac9c65)
-(setf (aref s_sha_512_k 20) #x2de92c6f592b0275)
-(setf (aref s_sha_512_k 21) #x4a7484aa6ea6e483)
-(setf (aref s_sha_512_k 22) #x5cb0a9dcbd41fbd4)
-(setf (aref s_sha_512_k 23) #x76f988da831153b5)
-(setf (aref s_sha_512_k 24) #x983e5152ee66dfab)
-(setf (aref s_sha_512_k 25) #xa831c66d2db43210)
-(setf (aref s_sha_512_k 26) #xb00327c898fb213f)
-(setf (aref s_sha_512_k 27) #xbf597fc7beef0ee4)
-(setf (aref s_sha_512_k 28) #xc6e00bf33da88fc2)
-(setf (aref s_sha_512_k 29) #xd5a79147930aa725)
-(setf (aref s_sha_512_k 30) #x06ca6351e003826f)
-(setf (aref s_sha_512_k 31) #x142929670a0e6e70)
-(setf (aref s_sha_512_k 32) #x27b70a8546d22ffc)
-(setf (aref s_sha_512_k 33) #x2e1b21385c26c926)
-(setf (aref s_sha_512_k 34) #x4d2c6dfc5ac42aed)
-(setf (aref s_sha_512_k 35) #x53380d139d95b3df)
-(setf (aref s_sha_512_k 36) #x650a73548baf63de)
-(setf (aref s_sha_512_k 37) #x766a0abb3c77b2a8)
-(setf (aref s_sha_512_k 38) #x81c2c92e47edaee6)
-(setf (aref s_sha_512_k 39) #x92722c851482353b)
-(setf (aref s_sha_512_k 40) #xa2bfe8a14cf10364)
-(setf (aref s_sha_512_k 41) #xa81a664bbc423001)
-(setf (aref s_sha_512_k 42) #xc24b8b70d0f89791)
-(setf (aref s_sha_512_k 43) #xc76c51a30654be30)
-(setf (aref s_sha_512_k 44) #xd192e819d6ef5218)
-(setf (aref s_sha_512_k 45) #xd69906245565a910)
-(setf (aref s_sha_512_k 46) #xf40e35855771202a)
-(setf (aref s_sha_512_k 47) #x106aa07032bbd1b8)
-(setf (aref s_sha_512_k 48) #x19a4c116b8d2d0c8)
-(setf (aref s_sha_512_k 49) #x1e376c085141ab53)
-(setf (aref s_sha_512_k 50) #x2748774cdf8eeb99)
-(setf (aref s_sha_512_k 51) #x34b0bcb5e19b48a8)
-(setf (aref s_sha_512_k 52) #x391c0cb3c5c95a63)
-(setf (aref s_sha_512_k 53) #x4ed8aa4ae3418acb)
-(setf (aref s_sha_512_k 54) #x5b9cca4f7763e373)
-(setf (aref s_sha_512_k 55) #x682e6ff3d6b2b8a3)
-(setf (aref s_sha_512_k 56) #x748f82ee5defb2fc)
-(setf (aref s_sha_512_k 57) #x78a5636f43172f60)
-(setf (aref s_sha_512_k 58) #x84c87814a1f0ab72)
-(setf (aref s_sha_512_k 59) #x8cc702081a6439ec)
-(setf (aref s_sha_512_k 60) #x90befffa23631e28)
-(setf (aref s_sha_512_k 61) #xa4506cebde82bde9)
-(setf (aref s_sha_512_k 62) #xbef9a3f7b2c67915)
-(setf (aref s_sha_512_k 63) #xc67178f2e372532b)
-(setf (aref s_sha_512_k 64) #xca273eceea26619c)
-(setf (aref s_sha_512_k 65) #xd186b8c721c0c207)
-(setf (aref s_sha_512_k 66) #xeada7dd6cde0eb1e)
-(setf (aref s_sha_512_k 67) #xf57d4f7fee6ed178)
-(setf (aref s_sha_512_k 68) #x06f067aa72176fba)
-(setf (aref s_sha_512_k 69) #x0a637dc5a2c898a6)
-(setf (aref s_sha_512_k 70) #x113f9804bef90dae)
-(setf (aref s_sha_512_k 71) #x1b710b35131c471b)
-(setf (aref s_sha_512_k 72) #x28db77f523047d84)
-(setf (aref s_sha_512_k 73) #x32caab7b40c72493)
-(setf (aref s_sha_512_k 74) #x3c9ebe0a15c9bebc)
-(setf (aref s_sha_512_k 75) #x431d67c49c100d4c)
-(setf (aref s_sha_512_k 76) #x4cc5d4becb3e42b6)
-(setf (aref s_sha_512_k 77) #x597f299cfc657e2a)
-(setf (aref s_sha_512_k 78) #x5fcb6fab3ad6faec)
-(setf (aref s_sha_512_k 79) #x6c44198c4a475817)
+(defvar s_sha_512_k
+  (setf s_sha_512_k (make-array 80
+				:element-type '(unsigned-byte 64)
+				:initial-contents '(#x428a2f98d728ae22
+						    #x7137449123ef65cd
+						    #xb5c0fbcfec4d3b2f
+						    #xe9b5dba58189dbbc
+						    #x3956c25bf348b538
+						    #x59f111f1b605d019
+						    #x923f82a4af194f9b
+						    #xab1c5ed5da6d8118
+						    #xd807aa98a3030242
+						    #x12835b0145706fbe
+						    #x243185be4ee4b28c
+						    #x550c7dc3d5ffb4e2
+						    #x72be5d74f27b896f
+						    #x80deb1fe3b1696b1
+						    #x9bdc06a725c71235
+						    #xc19bf174cf692694
+						    #xe49b69c19ef14ad2
+						    #xefbe4786384f25e3
+						    #x0fc19dc68b8cd5b5
+						    #x240ca1cc77ac9c65
+						    #x2de92c6f592b0275
+						    #x4a7484aa6ea6e483
+						    #x5cb0a9dcbd41fbd4
+						    #x76f988da831153b5
+						    #x983e5152ee66dfab
+						    #xa831c66d2db43210
+						    #xb00327c898fb213f
+						    #xbf597fc7beef0ee4
+						    #xc6e00bf33da88fc2
+						    #xd5a79147930aa725
+						    #x06ca6351e003826f
+						    #x142929670a0e6e70
+						    #x27b70a8546d22ffc
+						    #x2e1b21385c26c926
+						    #x4d2c6dfc5ac42aed
+						    #x53380d139d95b3df
+						    #x650a73548baf63de
+						    #x766a0abb3c77b2a8
+						    #x81c2c92e47edaee6
+						    #x92722c851482353b
+						    #xa2bfe8a14cf10364
+						    #xa81a664bbc423001
+						    #xc24b8b70d0f89791
+						    #xc76c51a30654be30
+						    #xd192e819d6ef5218
+						    #xd69906245565a910
+						    #xf40e35855771202a
+						    #x106aa07032bbd1b8
+						    #x19a4c116b8d2d0c8
+						    #x1e376c085141ab53
+						    #x2748774cdf8eeb99
+						    #x34b0bcb5e19b48a8
+						    #x391c0cb3c5c95a63
+						    #x4ed8aa4ae3418acb
+						    #x5b9cca4f7763e373
+						    #x682e6ff3d6b2b8a3
+						    #x748f82ee5defb2fc
+						    #x78a5636f43172f60
+						    #x84c87814a1f0ab72
+						    #x8cc702081a6439ec
+						    #x90befffa23631e28
+						    #xa4506cebde82bde9
+						    #xbef9a3f7b2c67915
+						    #xc67178f2e372532b
+						    #xca273eceea26619c
+						    #xd186b8c721c0c207
+						    #xeada7dd6cde0eb1e
+						    #xf57d4f7fee6ed178
+						    #x06f067aa72176fba
+						    #x0a637dc5a2c898a6
+						    #x113f9804bef90dae
+						    #x1b710b35131c471b
+						    #x28db77f523047d84
+						    #x32caab7b40c72493
+						    #x3c9ebe0a15c9bebc
+						    #x431d67c49c100d4c
+						    #x4cc5d4becb3e42b6
+						    #x597f299cfc657e2a
+						    #x5fcb6fab3ad6faec
+						    #x6c44198c4a475817))))
 
 (defun bytes_to_number (data start)
   (setf number (logior (logand (aref data (+ start 7)) #xff)
@@ -183,7 +183,7 @@
   (setf hash (make-array (* 128 N)
 			 :element-type '(unsigned-byte 8)
 			 :initial-element 0))
-  (setf number (word_to_bytes d8))
+  (setf number (number_to_bytes d8))
 
   ;; Place the contents of the data container into the hash container.
 
