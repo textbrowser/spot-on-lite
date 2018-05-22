@@ -24,28 +24,36 @@
 ;; SPOT-ON-LITE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 (defun Ch (x y z)
-  (logxor (logand x y) (logand (lognot x) z)))
+  (logxor (logand x y) (logand (lognot x) z))
+)
 
 (defun Maj (x y z)
-  (logxor (logand x y) (logand x z) (logand y z)))
+  (logxor (logand x y) (logand x z) (logand y z))
+)
 
 (defun ROTR (n x)
-  (logior (ash x (- n)) (ash x (- 64 n))))
+  (logior (ash x (- n)) (ash x (- 64 n)))
+)
 
 (defun S0_512 (x)
-  (logxor (ROTR 28 x) (ROTR 34 x) (ROTR 39 x)))
+  (logxor (ROTR 28 x) (ROTR 34 x) (ROTR 39 x))
+)
 
 (defun S1_512 (x)
-  (logxor (ROTR 14 x) (ROTR 18 x) (ROTR 41 x)))
+  (logxor (ROTR 14 x) (ROTR 18 x) (ROTR 41 x))
+)
 
 (defun SHR (n x)
-  (ash x (- n)))
+  (ash x (- n))
+)
 
 (defun s0_512 (x)
-  (logxor (ROTR 1 x) (ROTR 8 x) (SHR 7 x)))
+  (logxor (ROTR 1 x) (ROTR 8 x) (SHR 7 x))
+)
 
 (defun s1_512 (x)
-  (logxor (ROTR 19 x) (ROTR 61 x) (SHR 6 x)))
+  (logxor (ROTR 19 x) (ROTR 61 x) (SHR 6 x))
+)
 
 (defvar s_sha_512_h
   (setf s_sha_512_h (make-array 8
@@ -152,7 +160,8 @@
 		       (ash (logand (aref data (+ start 2)) #xff) 40)
 		       (ash (logand (aref data (+ start 1)) #xff) 48)
 		       (ash (logand (aref data start) #xff) 56)))
-  number)
+  number
+)
 
 (defun number_to_bytes (number)
   (setf bytes (make-array 8
@@ -166,7 +175,8 @@
   (setf (aref bytes 5) (logand (ash number (- 16)) #xff))
   (setf (aref bytes 6) (logand (ash number (- 8)) #xff))
   (setf (aref bytes 7) (logand number #xff))
-  bytes)
+  bytes
+)
 
 (defun sha_512 (data)
   (setf H (make-array 8
@@ -217,9 +227,12 @@
 			:element-type '(unsigned-byte 64)
 			:initial-element 0))
     (setf n 0)
-    (dotimes (j 16)
-      (setf n (bytes_to_number hash (+ (* 128 i) j)))
-      (setf (aref M j) n)))
+
+    (loop for j from 0 to 120 by 8 do
+	  (setf n (bytes_to_number hash (+ (* 128 i) j)))
+	  (setf (aref M (/ j 8)) n)))
 )
 
-(defun test1 () (bytes_to_number (number_to_bytes 1234567890123456789) 0))
+(defun test1 ()
+  (bytes_to_number (number_to_bytes 1234567890123456789) 0)
+)
