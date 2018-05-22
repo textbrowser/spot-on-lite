@@ -221,3 +221,5 @@
       (setf n (bytes_to_number hash (+ (* 128 i) j)))
       (setf (aref M j) n)))
 )
+
+(defun test1 () (bytes_to_number (number_to_bytes 1234567890123456789) 0))
