@@ -31,9 +31,13 @@
   (logxor (logand x y) (logand x z) (logand y z))
 )
 
+;;(defun ROTR (n x)
+;;  (logior (logand (ash x (- (mod n 64))) (1- (ash 1 64)))
+;;	  (logand (ash x (- 64 (mod n 64))) (1- (ash 1 64))))
+;;)
+
 (defun ROTR (n x)
-  (logior (logand (ash x (- (mod n 64))) (1- (ash 1 64)))
-	  (logand (ash x (- 64 (mod n 64))) (1- (ash 1 64))))
+  (logior (ash x (- n)) (ash x (- 64 n)))
 )
 
 (defun SA0_512 (x)
@@ -289,19 +293,25 @@
 
 (defun test2 ()
   ;; "abc"
-  (write-to-string (sha_512 (make-array 3
-					:element-type '(unsigned-byte 8)
-					:initial-contents '(97 98 99)))
-		   :base 16)
+  (print "DDAF35A193617ABA CC417349AE204131 12E6FA4E89A97EA2 0A9EEEE64B55D39A")
+  (print "2192992A274FC1A8 36BA3C23A3FEEBBD 454D4423643CE80E 2A9AC94FA54CA49F")
+  (print (write-to-string (sha_512 (make-array 3
+					       :element-type '(unsigned-byte 8)
+					       :initial-contents '(97 98 99)))
+			  :base 16))
+  nil
 )
 
 (defun test3()
   ;; "abcdefghbcdefghicdefghijdefghijkefghijklfghijklmghijklmn
   ;;  hijklmnoijklmnopjklmnopqklmnopqrlmnopqrsmnopqrstnopqrstu"
+  (print "8E959B75DAE313DA 8CF4F72814FC143F 8F7779C6EB9F7FA1 7299AEADB6889018")
+  (print "501D289E4900F7E4 331B99DEC4B5433A C7D329EEB6DD2654 5E96E55B874BE909")
   (setf a "abcdefghbcdefghicdefghijdefghijkefghijklfghijklmghijklmnhijklmnoijklmnopjklmnopqklmnopqrlmnopqrsmnopqrstnopqrstu")
   (setf d (make-array (length a)
 		      :element-type '(unsigned-byte 8)))
   (loop for i from 0 to (1- (length a)) do
 	(setf (aref d i) (char-code (aref a i))))
-  (write-to-string (sha_512 d) :base 16)
+  (print (write-to-string (sha_512 d) :base 16))
+  nil
 )
