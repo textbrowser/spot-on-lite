@@ -179,12 +179,6 @@
   bytes
 )
 
-(defun print_array_as_hex (data)
-  (loop for i from 0 to (- (array-total-size data) 1) do
-	(princ (write-to-string (aref data i) :base 16))
-	(princ " "))
-)
-
 (defun sha_512 (data)
   ;; Initializations.
 
@@ -307,7 +301,7 @@
   (setf a "abcdefghbcdefghicdefghijdefghijkefghijklfghijklmghijklmnhijklmnoijklmnopjklmnopqklmnopqrlmnopqrsmnopqrstnopqrstu")
   (setf d (make-array (length a)
 		      :element-type '(unsigned-byte 8)))
-  (loop for i from 0 to (- (length a) 1) do
+  (loop for i from 0 to (1- (length a)) do
 	(setf (aref d i) (char-code (aref a i))))
   (write-to-string (sha_512 d) :base 16)
 )
