@@ -300,3 +300,14 @@
 					:initial-contents '(97 98 99)))
 		   :base 16)
 )
+
+(defun test3()
+  ;; "abcdefghbcdefghicdefghijdefghijkefghijklfghijklmghijklmn
+  ;;  hijklmnoijklmnopjklmnopqklmnopqrlmnopqrsmnopqrstnopqrstu"
+  (setf a "abcdefghbcdefghicdefghijdefghijkefghijklfghijklmghijklmnhijklmnoijklmnopjklmnopqklmnopqrlmnopqrsmnopqrstnopqrstu")
+  (setf d (make-array (length a)
+		      :element-type '(unsigned-byte 8)))
+  (loop for i from 0 to (- (length a) 1) do
+	(setf (aref d i) (char-code (aref a i))))
+  (write-to-string (sha_512 d) :base 16)
+)
