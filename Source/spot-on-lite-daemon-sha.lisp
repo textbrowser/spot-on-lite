@@ -32,26 +32,27 @@
 )
 
 (defun ROTR (n x)
-  (logior (ash x (- n)) (ash x (- 64 n)))
+  (logior (logand (ash x (- (mod n 64))) (1- (ash 1 64)))
+	  (logand (ash x (- 64 (mod n 64))) (1- (ash 1 64))))
 )
 
-(defun S0_512 (x)
+(defun SA0_512 (x)
   (logxor (ROTR 28 x) (ROTR 34 x) (ROTR 39 x))
 )
 
-(defun S1_512 (x)
+(defun SA1_512 (x)
   (logxor (ROTR 14 x) (ROTR 18 x) (ROTR 41 x))
 )
 
 (defun SHR (n x)
-  (ash x (- n))
+  (logand (ash x (- n)) (1- (ash 1 64)))
 )
 
-(defun s0_512 (x)
+(defun sb0_512 (x)
   (logxor (ROTR 1 x) (ROTR 8 x) (SHR 7 x))
 )
 
-(defun s1_512 (x)
+(defun sb1_512 (x)
   (logxor (ROTR 19 x) (ROTR 61 x) (SHR 6 x))
 )
 
@@ -178,10 +179,18 @@
   bytes
 )
 
+(defun print_array_as_hex (data)
+  (loop for i from 0 to (- (array-total-size data) 1) do
+	(princ (write-to-string (aref data i) :base 16))
+	(princ " "))
+)
+
 (defun sha_512 (data)
-  (setf H (make-array 8
-		      :element-type '(unsigned-byte 64)
-		      :initial-element 0))
+  ;; Initializations.
+
+  (setf HH (make-array 8
+		       :element-type '(unsigned-byte 64)
+		       :initial-element 0))
   (setf N (ceiling (/ (+ (array-total-size data) 17.0) 128.0)))
   (setf d8 (* (array-total-size data) 8))
   (setf number (make-array 8
@@ -215,10 +224,10 @@
   (setf (aref hash (- (array-total-size hash) 2)) (aref number 6))
   (setf (aref hash (- (array-total-size hash) 1)) (aref number 7))
 
-  ;; Initialize H (5.3.5).
+  ;; Initialize HH (5.3.5).
 
   (dotimes (i 8)
-    (setf (aref H i) (aref s_sha_512_h i)))
+    (setf (aref HH i) (aref s_sha_512_h i)))
 
   ;; Let's compute the hash (6.4.2).
 
@@ -226,13 +235,68 @@
     (setf M (make-array 16
 			:element-type '(unsigned-byte 64)
 			:initial-element 0))
-    (setf n 0)
 
     (loop for j from 0 to 120 by 8 do
 	  (setf n (bytes_to_number hash (+ (* 128 i) j)))
-	  (setf (aref M (/ j 8)) n)))
+	  (setf (aref M (/ j 8)) n))
+
+    (setf W (make-array 80
+			:element-type '(unsigned-byte 64)
+			:initial-element 0))
+
+    (loop for tt from 0 to 15 do
+	  (setf (aref W tt) (aref M tt)))
+
+    (loop for tt from 16 to 79 do
+	  (setf (aref W tt)
+		(logand (+ (sb1_512 (aref W (- tt 2)))
+			   (aref W (- tt 7))
+			   (sb0_512 (aref W (- tt 15)))
+			   (aref W (- tt 16))) #xffffffffffffffff)))
+
+    (setf a (aref HH 0))
+    (setf b (aref HH 1))
+    (setf c (aref HH 2))
+    (setf d (aref HH 3))
+    (setf e (aref HH 4))
+    (setf f (aref HH 5))
+    (setf g (aref HH 6))
+    (setf h (aref HH 7))
+
+    (loop for tt from 0 to 79 do
+	  (setf K (aref s_sha_512_k tt))
+	  (setf T1 (logand (+ h (SA1_512 e) (Ch e f g) K (aref W tt))
+			   #xffffffffffffffff))
+	  (setf T2 (logand (+ (SA0_512 a) (Maj a b c))
+			   #xffffffffffffffff))
+	  (setf h g)
+	  (setf g f)
+	  (setf f e)
+	  (setf e (logand (+ d T1) #xffffffffffffffff))
+	  (setf d c)
+	  (setf c b)
+	  (setf b a)
+	  (setf a (logand (+ T1 T2) #xffffffffffffffff)))
+
+    (setf (aref HH 0) (logand (+ (aref HH 0) a) #xffffffffffffffff))
+    (setf (aref HH 1) (logand (+ (aref HH 1) b) #xffffffffffffffff))
+    (setf (aref HH 2) (logand (+ (aref HH 2) c) #xffffffffffffffff))
+    (setf (aref HH 3) (logand (+ (aref HH 3) d) #xffffffffffffffff))
+    (setf (aref HH 4) (logand (+ (aref HH 4) e) #xffffffffffffffff))
+    (setf (aref HH 5) (logand (+ (aref HH 5) f) #xffffffffffffffff))
+    (setf (aref HH 6) (logand (+ (aref HH 6) g) #xffffffffffffffff))
+    (setf (aref HH 7) (logand (+ (aref HH 7) h) #xffffffffffffffff)))
+  HH
 )
 
 (defun test1 ()
   (bytes_to_number (number_to_bytes 1234567890123456789) 0)
+)
+
+(defun test2 ()
+  ;; "abc"
+  (write-to-string (sha_512 (make-array 3
+					:element-type '(unsigned-byte 8)
+					:initial-contents '(97 98 99)))
+		   :base 16)
 )
