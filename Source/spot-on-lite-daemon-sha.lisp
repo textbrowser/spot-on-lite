@@ -184,6 +184,19 @@
 )
 
 (defun sha_512 (data)
+  (declare (type (unsigned-byte 64) K))
+  (declare (type (unsigned-byte 64) T1))
+  (declare (type (unsigned-byte 64) T2))
+  (declare (type (unsigned-byte 64) a))
+  (declare (type (unsigned-byte 64) b))
+  (declare (type (unsigned-byte 64) c))
+  (declare (type (unsigned-byte 64) d))
+  (declare (type (unsigned-byte 64) d8))
+  (declare (type (unsigned-byte 64) e))
+  (declare (type (unsigned-byte 64) f))
+  (declare (type (unsigned-byte 64) g))
+  (declare (type (unsigned-byte 64) h))
+
   ;; Initializations.
 
   (setf HH (make-array 8
@@ -247,10 +260,10 @@
 
     (loop for tt from 16 to 79 do
 	  (setf (aref W tt)
-		(logand (+ (sb1_512 (aref W (- tt 2)))
-			   (aref W (- tt 7))
-			   (sb0_512 (aref W (- tt 15)))
-			   (aref W (- tt 16))) #xffffffffffffffff)))
+		(mod (+ (sb1_512 (aref W (- tt 2)))
+			(aref W (- tt 7))
+			(sb0_512 (aref W (- tt 15)))
+			(aref W (- tt 16))) (expt 2 64))))
 
     (setf a (aref HH 0))
     (setf b (aref HH 1))
@@ -263,27 +276,25 @@
 
     (loop for tt from 0 to 79 do
 	  (setf K (aref s_sha_512_k tt))
-	  (setf T1 (logand (+ h (SA1_512 e) (Ch e f g) K (aref W tt))
-			   #xffffffffffffffff))
-	  (setf T2 (logand (+ (SA0_512 a) (Maj a b c))
-			   #xffffffffffffffff))
+	  (setf T1 (mod (+ h (SA1_512 e) (Ch e f g) K (aref W tt)) (expt 2 64)))
+	  (setf T2 (mod (+ (SA0_512 a) (Maj a b c)) (expt 2 64)))
 	  (setf h g)
 	  (setf g f)
 	  (setf f e)
-	  (setf e (logand (+ d T1) #xffffffffffffffff))
+	  (setf e (mod (+ d T1) (expt 2 64)))
 	  (setf d c)
 	  (setf c b)
 	  (setf b a)
-	  (setf a (logand (+ T1 T2) #xffffffffffffffff)))
+	  (setf a (mod (+ T1 T2) (expt 2 64))))
 
-    (setf (aref HH 0) (logand (+ (aref HH 0) a) #xffffffffffffffff))
-    (setf (aref HH 1) (logand (+ (aref HH 1) b) #xffffffffffffffff))
-    (setf (aref HH 2) (logand (+ (aref HH 2) c) #xffffffffffffffff))
-    (setf (aref HH 3) (logand (+ (aref HH 3) d) #xffffffffffffffff))
-    (setf (aref HH 4) (logand (+ (aref HH 4) e) #xffffffffffffffff))
-    (setf (aref HH 5) (logand (+ (aref HH 5) f) #xffffffffffffffff))
-    (setf (aref HH 6) (logand (+ (aref HH 6) g) #xffffffffffffffff))
-    (setf (aref HH 7) (logand (+ (aref HH 7) h) #xffffffffffffffff)))
+    (setf (aref HH 0) (mod (+ (aref HH 0) a) (expt 2 64)))
+    (setf (aref HH 1) (mod (+ (aref HH 1) b) (expt 2 64)))
+    (setf (aref HH 2) (mod (+ (aref HH 2) c) (expt 2 64)))
+    (setf (aref HH 3) (mod (+ (aref HH 3) d) (expt 2 64)))
+    (setf (aref HH 4) (mod (+ (aref HH 4) e) (expt 2 64)))
+    (setf (aref HH 5) (mod (+ (aref HH 5) f) (expt 2 64)))
+    (setf (aref HH 6) (mod (+ (aref HH 6) g) (expt 2 64)))
+    (setf (aref HH 7) (mod (+ (aref HH 7) h) (expt 2 64))))
   HH
 )
 
