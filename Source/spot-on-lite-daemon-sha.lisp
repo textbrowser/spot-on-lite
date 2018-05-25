@@ -23,6 +23,8 @@
 ;; (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 ;; SPOT-ON-LITE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+(defconstant pow_2_64 (expt 2 64))
+
 (defun Ch (x y z)
   (logxor (logand x y) (logand (lognot x) z))
 )
@@ -30,11 +32,6 @@
 (defun Maj (x y z)
   (logxor (logand x y) (logand x z) (logand y z))
 )
-
-;;(defun ROTR (n x)
-;;  (logior (logand (ash x (- (mod n 64))) (1- (ash 1 64)))
-;;	  (logand (ash x (- 64 (mod n 64))) (1- (ash 1 64))))
-;;)
 
 (defun ROTR (n x)
   (logior (ash x (- n)) (ash x (- 64 n)))
@@ -263,7 +260,7 @@
 		(mod (+ (sb1_512 (aref W (- tt 2)))
 			(aref W (- tt 7))
 			(sb0_512 (aref W (- tt 15)))
-			(aref W (- tt 16))) (expt 2 64))))
+			(aref W (- tt 16))) pow_2_64)))
 
     (setf a (aref HH 0))
     (setf b (aref HH 1))
@@ -276,25 +273,25 @@
 
     (loop for tt from 0 to 79 do
 	  (setf K (aref s_sha_512_k tt))
-	  (setf T1 (mod (+ h (SA1_512 e) (Ch e f g) K (aref W tt)) (expt 2 64)))
-	  (setf T2 (mod (+ (SA0_512 a) (Maj a b c)) (expt 2 64)))
+	  (setf T1 (mod (+ h (SA1_512 e) (Ch e f g) K (aref W tt)) pow_2_64))
+	  (setf T2 (mod (+ (SA0_512 a) (Maj a b c)) pow_2_64))
 	  (setf h g)
 	  (setf g f)
 	  (setf f e)
-	  (setf e (mod (+ d T1) (expt 2 64)))
+	  (setf e (mod (+ d T1) pow_2_64))
 	  (setf d c)
 	  (setf c b)
 	  (setf b a)
-	  (setf a (mod (+ T1 T2) (expt 2 64))))
+	  (setf a (mod (+ T1 T2) pow_2_64)))
 
-    (setf (aref HH 0) (mod (+ (aref HH 0) a) (expt 2 64)))
-    (setf (aref HH 1) (mod (+ (aref HH 1) b) (expt 2 64)))
-    (setf (aref HH 2) (mod (+ (aref HH 2) c) (expt 2 64)))
-    (setf (aref HH 3) (mod (+ (aref HH 3) d) (expt 2 64)))
-    (setf (aref HH 4) (mod (+ (aref HH 4) e) (expt 2 64)))
-    (setf (aref HH 5) (mod (+ (aref HH 5) f) (expt 2 64)))
-    (setf (aref HH 6) (mod (+ (aref HH 6) g) (expt 2 64)))
-    (setf (aref HH 7) (mod (+ (aref HH 7) h) (expt 2 64))))
+    (setf (aref HH 0) (mod (+ (aref HH 0) a) pow_2_64))
+    (setf (aref HH 1) (mod (+ (aref HH 1) b) pow_2_64))
+    (setf (aref HH 2) (mod (+ (aref HH 2) c) pow_2_64))
+    (setf (aref HH 3) (mod (+ (aref HH 3) d) pow_2_64))
+    (setf (aref HH 4) (mod (+ (aref HH 4) e) pow_2_64))
+    (setf (aref HH 5) (mod (+ (aref HH 5) f) pow_2_64))
+    (setf (aref HH 6) (mod (+ (aref HH 6) g) pow_2_64))
+    (setf (aref HH 7) (mod (+ (aref HH 7) h) pow_2_64)))
   HH
 )
 
