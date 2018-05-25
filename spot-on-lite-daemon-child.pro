@@ -2,6 +2,9 @@ include (common.pro)
 
 exists(/usr/bin/ecl) {
 DEFINES += SPOTON_LITE_DAEMON_CHILD_ECL_SUPPORTED
+LIBS += -lecl
+QMAKE_CXXFLAGS += `ecl-config --cflags`
+QMAKE_LFLAGS += `ecl-config --ldflags`
 }
 
 macx {
