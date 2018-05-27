@@ -207,7 +207,9 @@
 	(N 0)
 	(T1 0)
 	(T2 0)
-	(W 0)
+	(W (make-array 80
+		       :element-type '(unsigned-byte 64)
+		       :initial-element 0))
 	(a 0)
 	(b 0)
 	(c 0)
@@ -263,10 +265,6 @@
       (loop for j from 0 to 120 by 8 do
 	    (setf n (bytes_to_number hash (+ (* 128 i) j)))
 	    (setf (aref M (/ j 8)) n))
-
-      (setf W (make-array 80
-			  :element-type '(unsigned-byte 64)
-			  :initial-element 0))
 
       (loop for tt from 0 to 15 do
 	    (setf (aref W tt) (aref M tt)))
