@@ -197,37 +197,35 @@
 
   ;; Initializations.
 
-  (let ((HH (make-array 8
+  (let* ((HH (make-array 8
+			 :element-type '(unsigned-byte 64)
+			 :initial-element 0))
+	 (K 0)
+	 (M (make-array 16
 			:element-type '(unsigned-byte 64)
 			:initial-element 0))
-	(K 0)
-	(M (make-array 16
-		       :element-type '(unsigned-byte 64)
-		       :initial-element 0))
-	(N 0)
-	(T1 0)
-	(T2 0)
-	(W (make-array 80
-		       :element-type '(unsigned-byte 64)
-		       :initial-element 0))
-	(a 0)
-	(b 0)
-	(c 0)
-	(d 0)
-	(d8 0)
-	(e 0)
-	(f 0)
-	(g 0)
-	(h 0)
-	(hash (make-array (* 128 (ceiling (/ (+ (array-total-size data)
-						17.0) 128.0)))
-			  :element-type '(unsigned-byte 8)
-			  :initial-element 0))
-	(number (make-array 8
-			    :element-type '(unsigned-byte 8)
-			    :initial-element 0)))
+	 (N (ceiling (/ (+ (array-total-size data) 17.0) 128.0)))
+	 (T1 0)
+	 (T2 0)
+	 (W (make-array 80
+			:element-type '(unsigned-byte 64)
+			:initial-element 0))
+	 (a 0)
+	 (b 0)
+	 (c 0)
+	 (d 0)
+	 (d8 0)
+	 (e 0)
+	 (f 0)
+	 (g 0)
+	 (h 0)
+	 (hash (make-array (* 128 N)
+			   :element-type '(unsigned-byte 8)
+			   :initial-element 0))
+	 (number (make-array 8
+			     :element-type '(unsigned-byte 8)
+			     :initial-element 0)))
 
-    (setf N (ceiling (/ (+ (array-total-size data) 17.0) 128.0)))
     (setf d8 (* (array-total-size data) 8))
 
     ;; Padding the hash object (5.1.2).
@@ -329,9 +327,9 @@
   ;;  hijklmnoijklmnopjklmnopqklmnopqrlmnopqrsmnopqrstnopqrstu"
   (print "8E959B75DAE313DA 8CF4F72814FC143F 8F7779C6EB9F7FA1 7299AEADB6889018")
   (print "501D289E4900F7E4 331B99DEC4B5433A C7D329EEB6DD2654 5E96E55B874BE909")
-  (let ((a "abcdefghbcdefghicdefghijdefghijkefghijklfghijklmghijklmnhijklmnoijklmnopjklmnopqklmnopqrlmnopqrsmnopqrstnopqrstu")
-	(d (make-array 112
-		       :element-type '(unsigned-byte 8))))
+  (let* ((a "abcdefghbcdefghicdefghijdefghijkefghijklfghijklmghijklmnhijklmnoijklmnopjklmnopqklmnopqrlmnopqrsmnopqrstnopqrstu")
+	 (d (make-array (length a)
+			:element-type '(unsigned-byte 8))))
     (loop for i from 0 to (1- (length a)) do
 	  (setf (aref d i) (char-code (aref a i))))
     (print (write-to-string (sha_512 d) :base 16)))
