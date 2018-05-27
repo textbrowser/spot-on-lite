@@ -154,30 +154,31 @@
 						    #x6c44198c4a475817))))
 
 (defun bytes_to_number (data start)
-  (setf number (logior (logand (aref data (+ start 7)) #xff)
-		       (ash (logand (aref data (+ start 6)) #xff) 8)
-		       (ash (logand (aref data (+ start 5)) #xff) 16)
-		       (ash (logand (aref data (+ start 4)) #xff) 24)
-		       (ash (logand (aref data (+ start 3)) #xff) 32)
-		       (ash (logand (aref data (+ start 2)) #xff) 40)
-		       (ash (logand (aref data (+ start 1)) #xff) 48)
-		       (ash (logand (aref data start) #xff) 56)))
-  number
+  (let ((number 0))
+    (setf number (logior (logand (aref data (+ start 7)) #xff)
+			 (ash (logand (aref data (+ start 6)) #xff) 8)
+			 (ash (logand (aref data (+ start 5)) #xff) 16)
+			 (ash (logand (aref data (+ start 4)) #xff) 24)
+			 (ash (logand (aref data (+ start 3)) #xff) 32)
+			 (ash (logand (aref data (+ start 2)) #xff) 40)
+			 (ash (logand (aref data (+ start 1)) #xff) 48)
+			 (ash (logand (aref data start) #xff) 56)))
+    number)
 )
 
 (defun number_to_bytes (number)
-  (setf bytes (make-array 8
-			  :element-type '(unsigned-byte 8)
-			  :initial-element 0))
-  (setf (aref bytes 0) (logand (ash number (- 56)) #xff))
-  (setf (aref bytes 1) (logand (ash number (- 48)) #xff))
-  (setf (aref bytes 2) (logand (ash number (- 40)) #xff))
-  (setf (aref bytes 3) (logand (ash number (- 32)) #xff))
-  (setf (aref bytes 4) (logand (ash number (- 24)) #xff))
-  (setf (aref bytes 5) (logand (ash number (- 16)) #xff))
-  (setf (aref bytes 6) (logand (ash number (- 8)) #xff))
-  (setf (aref bytes 7) (logand number #xff))
-  bytes
+  (let ((bytes (make-array 8
+			   :element-type '(unsigned-byte 8)
+			   :initial-element 0)))
+    (setf (aref bytes 0) (logand (ash number (- 56)) #xff))
+    (setf (aref bytes 1) (logand (ash number (- 48)) #xff))
+    (setf (aref bytes 2) (logand (ash number (- 40)) #xff))
+    (setf (aref bytes 3) (logand (ash number (- 32)) #xff))
+    (setf (aref bytes 4) (logand (ash number (- 24)) #xff))
+    (setf (aref bytes 5) (logand (ash number (- 16)) #xff))
+    (setf (aref bytes 6) (logand (ash number (- 8)) #xff))
+    (setf (aref bytes 7) (logand number #xff))
+    bytes)
 )
 
 (defun sha_512 (data)
@@ -196,103 +197,118 @@
 
   ;; Initializations.
 
-  (setf HH (make-array 8
+  (let ((HH (make-array 8
+			:element-type '(unsigned-byte 64)
+			:initial-element 0))
+	(K 0)
+	(M (make-array 16
 		       :element-type '(unsigned-byte 64)
 		       :initial-element 0))
-  (setf N (ceiling (/ (+ (array-total-size data) 17.0) 128.0)))
-  (setf d8 (* (array-total-size data) 8))
-  (setf number (make-array 8
-			   :element-type '(unsigned-byte 8)
-			   :initial-element 0))
+	(N 0)
+	(T1 0)
+	(T2 0)
+	(W 0)
+	(a 0)
+	(b 0)
+	(c 0)
+	(d 0)
+	(d8 0)
+	(e 0)
+	(f 0)
+	(g 0)
+	(h 0)
+	(hash (make-array (* 128 (ceiling (/ (+ (array-total-size data)
+						17.0) 128.0)))
+			  :element-type '(unsigned-byte 8)
+			  :initial-element 0))
+	(number (make-array 8
+			    :element-type '(unsigned-byte 8)
+			    :initial-element 0)))
 
-  ;; Padding the hash object (5.1.2).
+    (setf N (ceiling (/ (+ (array-total-size data) 17.0) 128.0)))
+    (setf d8 (* (array-total-size data) 8))
 
-  (setf hash (make-array (* 128 N)
-			 :element-type '(unsigned-byte 8)
-			 :initial-element 0))
-  (setf number (number_to_bytes d8))
+    ;; Padding the hash object (5.1.2).
 
-  ;; Place the contents of the data container into the hash container.
+    (setf number (number_to_bytes d8))
 
-  (dotimes (i (array-total-size data))
-    (setf (aref hash i) (aref data i)))
+    ;; Place the contents of the data container into the hash container.
 
-  ;; Place 0x80 at hash[data.length()].
+    (dotimes (i (array-total-size data))
+      (setf (aref hash i) (aref data i)))
 
-  (setf (aref hash (array-total-size data)) #x80)
+    ;; Place 0x80 at hash[data.length()].
 
-  ;; Place the number at the end of the hash container.
+    (setf (aref hash (array-total-size data)) #x80)
 
-  (setf (aref hash (- (array-total-size hash) 8)) (aref number 0))
-  (setf (aref hash (- (array-total-size hash) 7)) (aref number 1))
-  (setf (aref hash (- (array-total-size hash) 6)) (aref number 2))
-  (setf (aref hash (- (array-total-size hash) 5)) (aref number 3))
-  (setf (aref hash (- (array-total-size hash) 4)) (aref number 4))
-  (setf (aref hash (- (array-total-size hash) 3)) (aref number 5))
-  (setf (aref hash (- (array-total-size hash) 2)) (aref number 6))
-  (setf (aref hash (- (array-total-size hash) 1)) (aref number 7))
+    ;; Place the number at the end of the hash container.
 
-  ;; Initialize HH (5.3.5).
+    (setf (aref hash (- (array-total-size hash) 8)) (aref number 0))
+    (setf (aref hash (- (array-total-size hash) 7)) (aref number 1))
+    (setf (aref hash (- (array-total-size hash) 6)) (aref number 2))
+    (setf (aref hash (- (array-total-size hash) 5)) (aref number 3))
+    (setf (aref hash (- (array-total-size hash) 4)) (aref number 4))
+    (setf (aref hash (- (array-total-size hash) 3)) (aref number 5))
+    (setf (aref hash (- (array-total-size hash) 2)) (aref number 6))
+    (setf (aref hash (- (array-total-size hash) 1)) (aref number 7))
 
-  (dotimes (i 8)
-    (setf (aref HH i) (aref s_sha_512_h i)))
+    ;; Initialize HH (5.3.5).
 
-  ;; Let's compute the hash (6.4.2).
+    (dotimes (i 8)
+      (setf (aref HH i) (aref s_sha_512_h i)))
 
-  (dotimes (i N)
-    (setf M (make-array 16
-			:element-type '(unsigned-byte 64)
-			:initial-element 0))
+    ;; Let's compute the hash (6.4.2).
 
-    (loop for j from 0 to 120 by 8 do
-	  (setf n (bytes_to_number hash (+ (* 128 i) j)))
-	  (setf (aref M (/ j 8)) n))
+    (dotimes (i N)
+      (loop for j from 0 to 120 by 8 do
+	    (setf n (bytes_to_number hash (+ (* 128 i) j)))
+	    (setf (aref M (/ j 8)) n))
 
-    (setf W (make-array 80
-			:element-type '(unsigned-byte 64)
-			:initial-element 0))
+      (setf W (make-array 80
+			  :element-type '(unsigned-byte 64)
+			  :initial-element 0))
 
-    (loop for tt from 0 to 15 do
-	  (setf (aref W tt) (aref M tt)))
+      (loop for tt from 0 to 15 do
+	    (setf (aref W tt) (aref M tt)))
 
-    (loop for tt from 16 to 79 do
-	  (setf (aref W tt)
-		(mod (+ (sb1_512 (aref W (- tt 2)))
-			(aref W (- tt 7))
-			(sb0_512 (aref W (- tt 15)))
-			(aref W (- tt 16))) pow_2_64)))
+      (loop for tt from 16 to 79 do
+	    (setf (aref W tt)
+		  (mod (+ (sb1_512 (aref W (- tt 2)))
+			  (aref W (- tt 7))
+			  (sb0_512 (aref W (- tt 15)))
+			  (aref W (- tt 16))) pow_2_64)))
 
-    (setf a (aref HH 0))
-    (setf b (aref HH 1))
-    (setf c (aref HH 2))
-    (setf d (aref HH 3))
-    (setf e (aref HH 4))
-    (setf f (aref HH 5))
-    (setf g (aref HH 6))
-    (setf h (aref HH 7))
+      (setf a (aref HH 0))
+      (setf b (aref HH 1))
+      (setf c (aref HH 2))
+      (setf d (aref HH 3))
+      (setf e (aref HH 4))
+      (setf f (aref HH 5))
+      (setf g (aref HH 6))
+      (setf h (aref HH 7))
 
-    (loop for tt from 0 to 79 do
-	  (setf K (aref s_sha_512_k tt))
-	  (setf T1 (mod (+ h (SA1_512 e) (Ch e f g) K (aref W tt)) pow_2_64))
-	  (setf T2 (mod (+ (SA0_512 a) (Maj a b c)) pow_2_64))
-	  (setf h g)
-	  (setf g f)
-	  (setf f e)
-	  (setf e (mod (+ d T1) pow_2_64))
-	  (setf d c)
-	  (setf c b)
-	  (setf b a)
-	  (setf a (mod (+ T1 T2) pow_2_64)))
+      (loop for tt from 0 to 79 do
+	    (setf K (aref s_sha_512_k tt))
+	    (setf T1 (mod (+ h (SA1_512 e) (Ch e f g) K (aref W tt)) pow_2_64))
+	    (setf T2 (mod (+ (SA0_512 a) (Maj a b c)) pow_2_64))
+	    (setf h g)
+	    (setf g f)
+	    (setf f e)
+	    (setf e (mod (+ d T1) pow_2_64))
+	    (setf d c)
+	    (setf c b)
+	    (setf b a)
+	    (setf a (mod (+ T1 T2) pow_2_64)))
 
-    (setf (aref HH 0) (mod (+ (aref HH 0) a) pow_2_64))
-    (setf (aref HH 1) (mod (+ (aref HH 1) b) pow_2_64))
-    (setf (aref HH 2) (mod (+ (aref HH 2) c) pow_2_64))
-    (setf (aref HH 3) (mod (+ (aref HH 3) d) pow_2_64))
-    (setf (aref HH 4) (mod (+ (aref HH 4) e) pow_2_64))
-    (setf (aref HH 5) (mod (+ (aref HH 5) f) pow_2_64))
-    (setf (aref HH 6) (mod (+ (aref HH 6) g) pow_2_64))
-    (setf (aref HH 7) (mod (+ (aref HH 7) h) pow_2_64)))
-  HH
+      (setf (aref HH 0) (mod (+ (aref HH 0) a) pow_2_64))
+      (setf (aref HH 1) (mod (+ (aref HH 1) b) pow_2_64))
+      (setf (aref HH 2) (mod (+ (aref HH 2) c) pow_2_64))
+      (setf (aref HH 3) (mod (+ (aref HH 3) d) pow_2_64))
+      (setf (aref HH 4) (mod (+ (aref HH 4) e) pow_2_64))
+      (setf (aref HH 5) (mod (+ (aref HH 5) f) pow_2_64))
+      (setf (aref HH 6) (mod (+ (aref HH 6) g) pow_2_64))
+      (setf (aref HH 7) (mod (+ (aref HH 7) h) pow_2_64)))
+    HH)
 )
 
 (defun test1 ()
@@ -315,11 +331,11 @@
   ;;  hijklmnoijklmnopjklmnopqklmnopqrlmnopqrsmnopqrstnopqrstu"
   (print "8E959B75DAE313DA 8CF4F72814FC143F 8F7779C6EB9F7FA1 7299AEADB6889018")
   (print "501D289E4900F7E4 331B99DEC4B5433A C7D329EEB6DD2654 5E96E55B874BE909")
-  (setf a "abcdefghbcdefghicdefghijdefghijkefghijklfghijklmghijklmnhijklmnoijklmnopjklmnopqklmnopqrlmnopqrsmnopqrstnopqrstu")
-  (setf d (make-array (length a)
-		      :element-type '(unsigned-byte 8)))
-  (loop for i from 0 to (1- (length a)) do
-	(setf (aref d i) (char-code (aref a i))))
-  (print (write-to-string (sha_512 d) :base 16))
+  (let ((a "abcdefghbcdefghicdefghijdefghijkefghijklfghijklmghijklmnhijklmnoijklmnopjklmnopqklmnopqrlmnopqrsmnopqrstnopqrstu")
+	(d (make-array 112
+		       :element-type '(unsigned-byte 8))))
+    (loop for i from 0 to (1- (length a)) do
+	  (setf (aref d i) (char-code (aref a i))))
+    (print (write-to-string (sha_512 d) :base 16)))
   nil
 )
