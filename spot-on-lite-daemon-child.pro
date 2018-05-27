@@ -12,6 +12,9 @@ INCLUDEPATH += /usr/local/opt/openssl/include
 LIBS += -L/usr/local/opt/openssl/lib
 }
 
+QMAKE_CLEAN += Source/spot-on-lite-daemon-sha.fas \
+               Source/spot-on-lite-daemon-sha.lib
+
 LIBS += -lcrypto -lssl
 
 HEADERS = Source/spot-on-lite-daemon-child-tcp-client.h
