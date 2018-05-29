@@ -322,3 +322,11 @@
     (print (write-to-string (sha_512 d) :base 16)))
   nil
 )
+
+(defun test4()
+  (let ((d (make-array 4096
+		       :element-type '(unsigned-byte 8)
+		       :initial-element 0)))
+    (print (write-to-string (sha_512 d) :base 16)))
+  nil
+)
