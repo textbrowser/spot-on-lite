@@ -31,6 +31,15 @@
 #include "spot-on-lite-daemon-sha.h"
 
 #ifdef SPOTON_LITE_DAEMON_CHILD_ECL_SUPPORTED
+#ifdef FALSE
+#undef FALSE
+#endif
+#ifdef SLOT
+#undef SLOT
+#endif
+#ifdef TRUE
+#undef TRUE
+#endif
 #ifdef slots
 #undef slots
 #endif
