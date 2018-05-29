@@ -23,8 +23,6 @@
 ;; (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 ;; SPOT-ON-LITE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-(defconstant pow_2_64 (expt 2 64))
-
 (defun Ch (x y z)
   (logxor (logand x y) (logand (lognot x) z))
 )
@@ -256,10 +254,10 @@
 
       (loop for tt from 16 to 79 do
 	    (setf (aref W tt)
-		  (mod (+ (sb1_512 (aref W (- tt 2)))
-			  (aref W (- tt 7))
-			  (sb0_512 (aref W (- tt 15)))
-			  (aref W (- tt 16))) pow_2_64)))
+		  (logand (+ (sb1_512 (aref W (- tt 2)))
+			     (aref W (- tt 7))
+			     (sb0_512 (aref W (- tt 15)))
+			     (aref W (- tt 16))) #xffffffffffffffff)))
 
       (setf a (aref HH 0))
       (setf b (aref HH 1))
@@ -272,25 +270,27 @@
 
       (loop for tt from 0 to 79 do
 	    (setf K (aref s_sha_512_k tt))
-	    (setf T1 (mod (+ h (SA1_512 e) (Ch e f g) K (aref W tt)) pow_2_64))
-	    (setf T2 (mod (+ (SA0_512 a) (Maj a b c)) pow_2_64))
+	    (setf T1 (logand (+ h (SA1_512 e) (Ch e f g) K (aref W tt))
+			     #xffffffffffffffff))
+	    (setf T2 (logand (+ (SA0_512 a) (Maj a b c))
+			     #xffffffffffffffff))
 	    (setf h g)
 	    (setf g f)
 	    (setf f e)
-	    (setf e (mod (+ d T1) pow_2_64))
+	    (setf e (logand (+ d T1) #xffffffffffffffff))
 	    (setf d c)
 	    (setf c b)
 	    (setf b a)
-	    (setf a (mod (+ T1 T2) pow_2_64)))
+	    (setf a (logand (+ T1 T2) #xffffffffffffffff)))
 
-      (setf (aref HH 0) (mod (+ (aref HH 0) a) pow_2_64))
-      (setf (aref HH 1) (mod (+ (aref HH 1) b) pow_2_64))
-      (setf (aref HH 2) (mod (+ (aref HH 2) c) pow_2_64))
-      (setf (aref HH 3) (mod (+ (aref HH 3) d) pow_2_64))
-      (setf (aref HH 4) (mod (+ (aref HH 4) e) pow_2_64))
-      (setf (aref HH 5) (mod (+ (aref HH 5) f) pow_2_64))
-      (setf (aref HH 6) (mod (+ (aref HH 6) g) pow_2_64))
-      (setf (aref HH 7) (mod (+ (aref HH 7) h) pow_2_64)))
+      (setf (aref HH 0) (logand (+ (aref HH 0) a) #xffffffffffffffff))
+      (setf (aref HH 1) (logand (+ (aref HH 1) b) #xffffffffffffffff))
+      (setf (aref HH 2) (logand (+ (aref HH 2) c) #xffffffffffffffff))
+      (setf (aref HH 3) (logand (+ (aref HH 3) d) #xffffffffffffffff))
+      (setf (aref HH 4) (logand (+ (aref HH 4) e) #xffffffffffffffff))
+      (setf (aref HH 5) (logand (+ (aref HH 5) f) #xffffffffffffffff))
+      (setf (aref HH 6) (logand (+ (aref HH 6) g) #xffffffffffffffff))
+      (setf (aref HH 7) (logand (+ (aref HH 7) h) #xffffffffffffffff)))
     HH)
 )
 
