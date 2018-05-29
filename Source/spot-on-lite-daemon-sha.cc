@@ -115,6 +115,7 @@ QByteArray spot_on_lite_daemon_sha::sha_512(const QByteArray &data) const
 
   bytes = bytes.mid(0, bytes.length() - 1);
   bytes.append("))");
+  ecl_disable_interrupts();
 
   cl_object c = c_string_to_object(bytes.constData());
 
