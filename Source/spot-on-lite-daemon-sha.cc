@@ -105,12 +105,7 @@ QByteArray spot_on_lite_daemon_sha::sha_512(const QByteArray &data) const
   QByteArray hash;
 
 #ifdef SPOTON_LITE_DAEMON_CHILD_ECL_SUPPORTED
-  QByteArray bytes;
-
-  bytes = QString
-    ("(sha_512 (make-array %1 "
-     ":element-type '(unsigned-byte 8) "
-     ":initial-contents '(").arg(data.length()).toLatin1();
+  QByteArray bytes(QString("(sha_512 '#%1(").arg(data.length()).toLatin1());
 
   for(int i = 0; i < data.length(); i++)
     {
@@ -119,7 +114,7 @@ QByteArray spot_on_lite_daemon_sha::sha_512(const QByteArray &data) const
     }
 
   bytes = bytes.mid(0, bytes.length() - 1);
-  bytes.append(")))");
+  bytes.append("))");
 
   cl_object c = c_string_to_object(bytes.constData());
 
