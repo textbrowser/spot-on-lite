@@ -126,7 +126,7 @@ QByteArray spot_on_lite_daemon_sha::sha_512(const QByteArray &data) const
   bytes.append("))");
   ecl_import_current_thread(ECL_NIL, ECL_NIL);
 
-  cl_object c = c_string_to_object(bytes.constData());
+  cl_object c = c_string_to_object(bytes.data());
 
   if(c)
     c = cl_safe_eval(c, Cnil, Cnil);
