@@ -114,29 +114,27 @@ QByteArray spot_on_lite_daemon_sha::sha_512(const QByteArray &data) const
 
   for(int i = 0; i < data.length(); i++)
     {
-      bytes.append(QByteArray::number(data.at(i)));
-
-      if(data.length() != i - 1)
-	bytes.append(' ');
+      bytes.append(QByteArray::number(static_cast<unsigned char> (data.at(i))));
+      bytes.append(' ');
     }
 
+  bytes = bytes.mid(0, bytes.length() - 1);
   bytes.append(")))");
 
-  cl_object c1 = c_string_to_object(bytes.constData());
-  cl_object c2 = 0;
+  cl_object c = c_string_to_object(bytes.constData());
 
-  if(c1)
-    c2 = cl_eval(c1);
+  if(c)
+    c = cl_safe_eval(c, Cnil, Cnil);
   else
     return hash;
 
-  if(!c2)
+  if(!c)
     return hash;
 
   for(int i = 0; i < 8; i++)
     {
       QByteArray h(8, 0);
-      cl_object e = ecl_aref(c2, i);
+      cl_object e = ecl_aref(c, i);
 
       if(e)
 	qToBigEndian(ecl_to_uint64_t(e), reinterpret_cast<uchar *> (h.data()));
