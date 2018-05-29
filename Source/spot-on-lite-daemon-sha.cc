@@ -115,17 +115,17 @@ QByteArray spot_on_lite_daemon_sha::sha_512(const QByteArray &data) const
 
   bytes = bytes.mid(0, bytes.length() - 1);
   bytes.append("))");
-  ecl_disable_interrupts();
+  ecl_import_current_thread(ECL_NIL, ECL_NIL);
 
   cl_object c = c_string_to_object(bytes.constData());
 
   if(c)
     c = cl_safe_eval(c, Cnil, Cnil);
   else
-    return hash;
+    goto done_label;
 
   if(!c)
-    return hash;
+    goto done_label;
 
   for(int i = 0; i < 8; i++)
     {
@@ -138,6 +138,8 @@ QByteArray spot_on_lite_daemon_sha::sha_512(const QByteArray &data) const
       hash.append(h);
     }
 
+ done_label:
+  ecl_release_current_thread();
   return hash;
 #else
   /*
