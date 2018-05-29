@@ -1,8 +1,14 @@
+UNAME := $(shell uname)
+
+ifeq ($(UNAME), OpenBSD)
+	QMAKE=qmake4
+else
+	QMAKE=qmake
+endif
+
 all: Makefile.daemon Makefile.daemon_child
 	$(MAKE) -f Makefile.daemon
 	$(MAKE) -f Makefile.daemon_child
-
-QMAKE=qmake
 
 Makefile.daemon: spot-on-lite-daemon.pro
 Makefile.daemon_child: spot-on-lite-daemon-child.pro
