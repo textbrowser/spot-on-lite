@@ -30,6 +30,13 @@
 
 #include "spot-on-lite-daemon-sha.h"
 
+#ifdef SPOTON_LITE_DAEMON_CHILD_ECL_SUPPORTED
+#ifdef slots
+#undef slots
+#endif
+#include <ecl/ecl.h>
+#endif
+
 #define Ch(x, y, z) ((x & y) ^ (~x & z))
 #define Maj(x, y, z) ((x & y) ^ (x & z) ^ (y & z))
 #define ROTR(n, x) ((x >> n) | (x << (64 - n)))
@@ -95,11 +102,54 @@ spot_on_lite_daemon_sha::spot_on_lite_daemon_sha(void)
 
 QByteArray spot_on_lite_daemon_sha::sha_512(const QByteArray &data) const
 {
+  QByteArray hash;
+
+#ifdef SPOTON_LITE_DAEMON_CHILD_ECL_SUPPORTED
+  QByteArray bytes;
+
+  bytes = QString
+    ("(sha_512 (make-array %1 "
+     ":element-type '(unsigned-byte 8) "
+     ":initial-contents '(").arg(data.length()).toLatin1();
+
+  for(int i = 0; i < data.length(); i++)
+    {
+      bytes.append(QByteArray::number(data.at(i)));
+
+      if(data.length() != i - 1)
+	bytes.append(' ');
+    }
+
+  bytes.append(")))");
+
+  cl_object c1 = c_string_to_object(bytes.constData());
+  cl_object c2 = 0;
+
+  if(c1)
+    c2 = cl_eval(c1);
+  else
+    return hash;
+
+  if(!c2)
+    return hash;
+
+  for(int i = 0; i < 8; i++)
+    {
+      QByteArray h(8, 0);
+      cl_object e = ecl_aref(c2, i);
+
+      if(e)
+	qToBigEndian(ecl_to_uint64_t(e), reinterpret_cast<uchar *> (h.data()));
+
+      hash.append(h);
+    }
+
+  return hash;
+#else
   /*
   ** Please read the NIST.FIPS.180-4.pdf publication.
   */
 
-  QByteArray hash;
   QByteArray number(8, 0);
   QVector<quint64> H;
   int N = qCeil(static_cast<double> (data.size() + 17) / 128.0);
@@ -192,6 +242,7 @@ QByteArray spot_on_lite_daemon_sha::sha_512(const QByteArray &data) const
       hash.append(h);
     }
 
+#endif
   return hash;
 }
 

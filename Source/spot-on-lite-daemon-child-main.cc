@@ -38,6 +38,18 @@ extern "C"
 
 #include "spot-on-lite-daemon-child-tcp-client.h"
 
+#ifdef SPOTON_LITE_DAEMON_CHILD_ECL_SUPPORTED
+#ifdef slots
+#undef slots
+#endif
+#include <ecl/ecl.h>
+
+extern "C"
+{
+  extern void init_lib_SPOT_ON_LITE_DAEMON_SHA(cl_object);
+}
+#endif
+
 static void handler_signal(int signal_number)
 {
   Q_UNUSED(signal_number);
@@ -88,6 +100,12 @@ int main(int argc, char *argv[])
 {
   if(prepare_signal_handlers())
     return EXIT_FAILURE;
+
+#ifdef SPOTON_LITE_DAEMON_CHILD_ECL_SUPPORTED
+  cl_boot(argc, argv);
+  ecl_init_module(NULL, init_lib_SPOT_ON_LITE_DAEMON_SHA);
+  atexit(cl_shutdown);
+#endif
 
   QString certificates_file_name("");
   QString congestion_control_file_name("");

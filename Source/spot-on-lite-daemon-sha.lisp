@@ -182,19 +182,6 @@
 )
 
 (defun sha_512 (data)
-  (declare (type (unsigned-byte 64) K))
-  (declare (type (unsigned-byte 64) T1))
-  (declare (type (unsigned-byte 64) T2))
-  (declare (type (unsigned-byte 64) a))
-  (declare (type (unsigned-byte 64) b))
-  (declare (type (unsigned-byte 64) c))
-  (declare (type (unsigned-byte 64) d))
-  (declare (type (unsigned-byte 64) d8))
-  (declare (type (unsigned-byte 64) e))
-  (declare (type (unsigned-byte 64) f))
-  (declare (type (unsigned-byte 64) g))
-  (declare (type (unsigned-byte 64) h))
-
   ;; Initializations.
 
   (let* ((HH (make-array 8
