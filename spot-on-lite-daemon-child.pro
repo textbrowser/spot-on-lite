@@ -12,7 +12,9 @@ QMAKE_CFLAGS += `ecl-config --cflags`
 QMAKE_CXXFLAGS += `ecl-config --cflags`
 QMAKE_EXTRA_TARGETS += libshalisp
 QMAKE_LFLAGS += `ecl-config --ldflags`
-} else exists(/usr/local/bin/ecl) {
+}
+
+exists(/usr/local/bin/ecl) {
 DEFINES += SPOTON_LITE_DAEMON_CHILD_ECL_SUPPORTED
 LIBS += -lecl
 LIBS += Source/spot-on-lite-daemon-sha.a
