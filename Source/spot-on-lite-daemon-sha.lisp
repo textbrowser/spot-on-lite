@@ -324,9 +324,9 @@
 )
 
 (defun test4()
-  (let ((d (make-array 4096
+  (let ((d (make-array 8192
 		       :element-type '(unsigned-byte 8)
-		       :initial-element 0)))
+		       :initial-element 128)))
     (print (write-to-string (sha_512 d) :base 16)))
   nil
 )
