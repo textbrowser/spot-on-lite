@@ -259,7 +259,6 @@ QByteArray spot_on_lite_daemon_sha::sha_512_hmac(const QByteArray &data,
   ** Please read https://en.wikipedia.org/wiki/SHA-2.
   */
 
-  QByteArray hmac;
   QByteArray k(key);
   static int block_length = 1024 / CHAR_BIT;
 
