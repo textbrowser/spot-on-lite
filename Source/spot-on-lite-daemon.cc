@@ -704,7 +704,7 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
 
 	int identities_lifetime = list.at(9).toInt(&o);
 
-	if(identities_lifetime < 30 || identities_lifetime > 600 || !ok)
+	if(identities_lifetime < 30 || identities_lifetime > 600 || !o)
 	  {
 	    entry_ok = false;
 
@@ -720,7 +720,6 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
 		      << "in the range [90, 600]. Ignoring entry."
 		      << std::endl;
 	  }
-
 
 	if(key.startsWith("listener"))
 	  {
