@@ -124,6 +124,7 @@ int main(int argc, char *argv[])
   QString protocol("tcp");
   QString server_identity("");
   QString ssl_control_string("");
+  int identities_lifetime = -1;
   int local_so_sndbuf = -1;
   int maximum_accumulated_bytes = -1;
   int rc = EXIT_SUCCESS;
@@ -177,6 +178,23 @@ int main(int argc, char *argv[])
 	    else
 	      {
 		std::cerr << "Invalid end-of-message-marker usage. Exiting."
+			  << std::endl;
+		return EXIT_FAILURE;
+	      }
+	  }
+      }
+    else if(argv && argv[i] &&
+	    strcmp(argv[i], "--identities-lifetime") == 0)
+      {
+	if(identities_lifetime == -1)
+	  {
+	    i += 1;
+
+	    if(argc > i && argv[i])
+	      identities_lifetime = std::atoi(argv[i]);
+	    else
+	      {
+		std::cerr << "Invalid identities-lifetime usage. Exiting."
 			  << std::endl;
 		return EXIT_FAILURE;
 	      }
@@ -348,6 +366,7 @@ int main(int argc, char *argv[])
 	     log_file_name,
 	     server_identity,
 	     ssl_control_string,
+	     identities_lifetime,
 	     local_so_sndbuf,
 	     maximum_accumulated_bytes,
 	     silence,

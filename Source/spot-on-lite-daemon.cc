@@ -256,6 +256,8 @@ void spot_on_lite_daemon::prepare_peers(void)
 		<< m_congestion_control_file_name
 		<< "--end-of-message-marker"
 		<< list.value(7).toUtf8().toBase64()
+		<< "--identities-lifetime"
+		<< list.value(9)
 		<< "--local-server-file"
 		<< local_server_file_name()
 		<< "--local-so-sndbuf"
@@ -542,9 +544,10 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
 	** 6 - SO Linger (Seconds)
 	** 7 - End-of-Message-Marker
 	** 8 - Local SO_SNDBUF
+	** 9 - Identities Lifetime (Seconds)
 	*/
 
-	int expected = 9;
+	int expected = 10;
 
 	if(list.size() != expected)
 	  {
@@ -698,6 +701,26 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
 		      << "in the range [4096, 65536]. Ignoring entry."
 		      << std::endl;
 	  }
+
+	int identities_lifetime = list.at(9).toInt(&o);
+
+	if(identities_lifetime < 30 || identities_lifetime > 600 || !ok)
+	  {
+	    entry_ok = false;
+
+	    if(ok)
+	      *ok = false;
+
+	    std::cerr << "spot_on_lite_daemon::"
+		      << "process_configuration_file(): The "
+		      << "listener/peer \""
+		      << key.toStdString()
+		      << "\" identities lifetime value is invalid. "
+		      << "Expecting a value "
+		      << "in the range [90, 600]. Ignoring entry."
+		      << std::endl;
+	  }
+
 
 	if(key.startsWith("listener"))
 	  {

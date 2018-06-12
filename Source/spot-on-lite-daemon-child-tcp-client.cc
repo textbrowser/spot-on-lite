@@ -59,7 +59,6 @@ extern "C"
 #include "spot-on-lite-daemon-sha.h"
 
 static int s_maximum_identities = 2048;
-static qint64 s_identity_lifetime = 30000; // 30 Seconds
 
 static int hash_algorithm_key_length(const QByteArray &algorithm)
 {
@@ -78,6 +77,7 @@ spot_on_lite_daemon_child_tcp_client
  const QString &log_file_name,
  const QString &server_identity,
  const QString &ssl_control_string,
+ const int identities_lifetime,
  const int local_so_sndbuf,
  const int maximum_accumulated_bytes,
  const int silence,
@@ -91,6 +91,7 @@ spot_on_lite_daemon_child_tcp_client
   m_client_role = socket_descriptor < 0;
   m_congestion_control_file_name = congestion_control_file_name;
   m_end_of_message_marker = end_of_message_marker;
+  m_identity_lifetime = 1000 * qBound(30, identities_lifetime, 600);
   m_local_server_file_name = local_server_file_name;
   m_local_so_sndbuf = qBound(4096, local_so_sndbuf, 65536);
   m_local_socket = 0;
@@ -1371,7 +1372,7 @@ void spot_on_lite_daemon_child_tcp_client::slot_remove_expired_identities(void)
 	it.next();
 
 	if(qAbs(QDateTime::currentMSecsSinceEpoch() - it.value().second) >
-	   s_identity_lifetime)
+	   m_identity_lifetime)
 	  it.remove();
       }
   }
