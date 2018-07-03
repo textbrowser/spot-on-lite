@@ -143,7 +143,7 @@ void spot_on_lite_daemon_tcp_listener::incomingConnection
 		"--end-of-message-marker",
 		list.value(7).toUtf8().toBase64().data(),
 		"--identities-lifetime",
-		list.value(9),
+		list.value(9).toStdString().data(),
 		"--local-server-file",
 		local_server_file_name.data(),
 		"--local-so-sndbuf",
