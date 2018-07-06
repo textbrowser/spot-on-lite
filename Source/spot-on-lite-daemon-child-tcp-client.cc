@@ -1335,11 +1335,15 @@ void spot_on_lite_daemon_child_tcp_client::slot_ready_read(void)
 	 mid(0, qAbs(m_maximum_accumulated_bytes - m_remote_content.length())));
     }
 
+  if(!m_local_socket || m_local_socket->state() != QLocalSocket::ConnectedState)
+    return;
+
   int index = 0;
 
   while((index = m_remote_content.indexOf(m_end_of_message_marker)) > 0)
     {
       data = m_remote_content.mid(0, index + m_end_of_message_marker.length());
+      m_remote_content.remove(0, data.length());
 
       if(data.contains("type=0095a&content"))
 	if(!m_client_role)
@@ -1349,14 +1353,11 @@ void spot_on_lite_daemon_child_tcp_client::slot_ready_read(void)
 
 	  record_remote_identity(data);
 
-      m_remote_content.remove(0, data.length());
-
       if(record_congestion(data))
-	if(m_local_socket)
-	  {
-	    m_local_socket->write(data);
-	    m_local_socket->flush();
-	  }
+	{
+	  m_local_socket->write(data);
+	  m_local_socket->flush();
+	}
     }
 }
 
