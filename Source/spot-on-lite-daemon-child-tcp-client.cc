@@ -914,6 +914,9 @@ void spot_on_lite_daemon_child_tcp_client::process_data(void)
 
   do
     {
+      if(m_process_data_future.isCanceled())
+	return;
+
       {
 	QWriteLocker lock(&m_local_content_mutex);
 
@@ -971,6 +974,9 @@ void spot_on_lite_daemon_child_tcp_client::process_data(void)
 
       while(it.hasNext())
 	{
+	  if(m_process_data_future.isCanceled())
+	    return;
+
 	  it.next();
 	  hmac = sha_512.sha_512_hmac(d, it.key());
 
