@@ -17,4 +17,5 @@ Completed Items
 Remaining Items
 
 1.  Optionally share identities in client mode.
-
+2.  Process accumulated data which may have arrived
+    while a local socket is not connected.
