@@ -137,7 +137,7 @@ spot_on_lite_daemon_child_tcp_client
     }
   else
     {
-      if(!setSocketDescriptor(dup(socket_descriptor)) ||
+      if(!setSocketDescriptor(socket_descriptor) ||
 	 state() != QAbstractSocket::ConnectedState)
 	{
 	  /*
