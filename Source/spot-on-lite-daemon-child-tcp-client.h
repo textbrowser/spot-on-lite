@@ -67,6 +67,7 @@ class spot_on_lite_daemon_child_tcp_client: public QSslSocket
   QAtomicInt m_abort;
   QByteArray m_local_content;
   QByteArray m_remote_content;
+  QFuture<void> m_expired_identities_future;
   QFuture<void> m_process_data_future;
   QHash<QByteArray, QPair<QByteArray, qint64> > m_remote_identities;
   QLocalSocket *m_local_socket;
@@ -107,6 +108,7 @@ class spot_on_lite_daemon_child_tcp_client: public QSslSocket
 			  const QByteArray &private_key,
 			  const QByteArray &public_key);
   void record_remote_identity(const QByteArray &data);
+  void remove_expired_identities(void);
   void send_identity(const QByteArray &data);
   void set_ssl_ciphers(const QList<QSslCipher> &ciphers,
 		       QSslConfiguration &configuration) const;

@@ -229,6 +229,8 @@ spot_on_lite_daemon_child_tcp_client::
 ~spot_on_lite_daemon_child_tcp_client()
 {
   m_abort.fetchAndStoreOrdered(1);
+  m_expired_identities_future.cancel();
+  m_expired_identities_future.waitForFinished();
   m_process_data_future.cancel();
   m_process_data_future.waitForFinished();
 }
@@ -1061,6 +1063,13 @@ void spot_on_lite_daemon_child_tcp_client::record_remote_identity
 
     return;
 
+  {
+    QReadLocker lock(&m_remote_identities_mutex);
+
+    if(m_remote_identities.size() >= s_maximum_identities)
+      return;
+  }
+
   QByteArray algorithm;
   QByteArray identity;
   int index = data.indexOf("content=");
@@ -1085,19 +1094,34 @@ void spot_on_lite_daemon_child_tcp_client::record_remote_identity
   identity = QByteArray::fromBase64(identity);
 
   if(hash_algorithm_key_length(algorithm) == identity.length())
-    if(m_remote_identities.size() < s_maximum_identities)
+    {
       {
-	{
-	  QWriteLocker lock(&m_remote_identities_mutex);
+	QWriteLocker lock(&m_remote_identities_mutex);
 
-	  m_remote_identities[identity] = QPair<QByteArray, qint64>
-	    (identity.toBase64().append(";").append(algorithm),
-	     QDateTime::currentMSecsSinceEpoch());
-	}
-
-	if(!m_expired_identities_timer.isActive())
-	  m_expired_identities_timer.start();
+	m_remote_identities[identity] = QPair<QByteArray, qint64>
+	  (identity.toBase64().append(";").append(algorithm),
+	   QDateTime::currentMSecsSinceEpoch());
       }
+
+      if(!m_expired_identities_timer.isActive())
+	m_expired_identities_timer.start();
+    }
+}
+
+void spot_on_lite_daemon_child_tcp_client::remove_expired_identities(void)
+{
+  QWriteLocker lock(&m_remote_identities_mutex);
+  QMutableHashIterator<QByteArray, QPair<QByteArray, qint64> > it
+    (m_remote_identities);
+
+  while(it.hasNext() && !m_expired_identities_future.isCanceled())
+    {
+      it.next();
+
+      if(qAbs(QDateTime::currentMSecsSinceEpoch() - it.value().second) >
+	 m_identity_lifetime)
+	it.remove();
+    }
 }
 
 void spot_on_lite_daemon_child_tcp_client::send_identity(const QByteArray &data)
@@ -1199,6 +1223,7 @@ void spot_on_lite_daemon_child_tcp_client::slot_broadcast_capabilities(void)
 
   if(!m_client_role)
     {
+      QReadLocker lock(&m_remote_identities_mutex);
       QHashIterator<QByteArray, QPair<QByteArray, qint64> > it
 	(m_remote_identities);
 
@@ -1352,12 +1377,18 @@ void spot_on_lite_daemon_child_tcp_client::slot_ready_read(void)
       m_remote_content.remove(0, data.length());
 
       if(data.contains("type=0095a&content"))
-	if(!m_client_role)
-	  /*
-	  ** We're a server socket!
-	  */
+	{
+	  record_congestion(data);
 
-	  record_remote_identity(data);
+	  if(!m_client_role)
+	    /*
+	    ** We're a server socket!
+	    */
+
+	    record_remote_identity(data);
+
+	  continue;
+	}
 
       if(record_congestion(data))
 	{
@@ -1370,22 +1401,18 @@ void spot_on_lite_daemon_child_tcp_client::slot_ready_read(void)
 void spot_on_lite_daemon_child_tcp_client::slot_remove_expired_identities(void)
 {
   {
-    QWriteLocker lock(&m_remote_identities_mutex);
-    QMutableHashIterator<QByteArray, QPair<QByteArray, qint64> > it
-      (m_remote_identities);
+    QReadLocker lock(&m_remote_identities_mutex);
 
-    while(it.hasNext())
+    if(m_remote_identities.isEmpty())
       {
-	it.next();
-
-	if(qAbs(QDateTime::currentMSecsSinceEpoch() - it.value().second) >
-	   m_identity_lifetime)
-	  it.remove();
+	m_expired_identities_timer.stop();
+	return;
       }
   }
 
-  if(m_remote_identities.isEmpty())
-    m_expired_identities_timer.stop();
+  if(m_expired_identities_future.isFinished())
+    m_expired_identities_future = QtConcurrent::run
+      (this, &spot_on_lite_daemon_child_tcp_client::remove_expired_identities);
 }
 
 void spot_on_lite_daemon_child_tcp_client::
