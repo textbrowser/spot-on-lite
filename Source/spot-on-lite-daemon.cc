@@ -111,6 +111,7 @@ spot_on_lite_daemon::~spot_on_lite_daemon()
       process->terminate();
     }
 
+  QFile::remove(m_congestion_control_file_name);
   m_congestion_control_future.cancel();
   m_congestion_control_future.waitForFinished();
 
@@ -389,7 +390,10 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
 		      << std::endl;
 	  }
 	else
-	  m_congestion_control_file_name = settings.value(key).toString();
+	  {
+	    m_congestion_control_file_name = settings.value(key).toString();
+	    QFile::remove(m_congestion_control_file_name);
+	  }
       }
     else if(key == "congestion_control_lifetime")
       {
