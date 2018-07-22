@@ -223,16 +223,7 @@ spot_on_lite_daemon_child_tcp_client
 spot_on_lite_daemon_child_tcp_client::
 ~spot_on_lite_daemon_child_tcp_client()
 {
-  m_expired_identities_future.cancel();
-  m_process_data_future.cancel();
-  m_wait_condition.wakeAll();
-
-  /*
-  ** Wait for threads to complete.
-  */
-
-  m_expired_identities_future.waitForFinished();
-  m_process_data_future.waitForFinished();
+  stop_threads_and_timers();
 }
 
 QList<QByteArray> spot_on_lite_daemon_child_tcp_client::
@@ -1265,6 +1256,7 @@ void spot_on_lite_daemon_child_tcp_client::slot_disconnected(void)
   else
     {
       abort();
+      stop_threads_and_timers();
       QCoreApplication::exit(0);
     }
 }
@@ -1437,4 +1429,23 @@ slot_write_data(const QByteArray &data)
 {
   write(data);
   flush();
+}
+
+void spot_on_lite_daemon_child_tcp_client::stop_threads_and_timers(void)
+{
+  m_attempt_local_connection_timer.stop();
+  m_attempt_remote_connection_timer.stop();
+  m_capabilities_timer.stop();
+  m_expired_identities_future.cancel();
+  m_expired_identities_timer.stop();
+  m_keep_alive_timer.stop();
+  m_process_data_future.cancel();
+  m_wait_condition.wakeAll();
+
+  /*
+  ** Wait for threads to complete.
+  */
+
+  m_expired_identities_future.waitForFinished();
+  m_process_data_future.waitForFinished();
 }

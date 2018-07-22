@@ -113,6 +113,7 @@ class spot_on_lite_daemon_child_tcp_client: public QSslSocket
   void send_identity(const QByteArray &data);
   void set_ssl_ciphers(const QList<QSslCipher> &ciphers,
 		       QSslConfiguration &configuration) const;
+  void stop_threads_and_timers(void);
 
  private slots:
   void slot_attempt_local_connection(void);
