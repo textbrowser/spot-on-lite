@@ -84,7 +84,6 @@ spot_on_lite_daemon_child_tcp_client
  const int socket_descriptor,
  const int ssl_key_size):QSslSocket()
 {
-  m_abort = 0;
   m_attempt_local_connection_timer.setInterval(2500);
   m_attempt_remote_connection_timer.setInterval(2500);
   m_certificates_file_name = certificates_file_name;
@@ -102,14 +101,10 @@ spot_on_lite_daemon_child_tcp_client
     m_maximum_accumulated_bytes = 8 * 1024 * 1024;
 
   if(!m_end_of_message_marker.isEmpty())
-    {
-      connect(this,
-	      SIGNAL(write_signal(const QByteArray &)),
-	      this,
-	      SLOT(slot_write_data(const QByteArray &)));
-      m_process_data_future = QtConcurrent::run
-	(this, &spot_on_lite_daemon_child_tcp_client::process_data);
-    }
+    connect(this,
+	    SIGNAL(write_signal(const QByteArray &)),
+	    this,
+	    SLOT(slot_write_data(const QByteArray &)));
 
   m_server_identity = server_identity;
   m_silence = 1000 * qBound(15, silence, 3600);
@@ -228,10 +223,15 @@ spot_on_lite_daemon_child_tcp_client
 spot_on_lite_daemon_child_tcp_client::
 ~spot_on_lite_daemon_child_tcp_client()
 {
-  m_abort.fetchAndStoreOrdered(1);
   m_expired_identities_future.cancel();
-  m_expired_identities_future.waitForFinished();
   m_process_data_future.cancel();
+  m_wait_condition.wakeAll();
+
+  /*
+  ** Wait for threads to complete.
+  */
+
+  m_expired_identities_future.waitForFinished();
   m_process_data_future.waitForFinished();
 }
 
@@ -912,12 +912,20 @@ void spot_on_lite_daemon_child_tcp_client::prepare_ssl_tls_configuration
 void spot_on_lite_daemon_child_tcp_client::process_data(void)
 {
   QByteArray data;
+  QMutex mutex;
   int index = 0;
 
   do
     {
       if(m_process_data_future.isCanceled())
-	return;
+	break;
+
+      mutex.lock();
+      m_wait_condition.wait(&mutex);
+      mutex.unlock();
+
+      if(m_process_data_future.isCanceled())
+	break;
 
       {
 	QWriteLocker lock(&m_local_content_mutex);
@@ -931,7 +939,7 @@ void spot_on_lite_daemon_child_tcp_client::process_data(void)
 	    m_local_content.remove(0, data.length());
 	  }
 	else
-	  return;
+	  continue;
       }
 
       {
@@ -1325,6 +1333,8 @@ void spot_on_lite_daemon_child_tcp_client::slot_local_socket_ready_read(void)
       if(m_process_data_future.isFinished())
 	m_process_data_future = QtConcurrent::run
 	  (this, &spot_on_lite_daemon_child_tcp_client::process_data);
+      else
+	m_wait_condition.wakeAll();
     }
   else
     {

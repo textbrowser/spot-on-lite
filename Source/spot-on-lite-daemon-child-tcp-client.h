@@ -38,6 +38,7 @@ extern "C"
 #include <QSslCipher>
 #include <QSslSocket>
 #include <QTimer>
+#include <QWaitCondition>
 
 class QLocalSocket;
 
@@ -64,7 +65,6 @@ class spot_on_lite_daemon_child_tcp_client: public QSslSocket
   static bool memcmp(const QByteArray &a, const QByteArray &b);
 
  private:
-  QAtomicInt m_abort;
   QByteArray m_local_content;
   QByteArray m_remote_content;
   QFuture<void> m_expired_identities_future;
@@ -85,6 +85,7 @@ class spot_on_lite_daemon_child_tcp_client: public QSslSocket
   QTimer m_capabilities_timer;
   QTimer m_expired_identities_timer;
   QTimer m_keep_alive_timer;
+  QWaitCondition m_wait_condition;
   bool m_client_role;
   int m_identity_lifetime;
   int m_local_so_sndbuf;
