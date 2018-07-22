@@ -1279,6 +1279,7 @@ void spot_on_lite_daemon_child_tcp_client::slot_keep_alive_timer_timeout(void)
   else
     {
       abort();
+      stop_threads_and_timers();
       QCoreApplication::exit(0);
     }
 }
