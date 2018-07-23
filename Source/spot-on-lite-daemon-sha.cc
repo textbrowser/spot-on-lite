@@ -174,9 +174,22 @@ QByteArray spot_on_lite_daemon_sha::sha_512(const QByteArray &data) const
   ** Initializing H (5.3.5).
   */
 
-  for(int i = 0; i < 8; i++)
-    H << qFromBigEndian<quint64>
-      (reinterpret_cast<const uchar *> (s_sha_512_h[i].constData()));
+  H << qFromBigEndian<quint64>
+    (reinterpret_cast<const uchar *> (s_sha_512_h[0].constData()));
+  H << qFromBigEndian<quint64>
+    (reinterpret_cast<const uchar *> (s_sha_512_h[1].constData()));
+  H << qFromBigEndian<quint64>
+    (reinterpret_cast<const uchar *> (s_sha_512_h[2].constData()));
+  H << qFromBigEndian<quint64>
+    (reinterpret_cast<const uchar *> (s_sha_512_h[3].constData()));
+  H << qFromBigEndian<quint64>
+    (reinterpret_cast<const uchar *> (s_sha_512_h[4].constData()));
+  H << qFromBigEndian<quint64>
+    (reinterpret_cast<const uchar *> (s_sha_512_h[5].constData()));
+  H << qFromBigEndian<quint64>
+    (reinterpret_cast<const uchar *> (s_sha_512_h[6].constData()));
+  H << qFromBigEndian<quint64>
+    (reinterpret_cast<const uchar *> (s_sha_512_h[7].constData()));
 
   /*
   ** Computing the hash (6.4.2).
@@ -239,14 +252,24 @@ QByteArray spot_on_lite_daemon_sha::sha_512(const QByteArray &data) const
 
   hash.clear();
 
-  for(size_t i = 0; i < 8; i++)
-    {
-      QByteArray h(8, 0);
+  QByteArray h(8, 0);
 
-      qToBigEndian(H[i], reinterpret_cast<uchar *> (h.data()));
-      hash.append(h);
-    }
-
+  qToBigEndian(H[0], reinterpret_cast<uchar *> (h.data()));
+  hash.append(h);
+  qToBigEndian(H[1], reinterpret_cast<uchar *> (h.data()));
+  hash.append(h);
+  qToBigEndian(H[2], reinterpret_cast<uchar *> (h.data()));
+  hash.append(h);
+  qToBigEndian(H[3], reinterpret_cast<uchar *> (h.data()));
+  hash.append(h);
+  qToBigEndian(H[4], reinterpret_cast<uchar *> (h.data()));
+  hash.append(h);
+  qToBigEndian(H[5], reinterpret_cast<uchar *> (h.data()));
+  hash.append(h);
+  qToBigEndian(H[6], reinterpret_cast<uchar *> (h.data()));
+  hash.append(h);
+  qToBigEndian(H[7], reinterpret_cast<uchar *> (h.data()));
+  hash.append(h);
 #endif
   return hash;
 }
