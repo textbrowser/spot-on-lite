@@ -913,9 +913,7 @@ void spot_on_lite_daemon_child_tcp_client::process_data(void)
       {
 	QWriteLocker lock(&m_local_content_mutex);
 
-	index = m_local_content.indexOf(m_end_of_message_marker);
-
-	if(index > 0)
+	if((index = m_local_content.indexOf(m_end_of_message_marker)) >= 0)
 	  {
 	    data = m_local_content.
 	      mid(0, index + m_end_of_message_marker.length());
@@ -925,10 +923,12 @@ void spot_on_lite_daemon_child_tcp_client::process_data(void)
 	  break;
       }
 
+      index = data.indexOf("content=");
+
       {
 	QReadLocker lock(&m_remote_identities_mutex);
 
-	if(m_remote_identities.isEmpty())
+	if(index < 0 || m_remote_identities.isEmpty())
 	  {
 	    emit write_signal(data);
 	    continue;
@@ -1065,7 +1065,7 @@ void spot_on_lite_daemon_child_tcp_client::record_remote_identity
   QByteArray identity;
   int index = data.indexOf("content=");
 
-  if(index > 0)
+  if(index >= 0)
     identity = data.mid(8 + index).trimmed();
   else
     identity = data.trimmed();
@@ -1374,7 +1374,7 @@ void spot_on_lite_daemon_child_tcp_client::slot_ready_read(void)
 
   int index = 0;
 
-  while((index = m_remote_content.indexOf(m_end_of_message_marker)) > 0)
+  while((index = m_remote_content.indexOf(m_end_of_message_marker)) >= 0)
     {
       data = m_remote_content.mid(0, index + m_end_of_message_marker.length());
       m_remote_content.remove(0, data.length());
