@@ -107,6 +107,10 @@ static QByteArray s_sha_512_k[] =
 
 spot_on_lite_daemon_sha::spot_on_lite_daemon_sha(void)
 {
+  for(size_t i = 0; i <= 79; i++)
+    m_K << qFromBigEndian<quint64>
+      (reinterpret_cast<const uchar *> (QByteArray::fromHex(s_sha_512_k[i]).
+					constData()));
 }
 
 QByteArray spot_on_lite_daemon_sha::sha_512(const QByteArray &data) const
@@ -199,18 +203,59 @@ QByteArray spot_on_lite_daemon_sha::sha_512(const QByteArray &data) const
     {
       QVector<quint64> M;
 
-      for(int j = 0; j < 128; j += 8)
-	M << qFromBigEndian<quint64>
-	  (reinterpret_cast<const uchar *> (hash.mid(128 * i + j, 8).
-					    constData()));
+      M << qFromBigEndian<quint64>
+	(reinterpret_cast<const uchar *> (hash.mid(128 * i + 0, 8).
+					  constData()));
+      M << qFromBigEndian<quint64>
+	(reinterpret_cast<const uchar *> (hash.mid(128 * i + 8, 8).
+					  constData()));
+      M << qFromBigEndian<quint64>
+	(reinterpret_cast<const uchar *> (hash.mid(128 * i + 16, 8).
+					  constData()));
+      M << qFromBigEndian<quint64>
+	(reinterpret_cast<const uchar *> (hash.mid(128 * i + 24, 8).
+					  constData()));
+      M << qFromBigEndian<quint64>
+	(reinterpret_cast<const uchar *> (hash.mid(128 * i + 32, 8).
+					  constData()));
+      M << qFromBigEndian<quint64>
+	(reinterpret_cast<const uchar *> (hash.mid(128 * i + 40, 8).
+					  constData()));
+      M << qFromBigEndian<quint64>
+	(reinterpret_cast<const uchar *> (hash.mid(128 * i + 48, 8).
+					  constData()));
+      M << qFromBigEndian<quint64>
+	(reinterpret_cast<const uchar *> (hash.mid(128 * i + 56, 8).
+					  constData()));
+      M << qFromBigEndian<quint64>
+	(reinterpret_cast<const uchar *> (hash.mid(128 * i + 64, 8).
+					  constData()));
+      M << qFromBigEndian<quint64>
+	(reinterpret_cast<const uchar *> (hash.mid(128 * i + 72, 8).
+					  constData()));
+      M << qFromBigEndian<quint64>
+	(reinterpret_cast<const uchar *> (hash.mid(128 * i + 80, 8).
+					  constData()));
+      M << qFromBigEndian<quint64>
+	(reinterpret_cast<const uchar *> (hash.mid(128 * i + 88, 8).
+					  constData()));
+      M << qFromBigEndian<quint64>
+	(reinterpret_cast<const uchar *> (hash.mid(128 * i + 96, 8).
+					  constData()));
+      M << qFromBigEndian<quint64>
+	(reinterpret_cast<const uchar *> (hash.mid(128 * i + 104, 8).
+					  constData()));
+      M << qFromBigEndian<quint64>
+	(reinterpret_cast<const uchar *> (hash.mid(128 * i + 112, 8).
+					  constData()));
+      M << qFromBigEndian<quint64>
+	(reinterpret_cast<const uchar *> (hash.mid(128 * i + 120, 8).
+					  constData()));
 
-      QVector<quint64> W;
+      QVector<quint64> W(M);
 
-      for(size_t t = 0; t <= 79; t++)
-	if(t <= 15)
-	  W << M[t];
-	else
-	  W << s1_512(W[t - 2]) + W[t - 7] + s0_512(W[t - 15]) + W[t - 16];
+      for(size_t t = 16; t <= 79; t++)
+	W << s1_512(W[t - 2]) + W[t - 7] + s0_512(W[t - 15]) + W[t - 16];
 
       quint64 a = H[0];
       quint64 b = H[1];
@@ -223,11 +268,7 @@ QByteArray spot_on_lite_daemon_sha::sha_512(const QByteArray &data) const
 
       for(size_t t = 0; t <= 79; t++)
 	{
-	  quint64 K = qFromBigEndian<quint64>
-	    (reinterpret_cast<const uchar *> (QByteArray::
-					      fromHex(s_sha_512_k[t]).
-					      constData()));
-	  quint64 T1 = h + S1_512(e) + Ch(e, f, g) + K + W[t];
+	  quint64 T1 = h + S1_512(e) + Ch(e, f, g) + m_K[t] + W[t];
 	  quint64 T2 = S0_512(a) + Maj(a, b, c);
 
 	  h = g;

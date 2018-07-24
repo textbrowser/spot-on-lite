@@ -36,6 +36,9 @@ class spot_on_lite_daemon_sha
   spot_on_lite_daemon_sha(void);
   QByteArray sha_512(const QByteArray &data) const;
   QByteArray sha_512_hmac(const QByteArray &data, const QByteArray &key) const;
+
+ private:
+  QVector<quint64> m_K;
 };
 
 #endif
