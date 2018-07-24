@@ -39,6 +39,8 @@ extern "C"
 #include <QSslSocket>
 #include <QTimer>
 
+#include "spot-on-lite-daemon-sha.h"
+
 class QLocalSocket;
 
 class spot_on_lite_daemon_child_tcp_client: public QSslSocket
@@ -90,6 +92,7 @@ class spot_on_lite_daemon_child_tcp_client: public QSslSocket
   int m_maximum_accumulated_bytes;
   int m_silence;
   int m_ssl_key_size;
+  spot_on_lite_daemon_sha m_sha_512;
   QList<QByteArray> local_certificate_configuration(void) const;
   QList<QSslCipher> default_ssl_ciphers(void) const;
   bool record_congestion(const QByteArray &data) const;

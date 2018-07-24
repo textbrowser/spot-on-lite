@@ -56,7 +56,6 @@ extern "C"
 #include <limits>
 
 #include "spot-on-lite-daemon-child-tcp-client.h"
-#include "spot-on-lite-daemon-sha.h"
 
 static int s_maximum_identities = 2048;
 
@@ -902,85 +901,71 @@ void spot_on_lite_daemon_child_tcp_client::prepare_ssl_tls_configuration
 
 void spot_on_lite_daemon_child_tcp_client::process_data(void)
 {
-  QByteArray data;
+  QList<QByteArray> list;
   int index = 0;
-  static spot_on_lite_daemon_sha sha_512;
 
-  do
+  {
+    QWriteLocker lock(&m_local_content_mutex);
+
+    while((index = m_local_content.indexOf(m_end_of_message_marker)) >= 0)
+      {
+	list << m_local_content.mid
+	  (0, index + m_end_of_message_marker.length());
+	m_local_content.remove(0, list.last().length());
+      }
+  }
+
+  if(list.isEmpty())
+    return;
+
+  QHash<QByteArray, QPair<QByteArray, qint64> > identities;
+
+  {
+    QReadLocker lock(&m_remote_identities_mutex);
+
+    identities = m_remote_identities;
+  }
+
+  for(int i = 0; i < list.size() && !m_process_data_future.isFinished(); i++)
     {
-      if(m_process_data_future.isCanceled())
-	break;
+      index = list.at(i).indexOf("content=");
 
-      {
-	QWriteLocker lock(&m_local_content_mutex);
-
-	if((index = m_local_content.indexOf(m_end_of_message_marker)) >= 0)
-	  {
-	    data = m_local_content.
-	      mid(0, index + m_end_of_message_marker.length());
-	    m_local_content.remove(0, data.length());
-	  }
-	else
-	  break;
-      }
-
-      index = data.indexOf("content=");
-
-      {
-	QReadLocker lock(&m_remote_identities_mutex);
-
-	if(index < 0 || m_remote_identities.isEmpty())
-	  {
-	    emit write_signal(data);
-	    continue;
-	  }
-      }
-
-      QByteArray d(data.mid(8 + data.indexOf("content=")).trimmed());
-      QByteArray h;
-
-      if(d.contains("\n")) // Spot-On
-	{
-	  QList<QByteArray> list(d.split('\n'));
-
-	  d = QByteArray::fromBase64(list.value(0)) +
-	    QByteArray::fromBase64(list.value(1));
-	  h = QByteArray::fromBase64(list.value(2)); // Destination.
-	}
+      if(identities.isEmpty() || index < 0)
+	emit write_signal(list.at(i));
       else
 	{
-	  d = QByteArray::fromBase64(d);
-	  h = d.mid(d.length() - 64);
-	  d = d.mid(0, d.length() - h.length());
-	}
+	  QByteArray data(list.at(i).mid(8 + index).trimmed());
+	  QByteArray hash;
 
-      QHash<QByteArray, QPair<QByteArray, qint64> > hash;
-
-      {
-	QReadLocker lock(&m_remote_identities_mutex);
-
-	hash = m_remote_identities;
-      }
-
-      QByteArray hmac;
-      QHashIterator<QByteArray, QPair<QByteArray, qint64> > it(hash);
-
-      while(it.hasNext())
-	{
-	  if(m_process_data_future.isCanceled())
-	    return;
-
-	  it.next();
-	  hmac = sha_512.sha_512_hmac(d, it.key());
-
-	  if(memcmp(h, hmac))
+	  if(data.contains("\n")) // Spot-On
 	    {
-	      emit write_signal(data);
-	      break;
+	      QList<QByteArray> list(data.split('\n'));
+
+	      data = QByteArray::fromBase64(list.value(0)) +
+		     QByteArray::fromBase64(list.value(1));
+	      hash = QByteArray::fromBase64(list.value(2)); // Destination.
+	    }
+	  else
+	    {
+	      data = QByteArray::fromBase64(data);
+	      hash = data.mid(data.length() - 64);
+	      data = data.mid(0, data.length() - hash.length());
+	    }
+
+	  QHashIterator<QByteArray, QPair<QByteArray, qint64> > it(identities);
+
+	  while(it.hasNext() && !m_process_data_future.isFinished())
+	    {
+	      it.next();
+
+	      if(memcmp(hash, m_sha_512.sha_512_hmac(data, it.key())))
+		{
+		  emit write_signal(list.at(i));
+		  break;
+		}
 	    }
 	}
     }
-  while(true);
 }
 
 void spot_on_lite_daemon_child_tcp_client::purge_containers(void)
