@@ -57,6 +57,9 @@ extern "C"
 
 #include "spot-on-lite-daemon-child-tcp-client.h"
 
+#define SO_LITE_DAEMON_SPECIAL_COMPRESSION(a) \
+  (qCompress(a).toBase64().append(';'))
+
 static int s_maximum_identities = 2048;
 
 static int hash_algorithm_key_length(const QByteArray &algorithm)
@@ -905,6 +908,30 @@ void spot_on_lite_daemon_child_tcp_client::process_data(void)
   int index = 0;
 
   {
+    QByteArray data;
+    QWriteLocker lock(&m_local_content_mutex);
+
+    while((index = m_local_content.indexOf(';')) >= 0)
+      if(index == 0)
+	m_local_content.remove(0, index + 1);
+      else
+	{
+	  data = qUncompress
+	    (QByteArray::fromBase64(m_local_content.mid(0, index)));
+
+	  if(m_end_of_message_marker.isEmpty())
+	    emit write_signal(data);
+	  else
+	    list << data;
+
+	  m_local_content.remove(0, index + 1);
+	}
+  }
+
+  if(m_end_of_message_marker.isEmpty())
+    return;
+
+  {
     QWriteLocker lock(&m_local_content_mutex);
 
     while((index = m_local_content.indexOf(m_end_of_message_marker)) >= 0)
@@ -1118,7 +1145,7 @@ void spot_on_lite_daemon_child_tcp_client::send_identity(const QByteArray &data)
      QByteArray::number(data.length() +
 			QString("type=0095a&content=\r\n\r\n\r\n").length()));
   results.replace("%2", data);
-  m_local_socket->write(results);
+  m_local_socket->write(SO_LITE_DAEMON_SPECIAL_COMPRESSION(results));
   m_local_socket->flush();
 }
 
@@ -1298,27 +1325,18 @@ void spot_on_lite_daemon_child_tcp_client::slot_local_socket_ready_read(void)
   if(data.isEmpty())
     return;
 
-  if(!m_end_of_message_marker.isEmpty() && !m_remote_identities.isEmpty())
-    {
-      QWriteLocker lock(&m_local_content_mutex);
+  QWriteLocker lock(&m_local_content_mutex);
 
-      if(m_local_content.length() >= m_maximum_accumulated_bytes)
-	m_local_content.clear();
+  if(m_local_content.length() >= m_maximum_accumulated_bytes)
+    m_local_content.clear();
 
-      m_local_content.append
-	(data.mid(0, qAbs(m_maximum_accumulated_bytes -
-			  m_local_content.length())));
-      lock.unlock();
+  m_local_content.append
+    (data.mid(0, qAbs(m_maximum_accumulated_bytes - m_local_content.length())));
+  lock.unlock();
 
-      if(m_process_data_future.isFinished())
-	m_process_data_future = QtConcurrent::run
-	  (this, &spot_on_lite_daemon_child_tcp_client::process_data);
-    }
-  else
-    {
-      write(data);
-      flush();
-    }
+  if(m_process_data_future.isFinished())
+    m_process_data_future = QtConcurrent::run
+      (this, &spot_on_lite_daemon_child_tcp_client::process_data);
 }
 
 void spot_on_lite_daemon_child_tcp_client::slot_ready_read(void)
@@ -1335,7 +1353,7 @@ void spot_on_lite_daemon_child_tcp_client::slot_ready_read(void)
       if(record_congestion(data))
 	if(m_local_socket)
 	  {
-	    m_local_socket->write(data);
+	    m_local_socket->write(SO_LITE_DAEMON_SPECIAL_COMPRESSION(data));
 	    m_local_socket->flush();
 	  }
 
@@ -1380,7 +1398,7 @@ void spot_on_lite_daemon_child_tcp_client::slot_ready_read(void)
 
       if(record_congestion(data))
 	{
-	  m_local_socket->write(data);
+	  m_local_socket->write(SO_LITE_DAEMON_SPECIAL_COMPRESSION(data));
 	  m_local_socket->flush();
 	}
     }
