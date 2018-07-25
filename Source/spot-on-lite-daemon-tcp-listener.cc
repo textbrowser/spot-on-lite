@@ -187,12 +187,11 @@ void spot_on_lite_daemon_tcp_listener::slot_start_timeout(void)
   /*
   ** 0 - IP Address
   ** 1 - Port
-  ** ...
+  ** 2 - Backlog
   */
 
   QStringList list(m_configuration.split(",", QString::KeepEmptyParts));
 
-  if(listen(QHostAddress(list.value(0)),
-	    static_cast<quint16> (list.value(1).toInt())))
+  if(listen(QHostAddress(list.value(0)), list.value(1).toUShort()))
     setMaxPendingConnections(list.value(2).toInt());
 }
