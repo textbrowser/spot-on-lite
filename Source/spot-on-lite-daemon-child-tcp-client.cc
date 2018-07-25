@@ -904,7 +904,7 @@ void spot_on_lite_daemon_child_tcp_client::prepare_ssl_tls_configuration
 
 void spot_on_lite_daemon_child_tcp_client::process_data(void)
 {
-  QList<QByteArray> list;
+  QByteArray local_content;
   int index = 0;
 
   {
@@ -922,7 +922,7 @@ void spot_on_lite_daemon_child_tcp_client::process_data(void)
 	  if(m_end_of_message_marker.isEmpty())
 	    emit write_signal(data);
 	  else
-	    list << data;
+	    local_content.append(data);
 
 	  m_local_content.remove(0, index + 1);
 	}
@@ -931,16 +931,13 @@ void spot_on_lite_daemon_child_tcp_client::process_data(void)
   if(m_end_of_message_marker.isEmpty())
     return;
 
-  {
-    QWriteLocker lock(&m_local_content_mutex);
+  QList<QByteArray> list;
 
-    while((index = m_local_content.indexOf(m_end_of_message_marker)) >= 0)
-      {
-	list << m_local_content.mid
-	  (0, index + m_end_of_message_marker.length());
-	m_local_content.remove(0, list.last().length());
-      }
-  }
+  while((index = local_content.indexOf(m_end_of_message_marker)) >= 0)
+    {
+      list << local_content.mid(0, index + m_end_of_message_marker.length());
+      local_content.remove(0, list.last().length());
+    }
 
   if(list.isEmpty())
     return;
