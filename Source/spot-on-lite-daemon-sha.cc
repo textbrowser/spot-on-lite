@@ -255,20 +255,23 @@ QByteArray spot_on_lite_daemon_sha::sha_512(const QByteArray &data) const
       QVector<quint64> W(M);
 
       for(size_t t = 16; t <= 79; t++)
-	W << s1_512(W[t - 2]) + W[t - 7] + s0_512(W[t - 15]) + W[t - 16];
+	W << (s1_512(W.at(t - 2)) +
+	      W.at(t - 7) +
+	      s0_512(W.at(t - 15]) +
+	      W.at(t - 16));
 
-      quint64 a = H[0];
-      quint64 b = H[1];
-      quint64 c = H[2];
-      quint64 d = H[3];
-      quint64 e = H[4];
-      quint64 f = H[5];
-      quint64 g = H[6];
-      quint64 h = H[7];
+      quint64 a = H.at(0);
+      quint64 b = H.at(1);
+      quint64 c = H.at(2);
+      quint64 d = H.at(3);
+      quint64 e = H.at(4);
+      quint64 f = H.at(5);
+      quint64 g = H.at(6);
+      quint64 h = H.at(7);
 
       for(size_t t = 0; t <= 79; t++)
 	{
-	  quint64 T1 = h + S1_512(e) + Ch(e, f, g) + m_K[t] + W[t];
+	  quint64 T1 = h + S1_512(e) + Ch(e, f, g) + m_K.at(t) + W.at(t);
 	  quint64 T2 = S0_512(a) + Maj(a, b, c);
 
 	  h = g;
@@ -281,35 +284,35 @@ QByteArray spot_on_lite_daemon_sha::sha_512(const QByteArray &data) const
 	  a = T1 + T2;
 	}
 
-      H[0] += a;
-      H[1] += b;
-      H[2] += c;
-      H[3] += d;
-      H[4] += e;
-      H[5] += f;
-      H[6] += g;
-      H[7] += h;
+      H.replace(0, H.at(0) + a);
+      H.replace(1, H.at(1) + b);
+      H.replace(2, H.at(2) + c);
+      H.replace(3, H.at(3) + d);
+      H.replace(4, H.at(4) + e);
+      H.replace(5, H.at(5) + f);
+      H.replace(6, H.at(6) + g);
+      H.replace(7, H.at(7) + h);
     }
 
   hash.clear();
 
   QByteArray h(8, 0);
 
-  qToBigEndian(H[0], reinterpret_cast<uchar *> (h.data()));
+  qToBigEndian(H.at(0), reinterpret_cast<uchar *> (h.data()));
   hash.append(h);
-  qToBigEndian(H[1], reinterpret_cast<uchar *> (h.data()));
+  qToBigEndian(H.at(1), reinterpret_cast<uchar *> (h.data()));
   hash.append(h);
-  qToBigEndian(H[2], reinterpret_cast<uchar *> (h.data()));
+  qToBigEndian(H.at(2), reinterpret_cast<uchar *> (h.data()));
   hash.append(h);
-  qToBigEndian(H[3], reinterpret_cast<uchar *> (h.data()));
+  qToBigEndian(H.at(3), reinterpret_cast<uchar *> (h.data()));
   hash.append(h);
-  qToBigEndian(H[4], reinterpret_cast<uchar *> (h.data()));
+  qToBigEndian(H.at(4), reinterpret_cast<uchar *> (h.data()));
   hash.append(h);
-  qToBigEndian(H[5], reinterpret_cast<uchar *> (h.data()));
+  qToBigEndian(H.at(5), reinterpret_cast<uchar *> (h.data()));
   hash.append(h);
-  qToBigEndian(H[6], reinterpret_cast<uchar *> (h.data()));
+  qToBigEndian(H.at(6), reinterpret_cast<uchar *> (h.data()));
   hash.append(h);
-  qToBigEndian(H[7], reinterpret_cast<uchar *> (h.data()));
+  qToBigEndian(H.at(7), reinterpret_cast<uchar *> (h.data()));
   hash.append(h);
 #endif
   return hash;

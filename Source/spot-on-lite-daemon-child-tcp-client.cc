@@ -429,7 +429,7 @@ bool spot_on_lite_daemon_child_tcp_client::memcmp(const QByteArray &a,
   int rc = 0;
 
   for(int i = 0; i < length; i++)
-    rc |= a.mid(i, 1)[0] ^ b.mid(i, 1)[0];
+    rc |= a.mid(i, 1).at(0) ^ b.mid(i, 1).at(0);
 
   return rc == 0;
 }
