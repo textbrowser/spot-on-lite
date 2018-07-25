@@ -257,7 +257,7 @@ QByteArray spot_on_lite_daemon_sha::sha_512(const QByteArray &data) const
       for(size_t t = 16; t <= 79; t++)
 	W << (s1_512(W.at(t - 2)) +
 	      W.at(t - 7) +
-	      s0_512(W.at(t - 15]) +
+	      s0_512(W.at(t - 15)) +
 	      W.at(t - 16));
 
       quint64 a = H.at(0);
