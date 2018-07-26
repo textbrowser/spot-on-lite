@@ -910,17 +910,18 @@ void spot_on_lite_daemon_child_tcp_client::process_data(void)
   if(m_abort.fetchAndAddOrdered(0))
     return;
 
+  QByteArray local_content;
+  QElapsedTimer elapsed;
+  int index = 0;
   struct timespec ts;
 
+  elapsed.start();
   ts.tv_nsec = 25000000; // 25 Milliseconds
   ts.tv_sec = 0;
 
   do
     {
       nanosleep(&ts, 0);
-
-      QByteArray local_content;
-      int index = 0;
 
       {
 	QByteArray data;
@@ -933,13 +934,12 @@ void spot_on_lite_daemon_child_tcp_client::process_data(void)
 	    {
 	      data = qUncompress
 		(QByteArray::fromBase64(m_local_content.mid(0, index)));
+	      m_local_content.remove(0, index + 1);
 
 	      if(m_end_of_message_marker.isEmpty())
 		emit write_signal(data);
 	      else
 		local_content.append(data);
-
-	      m_local_content.remove(0, index + 1);
 	    }
       }
 
@@ -956,7 +956,12 @@ void spot_on_lite_daemon_child_tcp_client::process_data(void)
 	}
 
       if(list.isEmpty())
-	continue;
+	{
+	  if(elapsed.elapsed() >= 10000)
+	    local_content.clear();
+
+	  continue;
+	}
 
       QHash<QByteArray, QPair<QByteArray, qint64> > identities;
 
@@ -1007,6 +1012,8 @@ void spot_on_lite_daemon_child_tcp_client::process_data(void)
 		}
 	    }
 	}
+
+      elapsed.start();
     }
   while(!m_abort.fetchAndAddOrdered(0));
 }
