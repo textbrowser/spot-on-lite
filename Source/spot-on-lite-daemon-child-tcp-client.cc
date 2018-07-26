@@ -58,9 +58,6 @@ extern "C"
 
 #include "spot-on-lite-daemon-child-tcp-client.h"
 
-#define SO_LITE_DAEMON_SPECIAL_COMPRESSION(a) \
-  (qCompress(a).toBase64().append(';'))
-
 static int s_maximum_identities = 2048;
 
 static int hash_algorithm_key_length(const QByteArray &algorithm)
@@ -103,12 +100,6 @@ spot_on_lite_daemon_child_tcp_client
 
   if(m_maximum_accumulated_bytes < 1024)
     m_maximum_accumulated_bytes = 8 * 1024 * 1024;
-
-  if(!m_end_of_message_marker.isEmpty())
-    connect(this,
-	    SIGNAL(write_signal(const QByteArray &)),
-	    this,
-	    SLOT(slot_write_data(const QByteArray &)));
 
   m_server_identity = server_identity;
   m_silence = 1000 * qBound(15, silence, 3600);
@@ -180,6 +171,10 @@ spot_on_lite_daemon_child_tcp_client
 	  SIGNAL(readyRead(void)),
 	  this,
 	  SLOT(slot_ready_read(void)));
+  connect(this,
+	  SIGNAL(write_signal(const QByteArray &)),
+	  this,
+	  SLOT(slot_write_data(const QByteArray &)));
 
   if(!m_ssl_control_string.isEmpty() && m_ssl_key_size > 0)
     {
@@ -910,9 +905,7 @@ void spot_on_lite_daemon_child_tcp_client::process_data(void)
   if(m_abort.fetchAndAddOrdered(0))
     return;
 
-  QByteArray local_content;
   QElapsedTimer elapsed;
-  int index = 0;
   struct timespec ts;
 
   elapsed.start();
@@ -923,47 +916,9 @@ void spot_on_lite_daemon_child_tcp_client::process_data(void)
     {
       nanosleep(&ts, 0);
 
-      {
-	QByteArray data;
-	QWriteLocker lock(&m_local_content_mutex);
-
-	while((index = m_local_content.indexOf(';')) >= 0)
-	  if(index == 0)
-	    m_local_content.remove(0, index + 1);
-	  else
-	    {
-	      data = qUncompress
-		(QByteArray::fromBase64(m_local_content.mid(0, index)));
-	      m_local_content.remove(0, index + 1);
-
-	      if(m_end_of_message_marker.isEmpty())
-		emit write_signal(data);
-	      else
-		local_content.append(data);
-	    }
-      }
-
-      if(local_content.isEmpty() || m_end_of_message_marker.isEmpty())
-	continue;
-
-      QList<QByteArray> list;
-
-      while((index = local_content.indexOf(m_end_of_message_marker)) >= 0)
-	{
-	  list << local_content.mid
-	    (0, index + m_end_of_message_marker.length());
-	  local_content.remove(0, list.last().length());
-	}
-
-      if(list.isEmpty())
-	{
-	  if(elapsed.elapsed() >= 10000)
-	    local_content.clear();
-
-	  continue;
-	}
-
       QHash<QByteArray, QPair<QByteArray, qint64> > identities;
+      QList<QByteArray> list;
+      int index = 0;
 
       {
 	QReadLocker lock(&m_remote_identities_mutex);
@@ -971,11 +926,43 @@ void spot_on_lite_daemon_child_tcp_client::process_data(void)
 	identities = m_remote_identities;
       }
 
+      {
+	QWriteLocker lock(&m_local_content_mutex);
+
+	if(identities.isEmpty() || m_end_of_message_marker.isEmpty())
+	  {
+	    emit write_signal(m_local_content);
+	    m_local_content.clear();
+	    continue;
+	  }
+	else
+	  while((index = m_local_content.
+		 indexOf(m_end_of_message_marker)) >= 0 &&
+		!m_abort.fetchAndAddOrdered(0))
+	    {
+	      list << m_local_content.mid
+		(0, index + m_end_of_message_marker.length());
+	      m_local_content.remove(0, list.last().length());
+	    }
+      }
+
+      if(list.isEmpty())
+	{
+	  if(elapsed.elapsed() >= 10025)
+	    {
+	      QWriteLocker lock(&m_local_content_mutex);
+
+	      m_local_content.clear();
+	    }
+
+	  continue;
+	}
+
       for(int i = 0; i < list.size() && !m_abort.fetchAndAddOrdered(0); i++)
 	{
 	  index = list.at(i).indexOf("content=");
 
-	  if(identities.isEmpty() || index < 0)
+	  if(index < 0)
 	    emit write_signal(list.at(i));
 	  else
 	    {
@@ -1168,7 +1155,7 @@ void spot_on_lite_daemon_child_tcp_client::send_identity(const QByteArray &data)
      QByteArray::number(data.length() +
 			QString("type=0095a&content=\r\n\r\n\r\n").length()));
   results.replace("%2", data);
-  m_local_socket->write(SO_LITE_DAEMON_SPECIAL_COMPRESSION(results));
+  m_local_socket->write(results);
   m_local_socket->flush();
 }
 
@@ -1378,7 +1365,7 @@ void spot_on_lite_daemon_child_tcp_client::slot_ready_read(void)
       if(record_congestion(data))
 	if(m_local_socket)
 	  {
-	    m_local_socket->write(SO_LITE_DAEMON_SPECIAL_COMPRESSION(data));
+	    m_local_socket->write(data);
 	    m_local_socket->flush();
 	  }
 
@@ -1423,7 +1410,7 @@ void spot_on_lite_daemon_child_tcp_client::slot_ready_read(void)
 
       if(record_congestion(data))
 	{
-	  m_local_socket->write(SO_LITE_DAEMON_SPECIAL_COMPRESSION(data));
+	  m_local_socket->write(data);
 	  m_local_socket->flush();
 	}
     }
