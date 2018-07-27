@@ -166,7 +166,9 @@ spot_on_lite_daemon *spot_on_lite_daemon::instance(void)
 
 void spot_on_lite_daemon::log(const QString &error) const
 {
-  if(error.trimmed().isEmpty())
+  QString e(error.trimmed());
+
+  if(e.isEmpty())
     return;
 
   QFile file(m_log_file_name);
@@ -177,7 +179,7 @@ void spot_on_lite_daemon::log(const QString &error) const
 
       file.write(dateTime.toString().toStdString().data());
       file.write("\n");
-      file.write(error.trimmed().toStdString().data());
+      file.write(e.toStdString().data());
       file.write("\n");
       file.close();
     }

@@ -801,10 +801,12 @@ void spot_on_lite_daemon_child_tcp_client::generate_ssl_tls(void)
 
 void spot_on_lite_daemon_child_tcp_client::log(const QString &error) const
 {
-  if(error.trimmed().isEmpty())
+  QString e(error.trimmed());
+
+  if(e.isEmpty())
     return;
   else
-    qDebug() << error;
+    qDebug() << e;
 
   QFile file(m_log_file_name);
 
@@ -814,7 +816,7 @@ void spot_on_lite_daemon_child_tcp_client::log(const QString &error) const
 
       file.write(dateTime.toString().toStdString().data());
       file.write("\n");
-      file.write(error.trimmed().toStdString().data());
+      file.write(e.toStdString().data());
       file.write("\n");
       file.close();
     }
