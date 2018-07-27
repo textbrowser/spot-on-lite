@@ -764,9 +764,7 @@ void spot_on_lite_daemon_child_tcp_client::generate_ssl_tls(void)
   memcpy(public_buffer, bptr->data, bptr->length);
   public_buffer[bptr->length] = 0;
   public_key = public_buffer;
-
-  if(days > 0)
-    generate_certificate(rsa, certificate, days, error);
+  generate_certificate(rsa, certificate, days, error);
 
  done_label:
 
