@@ -1163,11 +1163,12 @@ void spot_on_lite_daemon_child_tcp_client::record_remote_identity
 	    query.exec("CREATE TABLE IF NOT EXISTS remote_identities ("
 		       "algorithm TEXT NOT NULL, "
 		       "date_time_inserted BIGINT NOT NULL, "
-		       "identity TEXT PRIMARY KEY NOT NULL, "
-		       "pid BIGINT NOT NULL)");
+		       "identity TEXT NOT NULL, "
+		       "pid BIGINT NOT NULL, "
+		       "PRIMARY KEY (identity, pid))");
 	    query.exec("PRAGMA journal_mode = OFF");
 	    query.exec("PRAGMA synchronous = OFF");
-	    query.prepare("INSERT INTO remote_identities "
+	    query.prepare("INSERT OR REPLACE INTO remote_identities "
 			  "(algorithm, date_time_inserted, identity, pid) "
 			  "VALUES (?, ?, ?, ?)");
 	    query.addBindValue(algorithm);
