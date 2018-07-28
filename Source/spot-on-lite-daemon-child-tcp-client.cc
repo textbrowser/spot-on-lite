@@ -246,8 +246,9 @@ remote_identities(void)
 	QSqlQuery query(db);
 
 	query.setForwardOnly(true);
-	query.prepare("SELECT algorithm, identity FROM remote_identities "
-		      "WHERE pid = ?");
+	query.prepare
+	  ("SELECT algorithm, identity FROM remote_identities "
+	   "WHERE pid = ? ORDER BY date_time_inserted DESC LIMIT 16");
 	query.addBindValue(QCoreApplication::applicationPid());
 
 	if(query.exec())
@@ -1493,14 +1494,17 @@ void spot_on_lite_daemon_child_tcp_client::slot_ready_read(void)
 
       if(data.contains("type=0095a&content"))
 	{
-	  record_congestion(data);
-
 	  if(!m_client_role)
-	    /*
-	    ** We're a server socket!
-	    */
+	    {
+	      if(record_congestion(data))
+		/*
+		** We're a server socket!
+		*/
 
-	    record_remote_identity(data);
+		record_remote_identity(data);
+	    }
+	  else
+	    record_congestion(data);
 
 	  continue;
 	}
