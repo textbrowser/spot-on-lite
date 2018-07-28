@@ -91,6 +91,7 @@ spot_on_lite_daemon_child_tcp_client
   m_certificates_file_name = certificates_file_name;
   m_client_role = socket_descriptor < 0;
   m_congestion_control_file_name = congestion_control_file_name;
+  m_db_id = 0;
   m_end_of_message_marker = end_of_message_marker;
   m_identity_lifetime = 1000 * qBound(30, identities_lifetime, 600);
   m_local_server_file_name = local_server_file_name;
@@ -147,7 +148,7 @@ spot_on_lite_daemon_child_tcp_client
       m_capabilities_timer.start(m_silence / 2);
     }
 
-  m_expired_identities_timer.setInterval(30000);
+  m_expired_identities_timer.setInterval(15000);
   m_keep_alive_timer.start(m_silence);
   connect(&m_attempt_local_connection_timer,
 	  SIGNAL(timeout(void)),
@@ -229,13 +230,14 @@ spot_on_lite_daemon_child_tcp_client::
 }
 
 QHash<QByteArray, QString>spot_on_lite_daemon_child_tcp_client::
-remote_identities(void) const
+remote_identities(void)
 {
   QHash<QByteArray, QString> hash;
+  quint64 db_connection_id = db_id();
 
   {
     QSqlDatabase db = QSqlDatabase::addDatabase
-      ("QSQLITE", "remote_identities_database");
+      ("QSQLITE", QString::number(db_connection_id));
 
     db.setDatabaseName(m_certificates_file_name);
 
@@ -257,19 +259,20 @@ remote_identities(void) const
     db.close();
   }
 
-  QSqlDatabase::removeDatabase("remote_identities_database");
+  QSqlDatabase::removeDatabase(QString::number(db_connection_id));
 
   return hash;
 }
 
 QList<QByteArray> spot_on_lite_daemon_child_tcp_client::
-local_certificate_configuration(void) const
+local_certificate_configuration(void)
 {
   QList<QByteArray> list;
+  quint64 db_connection_id = db_id();
 
   {
     QSqlDatabase db = QSqlDatabase::addDatabase
-      ("QSQLITE", "certificates_database");
+      ("QSQLITE", QString::number(db_connection_id));
 
     db.setDatabaseName(m_certificates_file_name);
 
@@ -290,7 +293,7 @@ local_certificate_configuration(void) const
     db.close();
   }
 
-  QSqlDatabase::removeDatabase("certificates_database");
+  QSqlDatabase::removeDatabase(QString::number(db_connection_id));
   return list;
 }
 
@@ -466,13 +469,14 @@ bool spot_on_lite_daemon_child_tcp_client::memcmp(const QByteArray &a,
 }
 
 bool spot_on_lite_daemon_child_tcp_client::record_congestion
-(const QByteArray &data) const
+(const QByteArray &data)
 {
   bool added = false;
+  quint64 db_connection_id = db_id();
 
   {
     QSqlDatabase db = QSqlDatabase::addDatabase
-      ("QSQLITE", "congestion_control_database");
+      ("QSQLITE", QString::number(db_connection_id));
 
     db.setDatabaseName(m_congestion_control_file_name);
 
@@ -482,7 +486,7 @@ bool spot_on_lite_daemon_child_tcp_client::record_congestion
 
 	query.exec("CREATE TABLE IF NOT EXISTS congestion_control ("
 		   "date_time_inserted BIGINT NOT NULL, "
-		   "hash TEXT PRIMARY KEY NOT NULL)");
+		   "hash TEXT NOT NULL PRIMARY KEY)");
 	query.exec("PRAGMA journal_mode = OFF");
 	query.exec("PRAGMA synchronous = OFF");
 	query.prepare("INSERT INTO congestion_control "
@@ -502,8 +506,16 @@ bool spot_on_lite_daemon_child_tcp_client::record_congestion
     db.close();
   }
 
-  QSqlDatabase::removeDatabase("congestion_control_database");
+  QSqlDatabase::removeDatabase(QString::number(db_connection_id));
   return added;
+}
+
+quint64 spot_on_lite_daemon_child_tcp_client::db_id(void)
+{
+  QWriteLocker lock(&m_db_id_mutex);
+
+  m_db_id += 1;
+  return m_db_id;
 }
 
 void spot_on_lite_daemon_child_tcp_client::generate_certificate
@@ -1052,9 +1064,11 @@ void spot_on_lite_daemon_child_tcp_client::purge_containers(void)
 
 void spot_on_lite_daemon_child_tcp_client::purge_remote_identities(void)
 {
+  quint64 db_connection_id = db_id();
+
   {
     QSqlDatabase db = QSqlDatabase::addDatabase
-      ("QSQLITE", "remote_identities_database");
+      ("QSQLITE", QString::number(db_connection_id));
 
     db.setDatabaseName(m_congestion_control_file_name);
 
@@ -1072,7 +1086,7 @@ void spot_on_lite_daemon_child_tcp_client::purge_remote_identities(void)
     db.close();
   }
 
-  QSqlDatabase::removeDatabase("remote_identities_database");
+  QSqlDatabase::removeDatabase(QString::number(db_connection_id));
 }
 
 void spot_on_lite_daemon_child_tcp_client::record_certificate
@@ -1083,9 +1097,11 @@ void spot_on_lite_daemon_child_tcp_client::record_certificate
   if(m_client_role)
     return;
 
+  quint64 db_connection_id = db_id();
+
   {
     QSqlDatabase db = QSqlDatabase::addDatabase
-      ("QSQLITE", "certificates_database");
+      ("QSQLITE", QString::number(db_connection_id));
 
     db.setDatabaseName(m_certificates_file_name);
 
@@ -1097,7 +1113,7 @@ void spot_on_lite_daemon_child_tcp_client::record_certificate
 		   "certificate BLOB NOT NULL, "
 		   "private_key BLOB NOT NULL, "
 		   "public_key BLOB NOT NULL, "
-		   "server_identity TEXT PRIMARY KEY NOT NULL)");
+		   "server_identity TEXT NOT NULL PRIMARY KEY)");
 	query.prepare
 	  ("INSERT INTO certificates "
 	   "(certificate, private_key, public_key, server_identity) "
@@ -1112,7 +1128,7 @@ void spot_on_lite_daemon_child_tcp_client::record_certificate
     db.close();
   }
 
-  QSqlDatabase::removeDatabase("certificates_database");
+  QSqlDatabase::removeDatabase(QString::number(db_connection_id));
 }
 
 void spot_on_lite_daemon_child_tcp_client::record_remote_identity
@@ -1150,9 +1166,11 @@ void spot_on_lite_daemon_child_tcp_client::record_remote_identity
 
   if(hash_algorithm_key_length(algorithm) == identity.length())
     {
+      quint64 db_connection_id = db_id();
+
       {
 	QSqlDatabase db = QSqlDatabase::addDatabase
-	  ("QSQLITE", "remote_identities_database");
+	  ("QSQLITE", QString::number(db_connection_id));
 
 	db.setDatabaseName(m_remote_identities_file_name);
 
@@ -1163,9 +1181,8 @@ void spot_on_lite_daemon_child_tcp_client::record_remote_identity
 	    query.exec("CREATE TABLE IF NOT EXISTS remote_identities ("
 		       "algorithm TEXT NOT NULL, "
 		       "date_time_inserted BIGINT NOT NULL, "
-		       "identity TEXT NOT NULL, "
-		       "pid BIGINT NOT NULL, "
-		       "PRIMARY KEY (identity, pid))");
+		       "identity TEXT NOT NULL PRIMARY KEY, "
+		       "pid BIGINT NOT NULL)");
 	    query.exec("PRAGMA journal_mode = OFF");
 	    query.exec("PRAGMA synchronous = OFF");
 	    query.prepare("INSERT OR REPLACE INTO remote_identities "
@@ -1181,7 +1198,7 @@ void spot_on_lite_daemon_child_tcp_client::record_remote_identity
 	db.close();
       }
 
-      QSqlDatabase::removeDatabase("remote_identities_database");
+      QSqlDatabase::removeDatabase(QString::number(db_connection_id));
 
       if(!m_expired_identities_timer.isActive())
 	m_expired_identities_timer.start();
@@ -1190,9 +1207,11 @@ void spot_on_lite_daemon_child_tcp_client::record_remote_identity
 
 void spot_on_lite_daemon_child_tcp_client::remove_expired_identities(void)
 {
+  quint64 db_connection_id = db_id();
+
   {
     QSqlDatabase db = QSqlDatabase::addDatabase
-      ("QSQLITE", "remote_identities_database");
+      ("QSQLITE", QString::number(db_connection_id));
 
     db.setDatabaseName(m_congestion_control_file_name);
 
@@ -1202,9 +1221,11 @@ void spot_on_lite_daemon_child_tcp_client::remove_expired_identities(void)
 
 	query.exec("PRAGMA journal_mode = OFF");
 	query.exec("PRAGMA synchronous = OFF");
-	query.prepare("DELETE FROM remote_identities WHERE "
-		      "? - date_time_inserted > ?");
-	query.addBindValue(QDateTime::currentDateTime().toTime_t());
+	query.prepare
+	  (QString("DELETE FROM remote_identities WHERE "
+		   "%1 - date_time_inserted > %2 AND pid = ?").
+	   arg(QDateTime::currentDateTime().toTime_t()).
+	   arg(m_identity_lifetime));
 	query.addBindValue(m_identity_lifetime);
 	query.exec();
       }
@@ -1212,7 +1233,7 @@ void spot_on_lite_daemon_child_tcp_client::remove_expired_identities(void)
     db.close();
   }
 
-  QSqlDatabase::removeDatabase("remote_identities_database");
+  QSqlDatabase::removeDatabase(QString::number(db_connection_id));
 }
 
 void spot_on_lite_daemon_child_tcp_client::send_identity(const QByteArray &data)

@@ -75,6 +75,7 @@ class spot_on_lite_daemon_child_tcp_client: public QSslSocket
   QFuture<void> m_process_data_future;
   QLocalSocket *m_local_socket;
   QReadWriteLock m_local_content_mutex;
+  QReadWriteLock m_db_id_mutex;
   QString m_certificates_file_name;
   QString m_congestion_control_file_name;
   QString m_end_of_message_marker;
@@ -94,11 +95,13 @@ class spot_on_lite_daemon_child_tcp_client: public QSslSocket
   int m_maximum_accumulated_bytes;
   int m_silence;
   int m_ssl_key_size;
+  quint64 m_db_id;
   spot_on_lite_daemon_sha m_sha_512;
-  QHash<QByteArray, QString> remote_identities(void) const;
-  QList<QByteArray> local_certificate_configuration(void) const;
+  QHash<QByteArray, QString> remote_identities(void);
+  QList<QByteArray> local_certificate_configuration(void);
   QList<QSslCipher> default_ssl_ciphers(void) const;
-  bool record_congestion(const QByteArray &data) const;
+  bool record_congestion(const QByteArray &data);
+  quint64 db_id(void);
   void generate_certificate(RSA *rsa,
 			    QByteArray &certificate,
 			    const long int days,
