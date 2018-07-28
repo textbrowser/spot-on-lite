@@ -780,7 +780,7 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
 	      peers[list.at(0) + list.at(1)] = 0;
 	  }
       }
-    else if(key == "remote_identities_file_name")
+    else if(key == "remote_identities_file")
       {
 	QFileInfo file_info(settings.value(key).toString());
 
