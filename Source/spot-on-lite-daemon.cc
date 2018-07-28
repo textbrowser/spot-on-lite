@@ -112,6 +112,7 @@ spot_on_lite_daemon::~spot_on_lite_daemon()
     }
 
   QFile::remove(m_congestion_control_file_name);
+  QFile::remove(m_remote_identities_file_name);
   m_congestion_control_future.cancel();
   m_congestion_control_future.waitForFinished();
 
@@ -152,6 +153,11 @@ QString spot_on_lite_daemon::local_server_file_name(void) const
 QString spot_on_lite_daemon::log_file_name(void) const
 {
   return m_log_file_name;
+}
+
+QString spot_on_lite_daemon::remote_identities_file_name(void) const
+{
+  return m_remote_identities_file_name;
 }
 
 int spot_on_lite_daemon::maximum_accumulated_bytes(void) const
@@ -269,6 +275,8 @@ void spot_on_lite_daemon::prepare_peers(void)
 		<< m_log_file_name
 		<< "--maximum--accumulated-bytes"
 		<< QString::number(m_maximum_accumulated_bytes)
+		<< "--remote-identities-file"
+		<< m_remote_identities_file_name
 		<< "--server-identity"
 		<< server_identity
 		<< "--silence-timeout"
@@ -770,6 +778,44 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
 
 	    if(entry_ok)
 	      peers[list.at(0) + list.at(1)] = 0;
+	  }
+      }
+    else if(key == "remote_identities_file_name")
+      {
+	QFileInfo file_info(settings.value(key).toString());
+
+	file_info = QFileInfo(file_info.absolutePath());
+
+	if(!file_info.isDir())
+	  {
+	    if(ok)
+	      *ok = false;
+
+	    std::cerr << "spot_on_lite_daemon::"
+		      << "process_configuration_file(): "
+		      << "The parent directory \""
+		      << file_info.absoluteFilePath().toStdString()
+		      << "\" of the remote identities file is "
+		      << "not a directory. Ignoring entry."
+		      << std::endl;
+	  }
+	else if(!file_info.isWritable())
+	  {
+	    if(ok)
+	      *ok = false;
+
+	    std::cerr << "spot_on_lite_daemon::"
+		      << "process_configuration_file(): "
+		      << "The parent directory \""
+		      << file_info.absoluteFilePath().toStdString()
+		      << "\" of the remote identities file must be "
+		      << "writable. Ignoring entry."
+		      << std::endl;
+	  }
+	else
+	  {
+	    m_remote_identities_file_name = settings.value(key).toString();
+	    QFile::remove(m_congestion_control_file_name);
 	  }
       }
 }

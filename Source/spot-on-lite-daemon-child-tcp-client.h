@@ -55,6 +55,7 @@ class spot_on_lite_daemon_child_tcp_client: public QSslSocket
      const QString &end_of_message_marker,
      const QString &local_server_file_name,
      const QString &log_file_name,
+     const QString &remote_identities_file_name,
      const QString &server_identity,
      const QString &ssl_control_string,
      const int identities_lifetime,
@@ -72,15 +73,14 @@ class spot_on_lite_daemon_child_tcp_client: public QSslSocket
   QByteArray m_remote_content;
   QFuture<void> m_expired_identities_future;
   QFuture<void> m_process_data_future;
-  QHash<QByteArray, QPair<QByteArray, qint64> > m_remote_identities;
   QLocalSocket *m_local_socket;
   QReadWriteLock m_local_content_mutex;
-  QReadWriteLock m_remote_identities_mutex;
   QString m_certificates_file_name;
   QString m_congestion_control_file_name;
   QString m_end_of_message_marker;
   QString m_local_server_file_name;
   QString m_log_file_name;
+  QString m_remote_identities_file_name;
   QString m_server_identity;
   QString m_ssl_control_string;
   QTimer m_attempt_local_connection_timer;
@@ -95,6 +95,7 @@ class spot_on_lite_daemon_child_tcp_client: public QSslSocket
   int m_silence;
   int m_ssl_key_size;
   spot_on_lite_daemon_sha m_sha_512;
+  QHash<QByteArray, QString> remote_identities(void) const;
   QList<QByteArray> local_certificate_configuration(void) const;
   QList<QSslCipher> default_ssl_ciphers(void) const;
   bool record_congestion(const QByteArray &data) const;
@@ -108,6 +109,7 @@ class spot_on_lite_daemon_child_tcp_client: public QSslSocket
   void prepare_ssl_tls_configuration(const QList<QByteArray> &list);
   void process_data(void);
   void purge_containers(void);
+  void purge_remote_identities(void);
   void record_certificate(const QByteArray &certificate,
 			  const QByteArray &private_key,
 			  const QByteArray &public_key);

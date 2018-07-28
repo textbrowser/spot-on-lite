@@ -1,4 +1,4 @@
-.TH Spot-On-Lite-Daemon-Child 1 "June 12, 2018"
+.TH Spot-On-Lite-Daemon-Child 1 "July 27, 2018"
 .SH NAME
 Spot-On-Lite-Daemon-Child
 .SH SYNOPSIS
@@ -31,6 +31,9 @@ Absolute path of the log file. Assumed to be correct. Only the first instance wi
 .TP
 .BI --maximum-accumulated-bytes " bytes"
 The maximum number of bytes a child process will accumulate. Data will be discarded if the limit is breached. A default value of 8 MiB is assumed. The bytes parameter must be in the range [1024, 2147483647]. Only the first instance will be considered.
+.TP
+.BI --remote-identities-file " file"
+Absolute path of the remote identities file. Assumed to be correct. Only the first instance will be considered.
 .TP
 .BI --server-identy " identity"
 Identity of the parent listener. Required for permanent SSL/TLS certificates. Assumed to be correct. Only the first instance will be considered.

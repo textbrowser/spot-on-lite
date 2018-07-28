@@ -98,6 +98,9 @@ void spot_on_lite_daemon_tcp_listener::incomingConnection
     (spot_on_lite_daemon::instance()->local_server_file_name().toStdString());
   std::string log_file_name
     (spot_on_lite_daemon::instance()->log_file_name().toStdString());
+  std::string remote_identities_file_name
+    (spot_on_lite_daemon::instance()->remote_identities_file_name().
+     toStdString());
   std::string server_identity(QString("%1:%2").
 			      arg(serverAddress().toString()).
 			      arg(serverPort()).toStdString());
@@ -152,6 +155,8 @@ void spot_on_lite_daemon_tcp_listener::incomingConnection
 		log_file_name.data(),
 		"--maximum--accumulated-bytes",
 		QString::number(maximum_accumulated_bytes).toStdString().data(),
+		"--remote-identities-file",
+		remote_identities_file_name.data(),
 		"--server-identity",
 		server_identity.data(),
 		"--silence-timeout",

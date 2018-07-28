@@ -122,6 +122,7 @@ int main(int argc, char *argv[])
   QString local_server_file_name("");
   QString log_file_name("");
   QString protocol("tcp");
+  QString remote_identities_file_name("");
   QString server_identity("");
   QString ssl_control_string("");
   int identities_lifetime = -1;
@@ -266,6 +267,23 @@ int main(int argc, char *argv[])
 	      }
 	  }
       }
+    else if(argv && argv[i] &&
+	    strcmp(argv[i], "--remote-identities-file") == 0)
+      {
+	if(remote_identities_file_name.isEmpty())
+	  {
+	    i += 1;
+
+	    if(argc > i && argv[i])
+	      remote_identities_file_name = argv[i];
+	    else
+	      {
+		std::cerr << "Invalid remote-identities-file usage. Exiting."
+			  << std::endl;
+		return EXIT_FAILURE;
+	      }
+	  }
+      }
     else if(argv && argv[i] && strcmp(argv[i], "--server-identity") == 0)
       {
 	if(server_identity.isEmpty())
@@ -364,6 +382,7 @@ int main(int argc, char *argv[])
 	     end_of_message_marker,
 	     local_server_file_name,
 	     log_file_name,
+	     remote_identities_file_name,
 	     server_identity,
 	     ssl_control_string,
 	     identities_lifetime,

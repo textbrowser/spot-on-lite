@@ -75,6 +75,7 @@ spot_on_lite_daemon_child_tcp_client
  const QString &end_of_message_marker,
  const QString &local_server_file_name,
  const QString &log_file_name,
+ const QString &remote_identities_file_name,
  const QString &server_identity,
  const QString &ssl_control_string,
  const int identities_lifetime,
@@ -101,6 +102,7 @@ spot_on_lite_daemon_child_tcp_client
   if(m_maximum_accumulated_bytes < 1024)
     m_maximum_accumulated_bytes = 8 * 1024 * 1024;
 
+  m_remote_identities_file_name = remote_identities_file_name;
   m_server_identity = server_identity;
   m_silence = 1000 * qBound(15, silence, 3600);
   m_ssl_control_string = ssl_control_string.trimmed();
@@ -224,6 +226,40 @@ spot_on_lite_daemon_child_tcp_client::
 {
   m_abort.fetchAndStoreOrdered(1);
   stop_threads_and_timers();
+}
+
+QHash<QByteArray, QString>spot_on_lite_daemon_child_tcp_client::
+remote_identities(void) const
+{
+  QHash<QByteArray, QString> hash;
+
+  {
+    QSqlDatabase db = QSqlDatabase::addDatabase
+      ("QSQLITE", "remote_identities_database");
+
+    db.setDatabaseName(m_certificates_file_name);
+
+    if(db.open())
+      {
+	QSqlQuery query(db);
+
+	query.setForwardOnly(true);
+	query.prepare("SELECT algorithm, identity FROM remote_identities "
+		      "WHERE pid = ?");
+	query.addBindValue(QCoreApplication::applicationPid());
+
+	if(query.exec())
+	  while(query.next())
+	    hash[QByteArray::fromBase64(query.value(1).toByteArray())] =
+	      query.value(0).toString();
+      }
+
+    db.close();
+  }
+
+  QSqlDatabase::removeDatabase("remote_identities_database");
+
+  return hash;
 }
 
 QList<QByteArray> spot_on_lite_daemon_child_tcp_client::
@@ -916,15 +952,9 @@ void spot_on_lite_daemon_child_tcp_client::process_data(void)
     {
       nanosleep(&ts, 0);
 
-      QHash<QByteArray, QPair<QByteArray, qint64> > identities;
+      QHash<QByteArray, QString> identities(remote_identities());
       QList<QByteArray> list;
       int index = 0;
-
-      {
-	QReadLocker lock(&m_remote_identities_mutex);
-
-	identities = m_remote_identities;
-      }
 
       {
 	QWriteLocker lock(&m_local_content_mutex);
@@ -984,8 +1014,7 @@ void spot_on_lite_daemon_child_tcp_client::process_data(void)
 		  data = data.mid(0, data.length() - hash.length());
 		}
 
-	      QHashIterator<QByteArray, QPair<QByteArray, qint64> > it
-		(identities);
+	      QHashIterator<QByteArray, QString> it(identities);
 
 	      while(it.hasNext() && !m_abort.fetchAndAddOrdered(0))
 		{
@@ -1018,12 +1047,32 @@ void spot_on_lite_daemon_child_tcp_client::purge_containers(void)
 
   m_local_socket = 0;
   m_remote_content.clear();
+  purge_remote_identities();
+}
 
+void spot_on_lite_daemon_child_tcp_client::purge_remote_identities(void)
+{
   {
-    QWriteLocker lock(&m_remote_identities_mutex);
+    QSqlDatabase db = QSqlDatabase::addDatabase
+      ("QSQLITE", "remote_identities_database");
 
-    m_remote_identities.clear();
+    db.setDatabaseName(m_congestion_control_file_name);
+
+    if(db.open())
+      {
+	QSqlQuery query(db);
+
+	query.exec("PRAGMA journal_mode = OFF");
+	query.exec("PRAGMA synchronous = OFF");
+	query.prepare("DELETE FROM remote_identities WHERE pid = ?");
+	query.addBindValue(QCoreApplication::applicationPid());
+	query.exec();
+      }
+
+    db.close();
   }
+
+  QSqlDatabase::removeDatabase("remote_identities_database");
 }
 
 void spot_on_lite_daemon_child_tcp_client::record_certificate
@@ -1076,13 +1125,6 @@ void spot_on_lite_daemon_child_tcp_client::record_remote_identity
 
     return;
 
-  {
-    QReadLocker lock(&m_remote_identities_mutex);
-
-    if(m_remote_identities.size() >= s_maximum_identities)
-      return;
-  }
-
   QByteArray algorithm;
   QByteArray identity;
   int index = data.indexOf("content=");
@@ -1109,12 +1151,36 @@ void spot_on_lite_daemon_child_tcp_client::record_remote_identity
   if(hash_algorithm_key_length(algorithm) == identity.length())
     {
       {
-	QWriteLocker lock(&m_remote_identities_mutex);
+	QSqlDatabase db = QSqlDatabase::addDatabase
+	  ("QSQLITE", "remote_identities_database");
 
-	m_remote_identities[identity] = QPair<QByteArray, qint64>
-	  (identity.toBase64().append(";").append(algorithm),
-	   QDateTime::currentMSecsSinceEpoch());
+	db.setDatabaseName(m_remote_identities_file_name);
+
+	if(db.open())
+	  {
+	    QSqlQuery query(db);
+
+	    query.exec("CREATE TABLE IF NOT EXISTS remote_identities ("
+		       "algorithm TEXT NOT NULL, "
+		       "date_time_inserted BIGINT NOT NULL, "
+		       "identity TEXT PRIMARY KEY NOT NULL, "
+		       "pid BIGINT NOT NULL)");
+	    query.exec("PRAGMA journal_mode = OFF");
+	    query.exec("PRAGMA synchronous = OFF");
+	    query.prepare("INSERT INTO remote_identities "
+			  "(algorithm, date_time_inserted, identity, pid) "
+			  "VALUES (?, ?, ?, ?)");
+	    query.addBindValue(algorithm);
+	    query.addBindValue(QDateTime::currentDateTime().toTime_t());
+	    query.addBindValue(identity.toBase64());
+	    query.addBindValue(QCoreApplication::applicationPid());
+	    query.exec();
+	  }
+
+	db.close();
       }
+
+      QSqlDatabase::removeDatabase("remote_identities_database");
 
       if(!m_expired_identities_timer.isActive())
 	m_expired_identities_timer.start();
@@ -1123,18 +1189,29 @@ void spot_on_lite_daemon_child_tcp_client::record_remote_identity
 
 void spot_on_lite_daemon_child_tcp_client::remove_expired_identities(void)
 {
-  QWriteLocker lock(&m_remote_identities_mutex);
-  QMutableHashIterator<QByteArray, QPair<QByteArray, qint64> > it
-    (m_remote_identities);
+  {
+    QSqlDatabase db = QSqlDatabase::addDatabase
+      ("QSQLITE", "remote_identities_database");
 
-  while(it.hasNext() && !m_expired_identities_future.isCanceled())
-    {
-      it.next();
+    db.setDatabaseName(m_congestion_control_file_name);
 
-      if(qAbs(QDateTime::currentMSecsSinceEpoch() - it.value().second) >
-	 m_identity_lifetime)
-	it.remove();
-    }
+    if(db.open())
+      {
+	QSqlQuery query(db);
+
+	query.exec("PRAGMA journal_mode = OFF");
+	query.exec("PRAGMA synchronous = OFF");
+	query.prepare("DELETE FROM remote_identities WHERE "
+		      "? - date_time_inserted > ?");
+	query.addBindValue(QDateTime::currentDateTime().toTime_t());
+	query.addBindValue(m_identity_lifetime);
+	query.exec();
+      }
+
+    db.close();
+  }
+
+  QSqlDatabase::removeDatabase("remote_identities_database");
 }
 
 void spot_on_lite_daemon_child_tcp_client::send_identity(const QByteArray &data)
@@ -1236,14 +1313,12 @@ void spot_on_lite_daemon_child_tcp_client::slot_broadcast_capabilities(void)
 
   if(!m_client_role)
     {
-      QReadLocker lock(&m_remote_identities_mutex);
-      QHashIterator<QByteArray, QPair<QByteArray, qint64> > it
-	(m_remote_identities);
+      QHashIterator<QByteArray, QString> it(remote_identities());
 
       while(it.hasNext())
 	{
 	  it.next();
-	  send_identity(it.value().first);
+	  send_identity(it.key().toBase64().append(";").append(it.value()));
 	}
     }
 }
@@ -1418,16 +1493,6 @@ void spot_on_lite_daemon_child_tcp_client::slot_ready_read(void)
 
 void spot_on_lite_daemon_child_tcp_client::slot_remove_expired_identities(void)
 {
-  {
-    QReadLocker lock(&m_remote_identities_mutex);
-
-    if(m_remote_identities.isEmpty())
-      {
-	m_expired_identities_timer.stop();
-	return;
-      }
-  }
-
   if(m_expired_identities_future.isFinished())
     m_expired_identities_future = QtConcurrent::run
       (this, &spot_on_lite_daemon_child_tcp_client::remove_expired_identities);

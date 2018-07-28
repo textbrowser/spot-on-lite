@@ -54,6 +54,7 @@ class spot_on_lite_daemon: public QObject
   QString congestion_control_file_name(void) const;
   QString local_server_file_name(void) const;
   QString log_file_name(void) const;
+  QString remote_identities_file_name(void) const;
   int maximum_accumulated_bytes(void) const;
   static spot_on_lite_daemon *instance(void);
   static void handler_signal(int signal_number);
@@ -76,6 +77,7 @@ class spot_on_lite_daemon: public QObject
   QString m_congestion_control_file_name;
   QString m_local_socket_server_directory_name;
   QString m_log_file_name;
+  QString m_remote_identities_file_name;
   QTimer m_congestion_control_timer;
   QTimer m_start_timer;
   QVector<QString> m_listeners_properties;
