@@ -1222,13 +1222,11 @@ void spot_on_lite_daemon_child_tcp_client::remove_expired_identities(void)
 
 	query.exec("PRAGMA journal_mode = OFF");
 	query.exec("PRAGMA synchronous = OFF");
-	query.prepare
+	query.exec
 	  (QString("DELETE FROM remote_identities WHERE "
-		   "%1 - date_time_inserted > %2 AND pid = ?").
+		   "%1 - date_time_inserted > %2").
 	   arg(QDateTime::currentDateTime().toTime_t()).
 	   arg(m_identity_lifetime));
-	query.addBindValue(QCoreApplication::applicationPid());
-	query.exec();
       }
 
     db.close();
