@@ -1226,7 +1226,7 @@ void spot_on_lite_daemon_child_tcp_client::remove_expired_identities(void)
 		   "%1 - date_time_inserted > %2 AND pid = ?").
 	   arg(QDateTime::currentDateTime().toTime_t()).
 	   arg(m_identity_lifetime));
-	query.addBindValue(m_identity_lifetime);
+	query.addBindValue(QCoreApplication::applicationPid());
 	query.exec();
       }
 
