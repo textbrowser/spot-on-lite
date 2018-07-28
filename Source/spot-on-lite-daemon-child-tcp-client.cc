@@ -239,7 +239,7 @@ remote_identities(void)
     QSqlDatabase db = QSqlDatabase::addDatabase
       ("QSQLITE", QString::number(db_connection_id));
 
-    db.setDatabaseName(m_certificates_file_name);
+    db.setDatabaseName(m_remote_identities_file_name);
 
     if(db.open())
       {
@@ -1070,7 +1070,7 @@ void spot_on_lite_daemon_child_tcp_client::purge_remote_identities(void)
     QSqlDatabase db = QSqlDatabase::addDatabase
       ("QSQLITE", QString::number(db_connection_id));
 
-    db.setDatabaseName(m_congestion_control_file_name);
+    db.setDatabaseName(m_remote_identities_file_name);
 
     if(db.open())
       {
@@ -1213,7 +1213,7 @@ void spot_on_lite_daemon_child_tcp_client::remove_expired_identities(void)
     QSqlDatabase db = QSqlDatabase::addDatabase
       ("QSQLITE", QString::number(db_connection_id));
 
-    db.setDatabaseName(m_congestion_control_file_name);
+    db.setDatabaseName(m_remote_identities_file_name);
 
     if(db.open())
       {
