@@ -248,7 +248,7 @@ remote_identities(void)
 	query.setForwardOnly(true);
 	query.prepare
 	  ("SELECT algorithm, identity FROM remote_identities "
-	   "WHERE pid = ? ORDER BY date_time_inserted DESC LIMIT 16");
+	   "WHERE pid = ? ORDER BY date_time_inserted DESC");
 	query.addBindValue(QCoreApplication::applicationPid());
 
 	if(query.exec())
@@ -954,10 +954,8 @@ void spot_on_lite_daemon_child_tcp_client::process_data(void)
   if(m_abort.fetchAndAddOrdered(0))
     return;
 
-  QElapsedTimer elapsed;
   struct timespec ts;
 
-  elapsed.start();
   ts.tv_nsec = 25000000; // 25 Milliseconds
   ts.tv_sec = 0;
 
@@ -990,16 +988,7 @@ void spot_on_lite_daemon_child_tcp_client::process_data(void)
       }
 
       if(list.isEmpty())
-	{
-	  if(elapsed.elapsed() >= 10025)
-	    {
-	      QWriteLocker lock(&m_local_content_mutex);
-
-	      m_local_content.clear();
-	    }
-
-	  continue;
-	}
+	continue;
 
       for(int i = 0; i < list.size() && !m_abort.fetchAndAddOrdered(0); i++)
 	{
@@ -1041,8 +1030,6 @@ void spot_on_lite_daemon_child_tcp_client::process_data(void)
 		}
 	    }
 	}
-
-      elapsed.start();
     }
   while(!m_abort.fetchAndAddOrdered(0));
 }
@@ -1235,28 +1222,6 @@ void spot_on_lite_daemon_child_tcp_client::remove_expired_identities(void)
   QSqlDatabase::removeDatabase(QString::number(db_connection_id));
 }
 
-void spot_on_lite_daemon_child_tcp_client::send_identity(const QByteArray &data)
-{
-  if(m_client_role || !m_local_socket)
-    return;
-
-  QByteArray results;
-
-  results.append("POST HTTP/1.1\r\n"
-		 "Content-Type: application/x-www-form-urlencoded\r\n"
-		 "Content-Length: %1\r\n"
-		 "\r\n"
-		 "type=0095a&content=%2\r\n"
-		 "\r\n\r\n");
-  results.replace
-    ("%1",
-     QByteArray::number(data.length() +
-			QString("type=0095a&content=\r\n\r\n\r\n").length()));
-  results.replace("%2", data);
-  m_local_socket->write(results);
-  m_local_socket->flush();
-}
-
 void spot_on_lite_daemon_child_tcp_client::
 set_ssl_ciphers(const QList<QSslCipher> &ciphers,
 		QSslConfiguration &configuration) const
@@ -1327,21 +1292,6 @@ void spot_on_lite_daemon_child_tcp_client::slot_broadcast_capabilities(void)
   results.replace("%2", data.toBase64());
   write(results);
   flush();
-
-  /*
-  ** Send identities to other local processes.
-  */
-
-  if(!m_client_role)
-    {
-      QHashIterator<QByteArray, QString> it(remote_identities());
-
-      while(it.hasNext())
-	{
-	  it.next();
-	  send_identity(it.key().toBase64().append(";").append(it.value()));
-	}
-    }
 }
 
 void spot_on_lite_daemon_child_tcp_client::slot_connected(void)
@@ -1451,7 +1401,7 @@ void spot_on_lite_daemon_child_tcp_client::slot_ready_read(void)
 {
   QByteArray data(readAll());
 
-  if(m_end_of_message_marker.isEmpty())
+  if(m_client_role || m_end_of_message_marker.isEmpty())
     {
       if(data.isEmpty())
 	return;
@@ -1468,17 +1418,17 @@ void spot_on_lite_daemon_child_tcp_client::slot_ready_read(void)
       return;
     }
 
-  if(!data.isEmpty())
-    {
-      m_keep_alive_timer.start();
+  if(data.isEmpty())
+    return;
 
-      if(m_remote_content.length() >= m_maximum_accumulated_bytes)
-	m_remote_content.clear();
+  m_keep_alive_timer.start();
 
-      m_remote_content.append
-	(data.
-	 mid(0, qAbs(m_maximum_accumulated_bytes - m_remote_content.length())));
-    }
+  if(m_remote_content.length() >= m_maximum_accumulated_bytes)
+    m_remote_content.clear();
+
+  m_remote_content.
+    append(data.mid(0, qAbs(m_maximum_accumulated_bytes -
+			    m_remote_content.length())));
 
   if(!m_local_socket || m_local_socket->state() != QLocalSocket::ConnectedState)
     return;
