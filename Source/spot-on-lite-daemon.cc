@@ -58,13 +58,10 @@ extern "C"
 #include "spot-on-lite-daemon-tcp-listener.h"
 
 int spot_on_lite_daemon::s_signal_usr1_fd[2];
-spot_on_lite_daemon *spot_on_lite_daemon::s_instance = 0;
 
 spot_on_lite_daemon::spot_on_lite_daemon
 (const QString &configuration_file_name):QObject()
 {
-  s_instance = this;
-
   if(::socketpair(AF_UNIX, SOCK_STREAM, 0, s_signal_usr1_fd))
     qFatal("spot_on_lite_daemon::spot_on_lite_daemon(): "
 	   "socketpair() failure. Exiting.");
@@ -99,7 +96,6 @@ spot_on_lite_daemon::spot_on_lite_daemon(void):QObject()
   m_local_socket_server_directory_name = "/tmp";
   m_maximum_accumulated_bytes = 0;
   m_signal_usr1_socket_notifier = 0;
-  s_instance = this;
 }
 
 spot_on_lite_daemon::~spot_on_lite_daemon()
@@ -118,8 +114,6 @@ spot_on_lite_daemon::~spot_on_lite_daemon()
 
   if(m_local_server)
     QLocalServer::removeServer(m_local_server->fullServerName());
-
-  s_instance = 0;
 }
 
 QString spot_on_lite_daemon::certificates_file_name(void) const
@@ -163,11 +157,6 @@ QString spot_on_lite_daemon::remote_identities_file_name(void) const
 int spot_on_lite_daemon::maximum_accumulated_bytes(void) const
 {
   return m_maximum_accumulated_bytes;
-}
-
-spot_on_lite_daemon *spot_on_lite_daemon::instance(void)
-{
-  return s_instance;
 }
 
 void spot_on_lite_daemon::log(const QString &error) const

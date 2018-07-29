@@ -31,13 +31,15 @@
 #include <QTcpServer>
 #include <QTimer>
 
+class spot_on_lite_daemon;
+
 class spot_on_lite_daemon_tcp_listener: public QTcpServer
 {
   Q_OBJECT
 
  public:
   spot_on_lite_daemon_tcp_listener(const QString &configuration,
-				   QObject *parent);
+				   spot_on_lite_daemon *parent);
   ~spot_on_lite_daemon_tcp_listener();
 
  protected:
@@ -50,6 +52,7 @@ class spot_on_lite_daemon_tcp_listener: public QTcpServer
  private:
   QString m_configuration;
   QTimer m_start_timer;
+  spot_on_lite_daemon *m_parent;
 
  private slots:
   void slot_start_timeout(void);

@@ -38,7 +38,7 @@ extern "C"
 #include "spot-on-lite-daemon-tcp-listener.h"
 
 spot_on_lite_daemon_tcp_listener::spot_on_lite_daemon_tcp_listener
-(const QString &configuration, QObject *parent):QTcpServer(parent)
+(const QString &configuration, spot_on_lite_daemon *parent):QTcpServer(parent)
 {
   /*
   ** The configuration is assumed to be correct.
@@ -49,6 +49,7 @@ spot_on_lite_daemon_tcp_listener::spot_on_lite_daemon_tcp_listener
 	  this,
 	  SLOT(slot_start_timeout(void)));
   m_configuration = configuration;
+  m_parent = parent;
   m_start_timer.start(5000);
 }
 
@@ -65,7 +66,7 @@ void spot_on_lite_daemon_tcp_listener::incomingConnection
 (int socket_descriptor)
 #endif
 {
-  if(!spot_on_lite_daemon::instance())
+  if(!m_parent)
     {
       ::close(static_cast<int> (socket_descriptor));
       return;
@@ -80,27 +81,22 @@ void spot_on_lite_daemon_tcp_listener::incomingConnection
 
   QStringList list(m_configuration.split(",", QString::KeepEmptyParts));
   int listener_sd = static_cast<int> (socketDescriptor());
-  int maximum_accumulated_bytes = spot_on_lite_daemon::instance()->
-    maximum_accumulated_bytes();
+  int maximum_accumulated_bytes = m_parent->maximum_accumulated_bytes();
   int so_linger = list.value(6).toInt();
   pid_t pid = 0;
   std::string certificates_file_name
-    (spot_on_lite_daemon::instance()->certificates_file_name().toStdString());
+    (m_parent->certificates_file_name().toStdString());
   std::string command
-    (spot_on_lite_daemon::instance()->child_process_file_name().toStdString());
+    (m_parent->child_process_file_name().toStdString());
   std::string congestion_control_file_name
-    (spot_on_lite_daemon::instance()->congestion_control_file_name().
-     toStdString());
+    (m_parent->congestion_control_file_name().toStdString());
   std::string ld_library_path
-    (spot_on_lite_daemon::instance()->child_process_ld_library_path().
-     toStdString());
+    (m_parent->child_process_ld_library_path().toStdString());
   std::string local_server_file_name
-    (spot_on_lite_daemon::instance()->local_server_file_name().toStdString());
-  std::string log_file_name
-    (spot_on_lite_daemon::instance()->log_file_name().toStdString());
+    (m_parent->local_server_file_name().toStdString());
+  std::string log_file_name(m_parent->log_file_name().toStdString());
   std::string remote_identities_file_name
-    (spot_on_lite_daemon::instance()->remote_identities_file_name().
-     toStdString());
+    (m_parent->remote_identities_file_name().toStdString());
   std::string server_identity(QString("%1:%2").
 			      arg(serverAddress().toString()).
 			      arg(serverPort()).toStdString());

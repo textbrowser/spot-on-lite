@@ -56,7 +56,6 @@ class spot_on_lite_daemon: public QObject
   QString log_file_name(void) const;
   QString remote_identities_file_name(void) const;
   int maximum_accumulated_bytes(void) const;
-  static spot_on_lite_daemon *instance(void);
   static void handler_signal(int signal_number);
   void log(const QString &error) const;
   void start(void);
@@ -85,7 +84,6 @@ class spot_on_lite_daemon: public QObject
   int m_local_so_sndbuf;
   int m_maximum_accumulated_bytes;
   static int s_signal_usr1_fd[2];
-  static spot_on_lite_daemon *s_instance;
   void prepare_listeners(void);
   void prepare_local_socket_server(void);
   void prepare_peers(void);
