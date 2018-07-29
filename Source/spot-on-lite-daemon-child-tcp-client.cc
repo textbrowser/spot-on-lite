@@ -58,8 +58,6 @@ extern "C"
 
 #include "spot-on-lite-daemon-child-tcp-client.h"
 
-static int s_maximum_identities = 2048;
-
 static int hash_algorithm_key_length(const QByteArray &algorithm)
 {
   if(algorithm == "sha-512")
