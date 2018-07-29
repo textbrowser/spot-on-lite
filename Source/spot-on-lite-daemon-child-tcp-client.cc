@@ -91,7 +91,7 @@ spot_on_lite_daemon_child_tcp_client
   m_congestion_control_file_name = congestion_control_file_name;
   m_db_id = 0;
   m_end_of_message_marker = end_of_message_marker;
-  m_identity_lifetime = 1000 * qBound(30, identities_lifetime, 600);
+  m_identity_lifetime = qBound(5, identities_lifetime, 600);
   m_local_server_file_name = local_server_file_name;
   m_local_so_sndbuf = qBound(4096, local_so_sndbuf, 65536);
   m_local_socket = 0;
@@ -146,7 +146,7 @@ spot_on_lite_daemon_child_tcp_client
       m_capabilities_timer.start(m_silence / 2);
     }
 
-  m_expired_identities_timer.setInterval(15000);
+  m_expired_identities_timer.start(15000);
   m_keep_alive_timer.start(m_silence);
   connect(&m_attempt_local_connection_timer,
 	  SIGNAL(timeout(void)),
@@ -1185,9 +1185,6 @@ void spot_on_lite_daemon_child_tcp_client::record_remote_identity
       }
 
       QSqlDatabase::removeDatabase(QString::number(db_connection_id));
-
-      if(!m_expired_identities_timer.isActive())
-	m_expired_identities_timer.start();
     }
 }
 
