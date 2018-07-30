@@ -1435,7 +1435,12 @@ void spot_on_lite_daemon_child_tcp_client::slot_ready_read(void)
       data = m_remote_content.mid(0, index + m_end_of_message_marker.length());
       m_remote_content.remove(0, data.length());
 
-      if(data.contains("type=0095a&content="))
+      if(data.contains("type=0014&content="))
+	{
+	  record_congestion(data);
+	  continue;
+	}
+      else if(data.contains("type=0095a&content="))
 	{
 	  if(!m_client_role)
 	    /*
