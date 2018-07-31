@@ -233,7 +233,7 @@ remote_identities(bool *ok)
   QHash<QByteArray, QString> hash;
 
 #ifdef __arm__
-  QReadWriteLock lock(&m_remote_identities_mutex);
+  QReadLocker lock(&m_remote_identities_mutex);
   QHashIterator<QByteArray, qint64> it(m_remote_identities);
 
   while(it.hasNext())
