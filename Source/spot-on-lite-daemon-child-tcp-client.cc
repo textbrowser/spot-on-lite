@@ -228,7 +228,7 @@ spot_on_lite_daemon_child_tcp_client::
 }
 
 QHash<QByteArray, QString>spot_on_lite_daemon_child_tcp_client::
-remote_identities(void)
+remote_identities(bool *ok)
 {
   QHash<QByteArray, QString> hash;
   quint64 db_connection_id = db_id();
@@ -253,7 +253,11 @@ remote_identities(void)
 	  while(query.next())
 	    hash[QByteArray::fromBase64(query.value(1).toByteArray())] =
 	      query.value(0).toString();
+	else if(ok)
+	  *ok = false;
       }
+    else if(ok)
+      *ok = false;
 
     db.close();
   }
@@ -961,7 +965,14 @@ void spot_on_lite_daemon_child_tcp_client::process_data(void)
     {
       nanosleep(&ts, 0);
 
-      QHash<QByteArray, QString> identities(remote_identities());
+      QHash<QByteArray, QString> identities;
+      bool ok = true;
+
+      identities = remote_identities(&ok);
+
+      if(!ok)
+	continue;
+
       QList<QByteArray> list;
       int index = 0;
 

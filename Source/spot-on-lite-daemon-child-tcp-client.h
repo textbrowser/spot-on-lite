@@ -97,7 +97,7 @@ class spot_on_lite_daemon_child_tcp_client: public QSslSocket
   int m_ssl_key_size;
   quint64 m_db_id;
   spot_on_lite_daemon_sha m_sha_512;
-  QHash<QByteArray, QString> remote_identities(void);
+  QHash<QByteArray, QString> remote_identities(bool *ok);
   QList<QByteArray> local_certificate_configuration(void);
   QList<QSslCipher> default_ssl_ciphers(void) const;
   bool record_congestion(const QByteArray &data);
