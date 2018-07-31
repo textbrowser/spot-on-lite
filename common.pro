@@ -8,17 +8,6 @@ QMAKE_CXXFLAGS_RELEASE += -fPIE -fstack-protector-all -fwrapv \
 			  -Wextra \
 			  -Woverloaded-virtual -Wpointer-arith \
                           -Wstack-protector -Wstrict-overflow=5
-} else:linux {
-contains(QMAKE_HOST.arch, arm.*) {
-DEFINES += Q_PROCESSOR_ARM
-}
-QMAKE_CXXFLAGS_RELEASE += -fPIE -fstack-protector-all -fwrapv -pie -O3 \
-                          -mtune=native \
-                          -Wall -Wcast-qual \
-                          -Werror -Wextra \
-                          -Wno-unused-variable \
-                          -Woverloaded-virtual -Wpointer-arith \
-                          -Wstack-protector
 } else:macx {
 QMAKE_CXXFLAGS_RELEASE += -fPIE -fstack-protector-all -fwrapv \
                           -mtune=native -O3 \

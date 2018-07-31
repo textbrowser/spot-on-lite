@@ -232,7 +232,7 @@ remote_identities(bool *ok)
 {
   QHash<QByteArray, QString> hash;
 
-#ifdef Q_PROCESSOR_ARM
+#ifdef __arm__
   QReadWriteLock lock(&m_remote_identities_mutex);
   QHashIterator<QByteArray, qint64> it(m_remote_identities);
 
@@ -1072,7 +1072,7 @@ void spot_on_lite_daemon_child_tcp_client::purge_containers(void)
 
 void spot_on_lite_daemon_child_tcp_client::purge_remote_identities(void)
 {
-#ifdef Q_PROCESSOR_ARM
+#ifdef __arm__
   QWriteLocker lock(&m_remote_identities_mutex);
 
   m_remote_identities.clear();
@@ -1178,7 +1178,7 @@ void spot_on_lite_daemon_child_tcp_client::record_remote_identity
 
   if(hash_algorithm_key_length(algorithm) == identity.length())
     {
-#ifdef Q_PROCESSOR_ARM
+#ifdef __arm__
       QWriteLocker lock(&m_remote_identities_mutex);
 
       m_remote_identities[identity] = QDateTime::currentDateTime().toTime_t();
@@ -1220,7 +1220,7 @@ void spot_on_lite_daemon_child_tcp_client::record_remote_identity
 
 void spot_on_lite_daemon_child_tcp_client::remove_expired_identities(void)
 {
-#ifdef Q_PROCESSOR_ARM
+#ifdef __arm__
   QWriteLocker<QByteArray, qint64> lock(&m_remote_identities_mutex);
   QMutableHashIterator<QByteArray, qint64> it(m_remote_identities);
 
