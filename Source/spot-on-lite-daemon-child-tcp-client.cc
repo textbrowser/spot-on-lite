@@ -1072,6 +1072,8 @@ void spot_on_lite_daemon_child_tcp_client::process_data(void)
 		  }
 	      }
 	  }
+	else
+	  emit write_signal(list.at(i));
 
       elapsed.start();
     }
