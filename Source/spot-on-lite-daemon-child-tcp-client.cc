@@ -230,6 +230,9 @@ spot_on_lite_daemon_child_tcp_client::
 QHash<QByteArray, QString>spot_on_lite_daemon_child_tcp_client::
 remote_identities(bool *ok)
 {
+  if(ok)
+    *ok = true;
+
   QHash<QByteArray, QString> hash;
 
 #ifdef __arm__
