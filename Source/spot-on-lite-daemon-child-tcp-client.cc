@@ -1224,7 +1224,7 @@ void spot_on_lite_daemon_child_tcp_client::record_remote_identity
 void spot_on_lite_daemon_child_tcp_client::remove_expired_identities(void)
 {
 #ifdef __arm__
-  QWriteLocker<QByteArray, qint64> lock(&m_remote_identities_mutex);
+  QWriteLocker lock(&m_remote_identities_mutex);
   QMutableHashIterator<QByteArray, qint64> it(m_remote_identities);
 
   while(it.hasNext())
