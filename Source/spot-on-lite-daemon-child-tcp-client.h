@@ -73,9 +73,15 @@ class spot_on_lite_daemon_child_tcp_client: public QSslSocket
   QByteArray m_remote_content;
   QFuture<void> m_expired_identities_future;
   QFuture<void> m_process_data_future;
+#ifdef Q_PROCESSOR_ARM
+  QHash<QByteArray, qint64> m_remote_identities;
+#endif
   QLocalSocket *m_local_socket;
   QReadWriteLock m_local_content_mutex;
   QReadWriteLock m_db_id_mutex;
+#ifdef Q_PROCESSOR_ARM
+  QReadWriteLock m_remote_identities_mutex;
+#endif
   QString m_certificates_file_name;
   QString m_congestion_control_file_name;
   QString m_end_of_message_marker;

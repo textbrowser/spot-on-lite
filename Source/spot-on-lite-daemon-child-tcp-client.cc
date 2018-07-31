@@ -231,6 +231,17 @@ QHash<QByteArray, QString>spot_on_lite_daemon_child_tcp_client::
 remote_identities(bool *ok)
 {
   QHash<QByteArray, QString> hash;
+
+#ifdef Q_PROCESSOR_ARM
+  QReadWriteLock lock(&m_remote_identities_mutex);
+  QHashIterator<QByteArray, qint64> it(m_remote_identities);
+
+  while(it.hasNext())
+    {
+      it.next();
+      hash[it.key()] = "sha-512";
+    }
+#else
   quint64 db_connection_id = db_id();
 
   {
@@ -263,7 +274,7 @@ remote_identities(bool *ok)
   }
 
   QSqlDatabase::removeDatabase(QString::number(db_connection_id));
-
+#endif
   return hash;
 }
 
@@ -1061,6 +1072,11 @@ void spot_on_lite_daemon_child_tcp_client::purge_containers(void)
 
 void spot_on_lite_daemon_child_tcp_client::purge_remote_identities(void)
 {
+#ifdef Q_PROCESSOR_ARM
+  QWriteLocker lock(&m_remote_identities_mutex);
+
+  m_remote_identities.clear();
+#else
   quint64 db_connection_id = db_id();
 
   {
@@ -1073,8 +1089,6 @@ void spot_on_lite_daemon_child_tcp_client::purge_remote_identities(void)
       {
 	QSqlQuery query(db);
 
-	query.exec("PRAGMA journal_mode = OFF");
-	query.exec("PRAGMA synchronous = OFF");
 	query.prepare("DELETE FROM remote_identities WHERE pid = ?");
 	query.addBindValue(QCoreApplication::applicationPid());
 	query.exec();
@@ -1084,6 +1098,7 @@ void spot_on_lite_daemon_child_tcp_client::purge_remote_identities(void)
   }
 
   QSqlDatabase::removeDatabase(QString::number(db_connection_id));
+#endif
 }
 
 void spot_on_lite_daemon_child_tcp_client::record_certificate
@@ -1163,6 +1178,11 @@ void spot_on_lite_daemon_child_tcp_client::record_remote_identity
 
   if(hash_algorithm_key_length(algorithm) == identity.length())
     {
+#ifdef Q_PROCESSOR_ARM
+      QWriteLocker lock(&m_remote_identities_mutex);
+
+      m_remote_identities[identity] = QDateTime::currentDateTime().toTime_t();
+#else
       quint64 db_connection_id = db_id();
 
       {
@@ -1180,8 +1200,6 @@ void spot_on_lite_daemon_child_tcp_client::record_remote_identity
 		       "date_time_inserted BIGINT NOT NULL, "
 		       "identity TEXT NOT NULL PRIMARY KEY, "
 		       "pid BIGINT NOT NULL)");
-	    query.exec("PRAGMA journal_mode = OFF");
-	    query.exec("PRAGMA synchronous = OFF");
 	    query.prepare("INSERT OR REPLACE INTO remote_identities "
 			  "(algorithm, date_time_inserted, identity, pid) "
 			  "VALUES (?, ?, ?, ?)");
@@ -1196,11 +1214,25 @@ void spot_on_lite_daemon_child_tcp_client::record_remote_identity
       }
 
       QSqlDatabase::removeDatabase(QString::number(db_connection_id));
+#endif
     }
 }
 
 void spot_on_lite_daemon_child_tcp_client::remove_expired_identities(void)
 {
+#ifdef Q_PROCESSOR_ARM
+  QWriteLocker<QByteArray, qint64> lock(&m_remote_identities_mutex);
+  QMutableHashIterator<QByteArray, qint64> it(m_remote_identities);
+
+  while(it.hasNext())
+    {
+      it.next();
+
+      if(QDateTime::currentDateTime().toTime_t() - it.value() >
+	 m_identity_lifetime)
+	it.remove();
+    }
+#else
   quint64 db_connection_id = db_id();
 
   {
@@ -1213,8 +1245,6 @@ void spot_on_lite_daemon_child_tcp_client::remove_expired_identities(void)
       {
 	QSqlQuery query(db);
 
-	query.exec("PRAGMA journal_mode = OFF");
-	query.exec("PRAGMA synchronous = OFF");
 	query.exec
 	  (QString("DELETE FROM remote_identities WHERE "
 		   "%1 - date_time_inserted > %2").
@@ -1226,6 +1256,7 @@ void spot_on_lite_daemon_child_tcp_client::remove_expired_identities(void)
   }
 
   QSqlDatabase::removeDatabase(QString::number(db_connection_id));
+#endif
 }
 
 void spot_on_lite_daemon_child_tcp_client::
