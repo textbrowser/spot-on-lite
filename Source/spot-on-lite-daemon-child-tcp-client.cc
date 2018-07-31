@@ -970,8 +970,10 @@ void spot_on_lite_daemon_child_tcp_client::process_data(void)
   if(m_abort.fetchAndAddOrdered(0))
     return;
 
+  QElapsedTimer elapsed;
   struct timespec ts;
 
+  elapsed.start();
   ts.tv_nsec = 25000000; // 25 Milliseconds
   ts.tv_sec = 0;
 
@@ -979,13 +981,25 @@ void spot_on_lite_daemon_child_tcp_client::process_data(void)
     {
       nanosleep(&ts, 0);
 
+      {
+	QReadLocker lock(&m_local_content_mutex);
+
+	if(m_local_content.isEmpty())
+	  continue;
+      }
+
       QHash<QByteArray, QString> identities;
       bool ok = true;
 
       identities = remote_identities(&ok);
 
       if(!ok)
-	continue;
+	{
+	  if(elapsed.elapsed() <= 15025)
+	    continue;
+	  else
+	    elapsed.start();
+	}
 
       QList<QByteArray> list;
       int index = 0;
@@ -1011,48 +1025,55 @@ void spot_on_lite_daemon_child_tcp_client::process_data(void)
       }
 
       if(list.isEmpty())
-	continue;
+	{
+	  if(elapsed.elapsed() > 15025)
+	    {
+	      elapsed.start();
+
+	      QWriteLocker lock(&m_local_content_mutex);
+
+	      m_local_content.clear();
+	    }
+
+	  continue;
+	}
 
       for(int i = 0; i < list.size() && !m_abort.fetchAndAddOrdered(0); i++)
-	{
-	  index = list.at(i).indexOf("content=");
+	if((index = list.at(i).indexOf("content=")) >= 0)
+	  {
+	    QByteArray data(list.at(i).mid(8 + index).trimmed());
+	    QByteArray hash;
 
-	  if(index < 0)
-	    emit write_signal(list.at(i));
-	  else
-	    {
-	      QByteArray data(list.at(i).mid(8 + index).trimmed());
-	      QByteArray hash;
+	    if(data.contains("\n")) // Spot-On
+	      {
+		QList<QByteArray> list(data.split('\n'));
 
-	      if(data.contains("\n")) // Spot-On
-		{
-		  QList<QByteArray> list(data.split('\n'));
+		data = QByteArray::fromBase64(list.value(0)) +
+		       QByteArray::fromBase64(list.value(1));
+		hash = QByteArray::fromBase64(list.value(2)); // Destination.
+	      }
+	    else
+	      {
+		data = QByteArray::fromBase64(data);
+		hash = data.mid(data.length() - 64);
+		data = data.mid(0, data.length() - hash.length());
+	      }
 
-		  data = QByteArray::fromBase64(list.value(0)) +
-		         QByteArray::fromBase64(list.value(1));
-		  hash = QByteArray::fromBase64(list.value(2)); // Destination.
-		}
-	      else
-		{
-		  data = QByteArray::fromBase64(data);
-		  hash = data.mid(data.length() - 64);
-		  data = data.mid(0, data.length() - hash.length());
-		}
+	    QHashIterator<QByteArray, QString> it(identities);
 
-	      QHashIterator<QByteArray, QString> it(identities);
+	    while(it.hasNext() && !m_abort.fetchAndAddOrdered(0))
+	      {
+		it.next();
 
-	      while(it.hasNext() && !m_abort.fetchAndAddOrdered(0))
-		{
-		  it.next();
+		if(memcmp(hash, m_sha_512.sha_512_hmac(data, it.key())))
+		  {
+		    emit write_signal(list.at(i));
+		    break;
+		  }
+	      }
+	  }
 
-		  if(memcmp(hash, m_sha_512.sha_512_hmac(data, it.key())))
-		    {
-		      emit write_signal(list.at(i));
-		      break;
-		    }
-		}
-	    }
-	}
+      elapsed.start();
     }
   while(!m_abort.fetchAndAddOrdered(0));
 }
