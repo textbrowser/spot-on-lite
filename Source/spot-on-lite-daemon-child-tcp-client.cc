@@ -992,6 +992,8 @@ void spot_on_lite_daemon_child_tcp_client::process_data(void)
 	  ts.tv_sec = 0;
 	  nanosleep(&ts, 0);
 	}
+      else
+	break;
     }
   while(!m_process_data_future.isCanceled());
 
