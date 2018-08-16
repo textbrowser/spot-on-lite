@@ -28,7 +28,6 @@
 extern "C"
 {
 #include <sys/socket.h>
-#include <sys/wait.h>
 #include <unistd.h>
 }
 
@@ -159,7 +158,15 @@ void spot_on_lite_daemon_tcp_listener::incomingConnection
       _exit(EXIT_SUCCESS);
     }
   else
-    ::close(sd);
+    {
+      ::close(sd);
+
+      /*
+	while(waitpid(pid, NULL, 0) == -1)
+	  if(errno != EINTR)
+	    break;
+      */
+    }
 }
 
 void spot_on_lite_daemon_tcp_listener::slot_start_timeout(void)
