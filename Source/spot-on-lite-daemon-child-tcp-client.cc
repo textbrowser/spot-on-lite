@@ -512,7 +512,11 @@ bool spot_on_lite_daemon_child_tcp_client::record_congestion
 		      "(date_time_inserted, hash) "
 		      "VALUES (?, ?)");
 	query.addBindValue(QDateTime::currentDateTime().toTime_t());
-#if QT_VERSION >= 0x050000
+#if QT_VERSION >= 0x050100
+	query.addBindValue
+	  (QCryptographicHash::hash(data, QCryptographicHash::Sha3_384).
+	   toBase64());	
+#elif QT_VERSION >= 0x050000
 	query.addBindValue(QCryptographicHash::
 			   hash(data, QCryptographicHash::Sha384).toBase64());
 #else
@@ -1507,10 +1511,7 @@ void spot_on_lite_daemon_child_tcp_client::slot_ready_read(void)
       m_remote_content.remove(0, data.length());
 
       if(data.contains("type=0014&content="))
-	{
-	  record_congestion(data);
-	  continue;
-	}
+	continue;
       else if(data.contains("type=0095a&content="))
 	{
 	  if(!m_client_role)
@@ -1520,7 +1521,6 @@ void spot_on_lite_daemon_child_tcp_client::slot_ready_read(void)
 
 	    record_remote_identity(data);
 
-	  record_congestion(data);
 	  continue;
 	}
 
