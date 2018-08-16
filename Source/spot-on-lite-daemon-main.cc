@@ -49,12 +49,13 @@ extern "C"
 
 void spot_on_lite_daemon::handler_signal(int signal_number)
 {
+  waitpid(-1, NULL, WNOHANG);
+
   char a = 1;
 
   switch(signal_number)
     {
     case SIGCHLD:
-      waitpid(-1, NULL, WNOHANG);
       return;
     case SIGUSR1:
       break;
