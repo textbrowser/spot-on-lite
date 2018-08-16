@@ -55,7 +55,7 @@ void spot_on_lite_daemon::handler_signal(int signal_number)
     {
     case SIGCHLD:
       waitpid(-1, NULL, WNOHANG);
-      break;
+      return;
     case SIGUSR1:
       break;
     case SIGUSR2:
