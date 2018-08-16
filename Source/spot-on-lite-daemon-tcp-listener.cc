@@ -101,24 +101,9 @@ void spot_on_lite_daemon_tcp_listener::incomingConnection
 			      arg(serverAddress().toString()).
 			      arg(serverPort()).toStdString());
 
-  /*
-  ** Call fork() twice and avoid zombie processes.
-  */
-
   if((pid = fork()) == 0)
     {
       ::close(listener_sd);
-
-      if((pid = fork()) < 0)
-	{
-	  ::close(sd);
-	  _exit(EXIT_FAILURE);
-	}
-      else if(pid > 0)
-	{
-	  ::close(sd);
-	  _exit(EXIT_SUCCESS);
-	}
 
       if(so_linger > -1)
 	{
@@ -174,10 +159,7 @@ void spot_on_lite_daemon_tcp_listener::incomingConnection
       _exit(EXIT_SUCCESS);
     }
   else
-    {
-      ::close(sd);
-      waitpid(pid, NULL, 0);
-    }
+    ::close(sd);
 }
 
 void spot_on_lite_daemon_tcp_listener::slot_start_timeout(void)

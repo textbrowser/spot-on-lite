@@ -32,6 +32,7 @@ extern "C"
 #include <signal.h>
 #include <sys/resource.h>
 #include <sys/stat.h>
+#include <sys/wait.h>
 #include <unistd.h>
 }
 
@@ -52,6 +53,9 @@ void spot_on_lite_daemon::handler_signal(int signal_number)
 
   switch(signal_number)
     {
+    case SIGCHLD:
+      waitpid(-1, NULL, WNOHANG);
+      break;
     case SIGUSR1:
       break;
     case SIGUSR2:
@@ -124,17 +128,6 @@ static int prepare_signal_handlers(void)
   struct sigaction act;
 
   /*
-  ** Ignore SIGCHLD.
-  */
-
-  act.sa_handler = SIG_IGN;
-  sigemptyset(&act.sa_mask);
-  act.sa_flags = 0;
-
-  if(sigaction(SIGCHLD, &act, 0))
-    std::cerr << "sigaction() failure for SIGCHLD. Ignoring." << std::endl;
-
-  /*
   ** Ignore SIGHUP.
   */
 
@@ -162,7 +155,7 @@ static int prepare_signal_handlers(void)
 
   QList<int> list;
 
-  list << SIGTERM << SIGUSR1 << SIGUSR2;
+  list << SIGCHLD << SIGTERM << SIGUSR1 << SIGUSR2;
 
   while(!list.isEmpty())
     {
