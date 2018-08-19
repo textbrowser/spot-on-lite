@@ -162,7 +162,7 @@ void spot_on_lite_daemon_tcp_listener::incomingConnection
       ::close(sd);
 
       /*
-	while(waitpid(pid, NULL, 0) == -1)
+	while(waitpid(pid, NULL, WNOHANG) == -1)
 	  if(errno != EINTR)
 	    break;
       */
