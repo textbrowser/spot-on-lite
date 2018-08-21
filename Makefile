@@ -2,6 +2,8 @@ UNAME := $(shell uname)
 
 ifeq ($(UNAME), FreeBSD)
 	QMAKE=/usr/local/lib/qt4/bin/qmake
+else ifeq ($(UNAME), NetBSD)
+	QMAKE=/usr/pkg/qt4/bin/qmake
 else ifeq ($(UNAME), OpenBSD)
 	QMAKE=qmake4
 else
