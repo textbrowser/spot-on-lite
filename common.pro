@@ -8,17 +8,18 @@ QMAKE_CXXFLAGS_RELEASE += -fPIE -fstack-protector-all -fwrapv \
 			  -Wextra \
 			  -Woverloaded-virtual -Wpointer-arith \
                           -Wstack-protector -Wstrict-overflow=5
-} else:macx {
-QMAKE_CXXFLAGS_RELEASE += -fPIE -fstack-protector-all -fwrapv \
-                          -mtune=native -O3 \
-                          -Wall -Wcast-align -Wcast-qual \
+} else:linux-* {
+QMAKE_CXXFLAGS_RELEASE += -fPIE -fstack-protector-all -fwrapv -pie -O3 \
+                          -mtune=native \
+                          -Wall -Wcast-qual \
                           -Werror -Wextra \
                           -Wno-unused-variable \
                           -Woverloaded-virtual -Wpointer-arith \
                           -Wstack-protector
-} else:netbsd-* {
-QMAKE_CXXFLAGS_RELEASE += -fPIE -fstack-protector-all -fwrapv -pie -O3 \
-                          -Wall -Wcast-qual \
+} else:macx {
+QMAKE_CXXFLAGS_RELEASE += -fPIE -fstack-protector-all -fwrapv \
+                          -mtune=native -O3 \
+                          -Wall -Wcast-align -Wcast-qual \
                           -Werror -Wextra \
                           -Wno-unused-variable \
                           -Woverloaded-virtual -Wpointer-arith \
@@ -31,8 +32,7 @@ QMAKE_CXXFLAGS_RELEASE += -fPIE -fstack-protector-all -fwrapv -pie -O3 \
                           -Woverloaded-virtual -Wpointer-arith \
                           -Wstack-protector
 } else:unix {
-QMAKE_CXXFLAGS_RELEASE += -fPIE -fstack-protector-all -fwrapv -pie -O3 \
-                          -mtune=native \
+QMAKE_CXXFLAGS_RELEASE += -fPIE -fwrapv -pie -O3 \
                           -Wall -Wcast-qual \
                           -Werror -Wextra \
                           -Wno-unused-variable \
