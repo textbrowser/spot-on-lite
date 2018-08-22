@@ -24,6 +24,18 @@ QMAKE_CXXFLAGS_RELEASE += -fPIE -fstack-protector-all -fwrapv \
                           -Wno-unused-variable \
                           -Woverloaded-virtual -Wpointer-arith \
                           -Wstack-protector
+} else:netbsd-* {
+INCLUDEPATH += /usr/pkg/qt4/include/QtCore \
+               /usr/pkg/qt4/include/QtNetwork \
+               /usr/pkg/qt4/include/QtSql
+LIBS += -L/usr/pkg/qt4/lib
+QMAKE_CXXFLAGS_RELEASE += -fPIE -fwrapv -pie -O3 \
+                          -Wall -Wcast-qual \
+                          -Werror -Wextra \
+                          -Wno-unused-variable \
+                          -Woverloaded-virtual -Wpointer-arith \
+                          -Wstack-protector
+QMAKE_MOC = /usr/pkg/qt4/bin/moc
 } else:openbsd-* {
 QMAKE_CXXFLAGS_RELEASE += -fPIE -fstack-protector-all -fwrapv -pie -O3 \
                           -Wall -Wcast-qual \
