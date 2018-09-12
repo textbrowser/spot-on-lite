@@ -1,5 +1,6 @@
 include (common.pro)
 
+CXX = clang++-6.0
 INCLUDEPATH += Source
 
 HEADERS = Source/spot-on-lite-daemon.h \

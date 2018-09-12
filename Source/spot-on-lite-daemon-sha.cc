@@ -140,7 +140,7 @@ QByteArray spot_on_lite_daemon_sha::sha_512(const QByteArray &data) const
   if(!c)
     goto done_label;
 
-  for(int i = 0; i < 8; i++)
+  for(cl_index i = 0; i < 8; i++)
     {
       QByteArray h(8, 0);
       cl_object e = ecl_aref(c, i);
@@ -254,7 +254,7 @@ QByteArray spot_on_lite_daemon_sha::sha_512(const QByteArray &data) const
 
       QVector<quint64> W(M);
 
-      for(size_t t = 16; t <= 79; t++)
+      for(int t = 16; t <= 79; t++)
 	W << (s1_512(W.at(t - 2)) +
 	      W.at(t - 7) +
 	      s0_512(W.at(t - 15)) +
@@ -269,7 +269,7 @@ QByteArray spot_on_lite_daemon_sha::sha_512(const QByteArray &data) const
       quint64 g = H.at(6);
       quint64 h = H.at(7);
 
-      for(size_t t = 0; t <= 79; t++)
+      for(int t = 0; t <= 79; t++)
 	{
 	  quint64 T1 = h + S1_512(e) + Ch(e, f, g) + m_K.at(t) + W.at(t);
 	  quint64 T2 = S0_512(a) + Maj(a, b, c);

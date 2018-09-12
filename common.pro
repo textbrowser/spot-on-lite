@@ -1,4 +1,5 @@
 CONFIG -= app_bundle
+QMAKE_CXX = clang++-6.0
 QMAKE_CXXFLAGS_RELEASE -= -O2
 
 freebsd-* {
@@ -9,10 +10,10 @@ QMAKE_CXXFLAGS_RELEASE += -fPIE -fstack-protector-all -fwrapv \
 			  -Woverloaded-virtual -Wpointer-arith \
                           -Wstack-protector -Wstrict-overflow=5
 } else:linux-* {
-QMAKE_CXXFLAGS_RELEASE += -fPIE -fstack-protector-all -fwrapv -pie -O3 \
-                          -mtune=native \
+QMAKE_CXXFLAGS_RELEASE += -fPIE -fstack-protector-all -fwrapv -O3 \
+                          -mtune=native -Weverything \
                           -Wall -Wcast-qual \
-                          -Werror -Wextra \
+                           -Wextra \
                           -Wno-unused-variable \
                           -Woverloaded-virtual -Wpointer-arith \
                           -Wstack-protector
