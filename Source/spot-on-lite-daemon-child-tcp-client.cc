@@ -552,7 +552,7 @@ create_remote_identities_database(void)
     QSqlDatabase db = QSqlDatabase::addDatabase
       ("QSQLITE", QString::number(db_connection_id));
 
-    db.setDatabaseName(m_certificates_file_name);
+    db.setDatabaseName(m_remote_identities_file_name);
 
     if(db.open())
       {
