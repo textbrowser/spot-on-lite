@@ -247,6 +247,8 @@ remote_identities(bool *ok)
       hash[it.key()] = "sha-512";
     }
 #else
+  create_remote_identities_database();
+
   quint64 db_connection_id = db_id();
 
   {
@@ -539,6 +541,34 @@ quint64 spot_on_lite_daemon_child_tcp_client::db_id(void)
 
   m_db_id += 1;
   return m_db_id;
+}
+
+void spot_on_lite_daemon_child_tcp_client::
+create_remote_identities_database(void)
+{
+  quint64 db_connection_id = db_id();
+
+  {
+    QSqlDatabase db = QSqlDatabase::addDatabase
+      ("QSQLITE", QString::number(db_connection_id));
+
+    db.setDatabaseName(m_certificates_file_name);
+
+    if(db.open())
+      {
+	QSqlQuery query(db);
+
+	query.exec("CREATE TABLE IF NOT EXISTS remote_identities ("
+		   "algorithm TEXT NOT NULL, "
+		   "date_time_inserted BIGINT NOT NULL, "
+		   "identity TEXT NOT NULL PRIMARY KEY, "
+		   "pid BIGINT NOT NULL)");
+      }
+
+    db.close();
+  }
+
+  QSqlDatabase::removeDatabase(QString::number(db_connection_id));
 }
 
 void spot_on_lite_daemon_child_tcp_client::generate_certificate
@@ -1211,6 +1241,8 @@ void spot_on_lite_daemon_child_tcp_client::record_remote_identity
 
       m_remote_identities[identity] = QDateTime::currentDateTime().toTime_t();
 #else
+      create_remote_identities_database();
+
       quint64 db_connection_id = db_id();
 
       {
@@ -1223,11 +1255,6 @@ void spot_on_lite_daemon_child_tcp_client::record_remote_identity
 	  {
 	    QSqlQuery query(db);
 
-	    query.exec("CREATE TABLE IF NOT EXISTS remote_identities ("
-		       "algorithm TEXT NOT NULL, "
-		       "date_time_inserted BIGINT NOT NULL, "
-		       "identity TEXT NOT NULL PRIMARY KEY, "
-		       "pid BIGINT NOT NULL)");
 	    query.prepare("INSERT OR REPLACE INTO remote_identities "
 			  "(algorithm, date_time_inserted, identity, pid) "
 			  "VALUES (?, ?, ?, ?)");

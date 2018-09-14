@@ -106,6 +106,7 @@ class spot_on_lite_daemon_child_tcp_client: public QSslSocket
   QList<QSslCipher> default_ssl_ciphers(void) const;
   bool record_congestion(const QByteArray &data);
   quint64 db_id(void);
+  void create_remote_identities_database(void);
   void generate_certificate(RSA *rsa,
 			    QByteArray &certificate,
 			    const long int days,
