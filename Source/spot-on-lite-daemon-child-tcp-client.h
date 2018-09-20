@@ -116,6 +116,7 @@ class spot_on_lite_daemon_child_tcp_client: public QSslSocket
   void prepare_local_socket(void);
   void prepare_ssl_tls_configuration(const QList<QByteArray> &list);
   void process_data(void);
+  void process_remote_content(void);
   void purge_containers(void);
   void purge_remote_identities(void);
   void record_certificate(const QByteArray &certificate,

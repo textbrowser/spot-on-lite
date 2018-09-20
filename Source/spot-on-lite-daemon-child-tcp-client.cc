@@ -1112,6 +1112,38 @@ void spot_on_lite_daemon_child_tcp_client::process_data(void)
     }
 }
 
+void spot_on_lite_daemon_child_tcp_client::process_remote_content(void)
+{
+  if(m_client_role ||
+     m_end_of_message_marker.isEmpty() ||
+     !m_local_socket ||
+     m_local_socket->state() != QLocalSocket::ConnectedState)
+    return;
+
+  QByteArray data;
+  int index = 0;
+
+  while((index = m_remote_content.indexOf(m_end_of_message_marker)) >= 0)
+    {
+      data = m_remote_content.mid(0, index + m_end_of_message_marker.length());
+      m_remote_content.remove(0, data.length());
+
+      if(data.contains("type=0014&content="))
+	continue;
+      else if(data.contains("type=0095a&content="))
+	{
+	  record_remote_identity(data);
+	  continue;
+	}
+
+      if(record_congestion(data))
+	{
+	  m_local_socket->write(data);
+	  m_local_socket->flush();
+	}
+    }
+}
+
 void spot_on_lite_daemon_child_tcp_client::purge_containers(void)
 {
   {
@@ -1455,6 +1487,12 @@ void spot_on_lite_daemon_child_tcp_client::slot_local_socket_connected(void)
   socklen_t optlen = sizeof(m_local_so_sndbuf);
 
   setsockopt(sockfd, SOL_SOCKET, SO_SNDBUF, &m_local_so_sndbuf, optlen);
+
+  /*
+  ** We may have remote content.
+  */
+
+  process_remote_content();
 }
 
 void spot_on_lite_daemon_child_tcp_client::slot_local_socket_disconnected(void)
@@ -1498,11 +1536,11 @@ void spot_on_lite_daemon_child_tcp_client::slot_ready_read(void)
 {
   QByteArray data(readAll());
 
+  if(data.isEmpty())
+    return;
+
   if(m_client_role || m_end_of_message_marker.isEmpty())
     {
-      if(data.isEmpty())
-	return;
-
       m_keep_alive_timer.start();
 
       if(record_congestion(data))
@@ -1515,9 +1553,6 @@ void spot_on_lite_daemon_child_tcp_client::slot_ready_read(void)
       return;
     }
 
-  if(data.isEmpty())
-    return;
-
   m_keep_alive_timer.start();
 
   if(m_remote_content.length() >= m_maximum_accumulated_bytes)
@@ -1526,37 +1561,7 @@ void spot_on_lite_daemon_child_tcp_client::slot_ready_read(void)
   m_remote_content.
     append(data.mid(0, qAbs(m_maximum_accumulated_bytes -
 			    m_remote_content.length())));
-
-  if(!m_local_socket || m_local_socket->state() != QLocalSocket::ConnectedState)
-    return;
-
-  int index = 0;
-
-  while((index = m_remote_content.indexOf(m_end_of_message_marker)) >= 0)
-    {
-      data = m_remote_content.mid(0, index + m_end_of_message_marker.length());
-      m_remote_content.remove(0, data.length());
-
-      if(data.contains("type=0014&content="))
-	continue;
-      else if(data.contains("type=0095a&content="))
-	{
-	  if(!m_client_role)
-	    /*
-	    ** We're a server socket!
-	    */
-
-	    record_remote_identity(data);
-
-	  continue;
-	}
-
-      if(record_congestion(data))
-	{
-	  m_local_socket->write(data);
-	  m_local_socket->flush();
-	}
-    }
+  process_remote_content();
 }
 
 void spot_on_lite_daemon_child_tcp_client::slot_remove_expired_identities(void)

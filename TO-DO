@@ -8,14 +8,14 @@ Completed Items
 6.  Echo through child processes.
 7.  Limit number of processes via /etc/security/limits.conf.
 8.  Lisp version of the SHA-512 implementation. Optional.
-9.  Record certificate data.
-10. Remote peers.
-11. Remove expired identities.
-12. Remove local socket server file on exit.
-13. Restart dead peers.
+9.  Process accumulated data which may have arrived
+    while a local socket is not connected.
+10. Record certificate data.
+11. Remote peers.
+12. Remove expired identities.
+13. Remove local socket server file on exit.
+14. Restart dead peers.
 
 Remaining Items
 
 1.  Optionally share identities in client mode.
-2.  Process accumulated data which may have arrived
-    while a local socket is not connected.
