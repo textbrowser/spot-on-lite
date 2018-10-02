@@ -12,7 +12,7 @@ QMAKE_CXXFLAGS_RELEASE += -fPIE -fstack-protector-all -fwrapv \
 QMAKE_CXXFLAGS_RELEASE += -fPIE -fstack-protector-all -fwrapv -pie -O3 \
                           -mtune=native \
                           -Wall -Wcast-qual \
-                          -Werror -Wextra \
+                          -Wextra \
                           -Wno-unused-variable \
                           -Woverloaded-virtual -Wpointer-arith \
                           -Wstack-protector
@@ -20,7 +20,7 @@ QMAKE_CXXFLAGS_RELEASE += -fPIE -fstack-protector-all -fwrapv -pie -O3 \
 QMAKE_CXXFLAGS_RELEASE += -fPIE -fstack-protector-all -fwrapv \
                           -mtune=native -O3 \
                           -Wall -Wcast-align -Wcast-qual \
-                          -Werror -Wextra \
+                          -Wextra \
                           -Wno-unused-variable \
                           -Woverloaded-virtual -Wpointer-arith \
                           -Wstack-protector
@@ -31,7 +31,7 @@ INCLUDEPATH += /usr/pkg/qt4/include/QtCore \
 LIBS += -L/usr/pkg/qt4/lib
 QMAKE_CXXFLAGS_RELEASE += -fPIE -fwrapv -pie -O3 \
                           -Wall -Wcast-qual \
-                          -Werror -Wextra \
+                          -Wextra \
                           -Wno-unused-variable \
                           -Woverloaded-virtual -Wpointer-arith \
                           -Wstack-protector
@@ -39,14 +39,14 @@ QMAKE_MOC = /usr/pkg/qt4/bin/moc
 } else:openbsd-* {
 QMAKE_CXXFLAGS_RELEASE += -fPIE -fstack-protector-all -fwrapv -pie -O3 \
                           -Wall -Wcast-qual \
-                          -Werror -Wextra \
+                          -Wextra \
                           -Wno-unused-variable \
                           -Woverloaded-virtual -Wpointer-arith \
                           -Wstack-protector
 } else:unix {
 QMAKE_CXXFLAGS_RELEASE += -fPIE -fwrapv -pie -O3 \
                           -Wall -Wcast-qual \
-                          -Werror -Wextra \
+                          -Wextra \
                           -Wno-unused-variable \
                           -Woverloaded-virtual -Wpointer-arith \
                           -Wstack-protector

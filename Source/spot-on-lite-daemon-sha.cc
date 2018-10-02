@@ -146,7 +146,8 @@ QByteArray spot_on_lite_daemon_sha::sha_512(const QByteArray &data) const
       cl_object e = ecl_aref(c, i);
 
       if(e)
-	qToBigEndian(ecl_to_uint64_t(e), reinterpret_cast<uchar *> (h.data()));
+	qToBigEndian(static_cast<quint64> (ecl_to_uint64_t(e)),
+		     reinterpret_cast<uchar *> (h.data()));
 
       hash.append(h);
     }
