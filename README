@@ -11,3 +11,6 @@ spot-on-lite-daemon		hard	nproc		256
 The LD_LIBRARY_PATH may require adjusting.
 
 export LD_LIBRARY_PATH=/usr/local/Trolltech/Qt-4.8.7/lib
+
+Debian administrators, please add spot-on-lite-daemon.debian.sh to
+/etc/init.d and execute sudo update-rc.d spot-on-lite-daemon.debian.sh defaults.
