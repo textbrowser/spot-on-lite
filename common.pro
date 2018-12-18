@@ -13,6 +13,7 @@ QMAKE_CXXFLAGS_RELEASE += -fPIE -fstack-protector-all -fwrapv -pie -O3 \
                           -mtune=native \
                           -Wall -Wcast-qual \
                           -Wextra \
+                          -Wno-class-memaccess \
                           -Wno-unused-variable \
                           -Woverloaded-virtual -Wpointer-arith \
                           -Wstack-protector
