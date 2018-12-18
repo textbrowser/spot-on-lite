@@ -82,7 +82,6 @@ void spot_on_lite_daemon_udp_listener::incomingConnection
   QStringList list(m_configuration.split(",", QString::KeepEmptyParts));
   int listener_sd = static_cast<int> (socketDescriptor());
   int maximum_accumulated_bytes = m_parent->maximum_accumulated_bytes();
-  int so_linger = list.value(6).toInt();
   pid_t pid = 0;
   std::string certificates_file_name
     (m_parent->certificates_file_name().toStdString());
@@ -104,17 +103,6 @@ void spot_on_lite_daemon_udp_listener::incomingConnection
   if((pid = fork()) == 0)
     {
       ::close(listener_sd);
-
-      if(so_linger > -1)
-	{
-	  socklen_t length = 0;
-	  struct linger l;
-
-	  l.l_linger = so_linger;
-	  l.l_onoff = 1;
-	  length = static_cast<socklen_t> (sizeof(l));
-	  setsockopt(sd, SOL_SOCKET, SO_LINGER, &l, length);
-	}
 
       const char *envp[] = {ld_library_path.data(), NULL};
 
