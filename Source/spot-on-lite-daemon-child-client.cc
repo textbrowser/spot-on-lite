@@ -1632,11 +1632,19 @@ void spot_on_lite_daemon_child_client::write(const QByteArray &data)
     m_remote_socket->write(data);
   else
     {
-      if(m_client_role)
-	m_remote_socket->write(data);
-      else
-	qobject_cast<QUdpSocket *> (m_remote_socket)->writeDatagram
-	  (data, m_peer_address, m_peer_port);
+      int i = 0;
+      static const int maximum_datagram_size = 508;
+
+      while(data.size() > i)
+	{
+	  if(m_client_role)
+	    m_remote_socket->write(data.mid(i, maximum_datagram_size));
+	  else
+	    qobject_cast<QUdpSocket *> (m_remote_socket)->writeDatagram
+	      (data.mid(i, maximum_datagram_size), m_peer_address, m_peer_port);
+
+	  i += maximum_datagram_size;
+	}
     }
 
   m_remote_socket->flush();
