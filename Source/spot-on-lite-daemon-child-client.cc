@@ -997,7 +997,9 @@ void spot_on_lite_daemon_child_client::prepare_ssl_tls_configuration
 #if QT_VERSION >= 0x050000
 	  set_ssl_ciphers(configuration.supportedCiphers(), configuration);
 #else
-	  set_ssl_ciphers(supportedCiphers(), configuration);
+	  set_ssl_ciphers
+	    (qobject_cast<QSslSocket *> (m_remote_socket)->supportedCiphers(),
+	     configuration);
 #endif
 	  qobject_cast<QSslSocket *>
 	    (m_remote_socket)->setSslConfiguration(configuration);
