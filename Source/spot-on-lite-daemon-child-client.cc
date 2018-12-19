@@ -1445,7 +1445,7 @@ void spot_on_lite_daemon_child_client::slot_disconnected(void)
 {
   if(m_client_role)
     {
-      abort();
+      m_remote_socket->abort();
 
       if(!m_attempt_remote_connection_timer.isActive())
 	m_attempt_remote_connection_timer.start();
@@ -1455,7 +1455,7 @@ void spot_on_lite_daemon_child_client::slot_disconnected(void)
     }
   else
     {
-      abort();
+      m_remote_socket->abort();
 
       if(m_local_socket)
 	m_local_socket->deleteLater();
@@ -1475,7 +1475,7 @@ void spot_on_lite_daemon_child_client::slot_keep_alive_timer_timeout(void)
 
   if(m_client_role)
     {
-      abort();
+      m_remote_socket->abort();
 
       if(!m_attempt_remote_connection_timer.isActive())
 	m_attempt_remote_connection_timer.start();
@@ -1484,7 +1484,7 @@ void spot_on_lite_daemon_child_client::slot_keep_alive_timer_timeout(void)
     }
   else
     {
-      abort();
+      m_remote_socket->abort();
 
       if(m_local_socket)
 	m_local_socket->deleteLater();
