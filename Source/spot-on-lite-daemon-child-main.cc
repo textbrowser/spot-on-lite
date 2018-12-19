@@ -121,7 +121,7 @@ int main(int argc, char *argv[])
   QString end_of_message_marker("");
   QString local_server_file_name("");
   QString log_file_name("");
-  QString protocol("tcp");
+  QString protocol("");
   QString remote_identities_file_name("");
   QString server_identity("");
   QString ssl_control_string("");
@@ -372,7 +372,7 @@ int main(int argc, char *argv[])
     else if(argv && argv[i] && strcmp(argv[i], "--udp") == 0)
       {
 	if(protocol.isEmpty())
-	  protocol = "tcp";
+	  protocol = "udp";
       }
 
   QCoreApplication qapplication(argc, argv);

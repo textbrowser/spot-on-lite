@@ -57,8 +57,7 @@ spot_on_lite_daemon_udp_listener::spot_on_lite_daemon_udp_listener
   m_start_timer.start(5000);
 }
 
-spot_on_lite_daemon_udp_listener::
-~spot_on_lite_daemon_udp_listener()
+spot_on_lite_daemon_udp_listener::~spot_on_lite_daemon_udp_listener()
 {
 }
 
@@ -69,20 +68,14 @@ void spot_on_lite_daemon_udp_listener::new_connection(qintptr socket_descriptor)
 #endif
 {
   if(!m_parent)
-    {
-      ::close(static_cast<int> (socket_descriptor));
-      return;
-    }
+    return;
 
   int sd = dup(static_cast<int> (socket_descriptor));
-
-  ::close(static_cast<int> (socket_descriptor));
 
   if(sd == -1)
     return;
 
   QStringList list(m_configuration.split(",", QString::KeepEmptyParts));
-  int listener_sd = static_cast<int> (socketDescriptor());
   int maximum_accumulated_bytes = m_parent->maximum_accumulated_bytes();
   pid_t pid = 0;
   std::string certificates_file_name
@@ -104,8 +97,6 @@ void spot_on_lite_daemon_udp_listener::new_connection(qintptr socket_descriptor)
 
   if((pid = fork()) == 0)
     {
-      ::close(listener_sd);
-
       const char *envp[] = {ld_library_path.data(), NULL};
 
       if(execle(command.data(),
@@ -173,10 +164,18 @@ void spot_on_lite_daemon_udp_listener::slot_ready_read(void)
 				pendingDatagramSize())));
       readDatagram(datagram.data(), datagram.size(), &peer_address, &peer_port);
 
-      if(!m_clients.contains(QString(peer_port) +
+      if(peer_address.isNull())
+	continue;
+
+      if(!m_clients.contains(QString::number(peer_port) +
 			     peer_address.scopeId() +
 			     peer_address.toString()))
-	new_connection(socketDescriptor());
+	{
+	  m_clients[QString::number(peer_port) +
+		    peer_address.scopeId() +
+		    peer_address.toString()] = 0;
+	  new_connection(socketDescriptor());
+	}
     }
 }
 
