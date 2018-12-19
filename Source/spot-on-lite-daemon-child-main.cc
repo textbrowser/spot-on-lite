@@ -121,6 +121,7 @@ int main(int argc, char *argv[])
   QString end_of_message_marker("");
   QString local_server_file_name("");
   QString log_file_name("");
+  QString peer_address("");
   QString protocol("");
   QString remote_identities_file_name("");
   QString server_identity("");
@@ -132,6 +133,7 @@ int main(int argc, char *argv[])
   int sd = -1;
   int silence = -1;
   int ssl_key_size = -1;
+  quint16 peer_port = 0;
 
   for(int i = 0; i < argc; i++)
     if(argv && argv[i] && strcmp(argv[i], "--certificates-file") == 0)
@@ -267,6 +269,38 @@ int main(int argc, char *argv[])
 	      }
 	  }
       }
+    else if(argv && argv[i] && strcmp(argv[i], "--peer-address") == 0)
+      {
+	if(peer_address.isEmpty())
+	  {
+	    i += 1;
+
+	    if(argc > i && argv[i])
+	      peer_address = QByteArray::fromBase64(argv[i]);
+	    else
+	      {
+		std::cerr << "Invalid peer-address usage. Exiting."
+			  << std::endl;
+		return EXIT_FAILURE;
+	      }
+	  }
+      }
+    else if(argv && argv[i] && strcmp(argv[i], "--peer-port") == 0)
+      {
+	if(peer_port == 0)
+	  {
+	    i += 1;
+
+	    if(argc > i && argv[i])
+	      peer_port = static_cast<quint16> (std::atoi(argv[i]));
+	    else
+	      {
+		std::cerr << "Invalid peer-port usage. Exiting."
+			  << std::endl;
+		return EXIT_FAILURE;
+	      }
+	  }
+      }
     else if(argv && argv[i] &&
 	    strcmp(argv[i], "--remote-identities-file") == 0)
       {
@@ -387,6 +421,7 @@ int main(int argc, char *argv[])
 	     end_of_message_marker,
 	     local_server_file_name,
 	     log_file_name,
+	     peer_address,
 	     protocol,
 	     remote_identities_file_name,
 	     server_identity,
@@ -396,7 +431,8 @@ int main(int argc, char *argv[])
 	     maximum_accumulated_bytes,
 	     silence,
 	     sd,
-	     ssl_key_size);
+	     ssl_key_size,
+	     peer_port);
 
 	  rc = qapplication.exec();
 	}

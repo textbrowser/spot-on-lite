@@ -32,6 +32,12 @@ Absolute path of the log file. Assumed to be correct. Only the first instance wi
 .BI --maximum-accumulated-bytes " bytes"
 The maximum number of bytes a child process will accumulate. Data will be discarded if the limit is breached. A default value of 8 MiB is assumed. The bytes parameter must be in the range [1024, 2147483647]. Only the first instance will be considered.
 .TP
+.BI --peer-address " address"
+UDP address of peer. Assumed to be correct. Only the first instance will be considered.
+.TP
+.BI --peer-port " port"
+UDP port of peer. Assumed to be correct. Only the first instance will be considered.
+.TP
 .BI --remote-identities-file " file"
 Absolute path of the remote identities file. Assumed to be correct. Only the first instance will be considered.
 .TP

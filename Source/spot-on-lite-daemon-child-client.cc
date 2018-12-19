@@ -40,7 +40,6 @@ extern "C"
 #include <QCryptographicHash>
 #include <QDateTime>
 #include <QFile>
-#include <QHostAddress>
 #include <QLocalSocket>
 #include <QSqlDatabase>
 #include <QSqlQuery>
@@ -73,6 +72,7 @@ spot_on_lite_daemon_child_client::spot_on_lite_daemon_child_client
  const QString &end_of_message_marker,
  const QString &local_server_file_name,
  const QString &log_file_name,
+ const QString &peer_address,
  const QString &protocol,
  const QString &remote_identities_file_name,
  const QString &server_identity,
@@ -82,7 +82,8 @@ spot_on_lite_daemon_child_client::spot_on_lite_daemon_child_client
  const int maximum_accumulated_bytes,
  const int silence,
  const int socket_descriptor,
- const int ssl_key_size):QObject()
+ const int ssl_key_size,
+ const quint16 peer_port):QObject()
 {
   m_attempt_local_connection_timer.setInterval(2500);
   m_attempt_remote_connection_timer.setInterval(2500);
@@ -100,6 +101,8 @@ spot_on_lite_daemon_child_client::spot_on_lite_daemon_child_client
   if(m_maximum_accumulated_bytes < 1024)
     m_maximum_accumulated_bytes = 8 * 1024 * 1024;
 
+  m_peer_address = QHostAddress(peer_address);
+  m_peer_port = peer_port;
   m_protocol = protocol;
   m_remote_identities_file_name = remote_identities_file_name;
 
@@ -128,6 +131,8 @@ spot_on_lite_daemon_child_client::spot_on_lite_daemon_child_client
 		SIGNAL(connected(void)),
 		this,
 		SLOT(slot_connected(void)));
+      else
+	slot_connected();
 
       connect(&m_attempt_remote_connection_timer,
 	      SIGNAL(timeout(void)),
@@ -1433,8 +1438,7 @@ void spot_on_lite_daemon_child_client::slot_broadcast_capabilities(void)
      QByteArray::number(data.toBase64().length() +
 			QString("type=0014&content=\r\n\r\n\r\n").length()));
   results.replace("%2", data.toBase64());
-  m_remote_socket->write(results);
-  m_remote_socket->flush();
+  write(results);
 }
 
 void spot_on_lite_daemon_child_client::slot_connected(void)
@@ -1601,8 +1605,7 @@ slot_ssl_errors(const QList<QSslError> &errors)
 
 void spot_on_lite_daemon_child_client::slot_write_data(const QByteArray &data)
 {
-  m_remote_socket->write(data);
-  m_remote_socket->flush();
+  write(data);
 }
 
 void spot_on_lite_daemon_child_client::stop_threads_and_timers(void)
@@ -1621,4 +1624,20 @@ void spot_on_lite_daemon_child_client::stop_threads_and_timers(void)
 
   m_expired_identities_future.waitForFinished();
   m_process_data_future.waitForFinished();
+}
+
+void spot_on_lite_daemon_child_client::write(const QByteArray &data)
+{
+  if(m_protocol == "tcp")
+    m_remote_socket->write(data);
+  else
+    {
+      if(m_client_role)
+	m_remote_socket->write(data);
+      else
+	qobject_cast<QUdpSocket *> (m_remote_socket)->writeDatagram
+	  (data, m_peer_address, m_peer_port);
+    }
+
+  m_remote_socket->flush();
 }

@@ -35,6 +35,7 @@ extern "C"
 
 #include <QAbstractSocket>
 #include <QFuture>
+#include <QHostAddress>
 #include <QPointer>
 #include <QReadWriteLock>
 #include <QSslCipher>
@@ -56,6 +57,7 @@ class spot_on_lite_daemon_child_client: public QObject
      const QString &end_of_message_marker,
      const QString &local_server_file_name,
      const QString &log_file_name,
+     const QString &peer_address,
      const QString &protocol,
      const QString &remote_identities_file_name,
      const QString &server_identity,
@@ -65,7 +67,8 @@ class spot_on_lite_daemon_child_client: public QObject
      const int maximum_accumulated_bytes,
      const int silence,
      const int socket_descriptor,
-     const int ssl_key_size);
+     const int ssl_key_size,
+     const quint16 peer_port);
   ~spot_on_lite_daemon_child_client();
   static bool memcmp(const QByteArray &a, const QByteArray &b);
 
@@ -77,6 +80,7 @@ class spot_on_lite_daemon_child_client: public QObject
 #ifdef __arm__
   QHash<QByteArray, qint64> m_remote_identities;
 #endif
+  QHostAddress m_peer_address;
   QPointer<QLocalSocket> m_local_socket;
   QPointer<QAbstractSocket> m_remote_socket;
   QReadWriteLock m_local_content_mutex;
@@ -104,6 +108,7 @@ class spot_on_lite_daemon_child_client: public QObject
   int m_maximum_accumulated_bytes;
   int m_silence;
   int m_ssl_key_size;
+  quint16 m_peer_port;
   quint64 m_db_id;
   spot_on_lite_daemon_sha m_sha_512;
   QHash<QByteArray, QString> remote_identities(bool *ok);
@@ -132,6 +137,7 @@ class spot_on_lite_daemon_child_client: public QObject
   void set_ssl_ciphers(const QList<QSslCipher> &ciphers,
 		       QSslConfiguration &configuration) const;
   void stop_threads_and_timers(void);
+  void write(const QByteArray &data);
 
  private slots:
   void slot_attempt_local_connection(void);

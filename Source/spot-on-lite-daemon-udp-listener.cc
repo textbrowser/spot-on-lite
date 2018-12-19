@@ -62,9 +62,15 @@ spot_on_lite_daemon_udp_listener::~spot_on_lite_daemon_udp_listener()
 }
 
 #if QT_VERSION < 0x050000
-void spot_on_lite_daemon_udp_listener::new_connection(int socket_descriptor)
+void spot_on_lite_daemon_udp_listener::new_connection
+(const QHostAddress &peer_address,
+ const int socket_descriptor,
+ const quint16 peer_port)
 #else
-void spot_on_lite_daemon_udp_listener::new_connection(qintptr socket_descriptor)
+void spot_on_lite_daemon_udp_listener::new_connection
+(const QHostAddress &peer_address,
+ const qintptr socket_descriptor,
+ const quint16 peer_port)
 #endif
 {
   if(!m_parent)
@@ -117,6 +123,10 @@ void spot_on_lite_daemon_udp_listener::new_connection(qintptr socket_descriptor)
 		log_file_name.data(),
 		"--maximum--accumulated-bytes",
 		QString::number(maximum_accumulated_bytes).toStdString().data(),
+		"--peer-address",
+		peer_address.toString().toLatin1().toBase64().data(),
+		"--peer-port",
+		QString::number(peer_port).toStdString().data(),
 		"--remote-identities-file",
 		remote_identities_file_name.data(),
 		"--server-identity",
@@ -174,7 +184,7 @@ void spot_on_lite_daemon_udp_listener::slot_ready_read(void)
 	  m_clients[QString::number(peer_port) +
 		    peer_address.scopeId() +
 		    peer_address.toString()] = 0;
-	  new_connection(socketDescriptor());
+	  new_connection(peer_address, socketDescriptor(), peer_port);
 	}
     }
 }

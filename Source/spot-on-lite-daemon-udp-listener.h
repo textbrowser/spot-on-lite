@@ -49,9 +49,13 @@ class spot_on_lite_daemon_udp_listener: public QUdpSocket
   int m_max_pending_connections;
   spot_on_lite_daemon *m_parent;
 #if QT_VERSION < 0x050000
-  void new_connection(const int socket_descriptor);
+  void new_connection(const QHostAddress &peer_address,
+		      const int socket_descriptor,
+		      const quint16 peer_port);
 #else
-  void new_connection(const qintptr socket_descriptor);
+  void new_connection(const QHostAddress &peer_address,
+		      const qintptr socket_descriptor,
+		      const quint16 peer_port);
 #endif
 
  private slots:
