@@ -8,6 +8,7 @@ Completed Items
 - Echo through child processes.
 - Limit number of processes via /etc/security/limits.conf.
 - Lisp version of the SHA-512 implementation. Optional.
+- Partition datagrams.
 - Process accumulated data which may have arrived
   while a local socket is not connected.
 - Record certificate data.
@@ -15,10 +16,9 @@ Completed Items
 - Remove expired identities.
 - Remove local socket server file on exit.
 - Restart dead peers.
-- UDP.
+- UDP unicast.
 
 Remaining Items
 
 - DTLS.
 - Optionally share identities in client mode.
-- Partition datagrams.
