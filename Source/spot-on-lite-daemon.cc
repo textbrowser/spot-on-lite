@@ -56,6 +56,7 @@ extern "C"
 
 #include "spot-on-lite-daemon.h"
 #include "spot-on-lite-daemon-tcp-listener.h"
+#include "spot-on-lite-daemon-udp-listener.h"
 
 int spot_on_lite_daemon::s_signal_usr1_fd[2];
 
@@ -189,8 +190,12 @@ void spot_on_lite_daemon::prepare_listeners(void)
       m_listeners.removeFirst();
 
   for(int i = 0; i < m_listeners_properties.size(); i++)
-    m_listeners << new spot_on_lite_daemon_tcp_listener
-      (m_listeners_properties.at(i), this);
+    if(m_listeners_properties.at(i).contains("tcp"))
+      m_listeners << new spot_on_lite_daemon_tcp_listener
+	(m_listeners_properties.at(i), this);
+    else
+      m_listeners << new spot_on_lite_daemon_udp_listener
+	(m_listeners_properties.at(i), this);
 }
 
 void spot_on_lite_daemon::prepare_local_socket_server(void)
@@ -275,8 +280,12 @@ void spot_on_lite_daemon::prepare_peers(void)
 		<< "--ssl-tls-control-string"
 		<< list.value(3)
 		<< "--ssl-tls-key-size"
-		<< list.value(4)
-		<< "--tcp";
+		<< list.value(4);
+
+      if(m_peers_properties.at(i).contains("tcp"))
+	arguments << "--tcp";
+      else
+	arguments << "--udp";
 
       QProcess *process = new QProcess(this);
 
@@ -538,19 +547,20 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
 	  (settings.value(key).toString().split(",", QString::KeepEmptyParts));
 
 	/*
-	** 0 - IP Address
-	** 1 - Port
-	** 2 - Backlog
-	** 3 - SSL Control String
-	** 4 - SSL Key Size (Bits)
-	** 5 - Silence Timeout (Seconds)
-	** 6 - SO Linger (Seconds)
-	** 7 - End-of-Message-Marker
-	** 8 - Local SO_SNDBUF
-	** 9 - Identities Lifetime (Seconds)
+	** 0  - IP Address
+	** 1  - Port
+	** 2  - Backlog
+	** 3  - SSL Control String
+	** 4  - SSL Key Size (Bits)
+	** 5  - Silence Timeout (Seconds)
+	** 6  - SO Linger (Seconds)
+	** 7  - End-of-Message-Marker
+	** 8  - Local SO_SNDBUF
+	** 9  - Identities Lifetime (Seconds)
+	** 10 - Protocol
 	*/
 
-	int expected = 10;
+	int expected = 11;
 
 	if(list.size() != expected)
 	  {
@@ -721,6 +731,25 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
 		      << "\" identities lifetime value is invalid. "
 		      << "Expecting a value "
 		      << "in the range [90, 600]. Ignoring entry."
+		      << std::endl;
+	  }
+	
+	QString protocol(list.value(10));
+
+	if(!(protocol == "tcp" || protocol == "udp"))
+	  {
+	    entry_ok = false;
+
+	    if(ok)
+	      *ok = false;
+
+	    std::cerr << "spot_on_lite_daemon::"
+		      << "process_configuration_file(): The "
+		      << "listener/peer \""
+		      << key.toStdString()
+		      << "\" protocol value is invalid. "
+		      << "Expecting a value of tcp or udp. "
+		      << "Ignoring entry."
 		      << std::endl;
 	  }
 

@@ -38,7 +38,6 @@
 #include <QVector>
 
 class QSocketNotifier;
-class spot_on_lite_daemon_tcp_listener;
 
 class spot_on_lite_daemon: public QObject
 {
@@ -66,7 +65,7 @@ class spot_on_lite_daemon: public QObject
   QAtomicInt m_congestion_control_lifetime;
   QFuture<void> m_congestion_control_future;
   QHash<QLocalSocket *, char> m_local_sockets;
-  QList<spot_on_lite_daemon_tcp_listener *> m_listeners;
+  QList<QObject *> m_listeners;
   QPointer<QLocalServer> m_local_server;
   QSocketNotifier *m_signal_usr1_socket_notifier;
   QString m_certificates_file_name;

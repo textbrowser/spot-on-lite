@@ -33,17 +33,19 @@ extern "C"
 #include <openssl/rsa.h>
 }
 
+#include <QAbstractSocket>
 #include <QFuture>
+#include <QPointer>
 #include <QReadWriteLock>
 #include <QSslCipher>
-#include <QSslSocket>
+#include <QSslConfiguration>
 #include <QTimer>
 
 #include "spot-on-lite-daemon-sha.h"
 
 class QLocalSocket;
 
-class spot_on_lite_daemon_child_client: public QSslSocket
+class spot_on_lite_daemon_child_client: public QObject
 {
   Q_OBJECT
 
@@ -54,6 +56,7 @@ class spot_on_lite_daemon_child_client: public QSslSocket
      const QString &end_of_message_marker,
      const QString &local_server_file_name,
      const QString &log_file_name,
+     const QString &protocol,
      const QString &remote_identities_file_name,
      const QString &server_identity,
      const QString &ssl_control_string,
@@ -74,7 +77,8 @@ class spot_on_lite_daemon_child_client: public QSslSocket
 #ifdef __arm__
   QHash<QByteArray, qint64> m_remote_identities;
 #endif
-  QLocalSocket *m_local_socket;
+  QPointer<QLocalSocket> m_local_socket;
+  QPointer<QAbstractSocket> m_remote_socket;
   QReadWriteLock m_local_content_mutex;
   QReadWriteLock m_db_id_mutex;
 #ifdef __arm__
@@ -85,6 +89,7 @@ class spot_on_lite_daemon_child_client: public QSslSocket
   QString m_end_of_message_marker;
   QString m_local_server_file_name;
   QString m_log_file_name;
+  QString m_protocol;
   QString m_remote_identities_file_name;
   QString m_server_identity;
   QString m_ssl_control_string;

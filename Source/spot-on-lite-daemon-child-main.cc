@@ -387,6 +387,7 @@ int main(int argc, char *argv[])
 	     end_of_message_marker,
 	     local_server_file_name,
 	     log_file_name,
+	     protocol,
 	     remote_identities_file_name,
 	     server_identity,
 	     ssl_control_string,

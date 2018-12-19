@@ -44,10 +44,11 @@ extern "C"
 #include <QLocalSocket>
 #include <QSqlDatabase>
 #include <QSqlQuery>
-#include <QSslConfiguration>
 #include <QSslKey>
+#include <QSslSocket>
 #include <QStringList>
 #include <QTimer>
+#include <QUdpSocket>
 #include <QUuid>
 #if QT_VERSION >= 0x050000
 #include <QtConcurrent>
@@ -72,6 +73,7 @@ spot_on_lite_daemon_child_client::spot_on_lite_daemon_child_client
  const QString &end_of_message_marker,
  const QString &local_server_file_name,
  const QString &log_file_name,
+ const QString &protocol,
  const QString &remote_identities_file_name,
  const QString &server_identity,
  const QString &ssl_control_string,
@@ -80,7 +82,7 @@ spot_on_lite_daemon_child_client::spot_on_lite_daemon_child_client
  const int maximum_accumulated_bytes,
  const int silence,
  const int socket_descriptor,
- const int ssl_key_size):QSslSocket()
+ const int ssl_key_size):QObject()
 {
   m_attempt_local_connection_timer.setInterval(2500);
   m_attempt_remote_connection_timer.setInterval(2500);
@@ -92,14 +94,20 @@ spot_on_lite_daemon_child_client::spot_on_lite_daemon_child_client
   m_identity_lifetime = qBound(5, identities_lifetime, 600);
   m_local_server_file_name = local_server_file_name;
   m_local_so_sndbuf = qBound(4096, local_so_sndbuf, 65536);
-  m_local_socket = 0;
   m_log_file_name = log_file_name;
   m_maximum_accumulated_bytes = maximum_accumulated_bytes;
 
   if(m_maximum_accumulated_bytes < 1024)
     m_maximum_accumulated_bytes = 8 * 1024 * 1024;
 
+  m_protocol = protocol;
   m_remote_identities_file_name = remote_identities_file_name;
+
+  if(m_protocol == "udp")
+    m_remote_socket = new QSslSocket(this);
+  else
+    m_remote_socket = new QUdpSocket(this);
+
   m_server_identity = server_identity;
   m_silence = 1000 * qBound(15, silence, 3600);
   m_ssl_control_string = ssl_control_string.trimmed();
@@ -126,8 +134,9 @@ spot_on_lite_daemon_child_client::spot_on_lite_daemon_child_client
     }
   else
     {
-      if(!setSocketDescriptor(socket_descriptor) ||
-	 state() != QAbstractSocket::ConnectedState)
+      if(!m_remote_socket->setSocketDescriptor(socket_descriptor) ||
+	 !(m_remote_socket->state() == QAbstractSocket::BoundState ||
+	   m_remote_socket->state() == QAbstractSocket::ConnectedState))
 	{
 	  /*
 	  ** Fatal error!
@@ -179,7 +188,9 @@ spot_on_lite_daemon_child_client::spot_on_lite_daemon_child_client
 	  this,
 	  SLOT(slot_write_data(const QByteArray &)));
 
-  if(!m_ssl_control_string.isEmpty() && m_ssl_key_size > 0)
+  if(m_protocol == "tcp" &&
+     !m_ssl_control_string.isEmpty() &&
+     m_ssl_key_size > 0)
     {
 #if OPENSSL_VERSION_NUMBER < 0x10100000L || defined(Q_OS_OPENBSD)
       SSL_library_init(); // Always returns 1.
@@ -197,7 +208,7 @@ spot_on_lite_daemon_child_client::spot_on_lite_daemon_child_client
 
 	  QStringList list(m_server_identity.split(":"));
 
-	  connectToHostEncrypted
+	  qobject_cast<QSslSocket *> (m_remote_socket)->connectToHostEncrypted
 	    (list.value(0), static_cast<quint16> (list.value(1).toInt()));
 	}
       else
@@ -209,14 +220,14 @@ spot_on_lite_daemon_child_client::spot_on_lite_daemon_child_client
 	  else
 	    prepare_ssl_tls_configuration(list);
 
-	  startServerEncryption();
+	  qobject_cast<QSslSocket *> (m_remote_socket)->startServerEncryption();
 	}
     }
   else if(m_client_role)
     {
       QStringList list(m_server_identity.split(":"));
 
-      connectToHost
+      m_remote_socket->connectToHost
 	(QHostAddress(list.value(0)),
 	 static_cast<quint16> (list.value(1).toInt()));
     }
@@ -634,12 +645,12 @@ void spot_on_lite_daemon_child_client::generate_certificate
     }
 
   if(std::numeric_limits<int>::max() -
-     localAddress().toString().toLatin1().length() < 1)
+     m_remote_socket->localAddress().toString().toLatin1().length() < 1)
     common_name = 0;
   else
     common_name = static_cast<unsigned char *>
-      (calloc(static_cast<size_t> (localAddress().toString().
-				   toLatin1().length() + 1),
+      (calloc(static_cast<size_t> (m_remote_socket->localAddress().
+				   toString().toLatin1().length() + 1),
 	      sizeof(unsigned char)));
 
   if(!common_name)
@@ -648,9 +659,9 @@ void spot_on_lite_daemon_child_client::generate_certificate
       goto done_label;
     }
 
-  length = localAddress().toString().toLatin1().length();
+  length = m_remote_socket->localAddress().toString().toLatin1().length();
   memcpy(common_name,
-	 localAddress().toString().toLatin1().constData(),
+	 m_remote_socket->localAddress().toString().toLatin1().constData(),
 	 static_cast<size_t> (length));
   common_name_entry = X509_NAME_ENTRY_create_by_NID
     (0,
@@ -951,6 +962,9 @@ void spot_on_lite_daemon_child_client::prepare_local_socket(void)
 void spot_on_lite_daemon_child_client::prepare_ssl_tls_configuration
 (const QList<QByteArray> &list)
 {
+  if(m_protocol != "tcp")
+    return;
+
   QSslConfiguration configuration;
 
   configuration.setLocalCertificate(QSslCertificate(list.value(0)));
@@ -985,7 +999,8 @@ void spot_on_lite_daemon_child_client::prepare_ssl_tls_configuration
 #else
 	  set_ssl_ciphers(supportedCiphers(), configuration);
 #endif
-	  setSslConfiguration(configuration);
+	  qobject_cast<QSslSocket *>
+	    (m_remote_socket)->setSslConfiguration(configuration);
 	}
       else
 	/*
@@ -1151,7 +1166,6 @@ void spot_on_lite_daemon_child_client::purge_containers(void)
   if(m_local_socket)
     m_local_socket->deleteLater();
 
-  m_local_socket = 0;
   m_remote_content.clear();
   purge_remote_identities();
 }
@@ -1369,17 +1383,19 @@ void spot_on_lite_daemon_child_client::slot_attempt_remote_connection(void)
   ** Attempt a client connection.
   */
 
-  if(state() != QAbstractSocket::UnconnectedState)
+  if(m_remote_socket->state() != QAbstractSocket::UnconnectedState)
     return;
 
   QStringList list(m_server_identity.split(":"));
 
-  if(!m_ssl_control_string.isEmpty() && m_ssl_key_size > 0)
-    connectToHostEncrypted
+  if(m_protocol == "tcp" &&
+     !m_ssl_control_string.isEmpty() &&
+     m_ssl_key_size > 0)
+    qobject_cast<QSslSocket *> (m_remote_socket)->connectToHostEncrypted
       (list.value(0),
        static_cast<quint16> (list.value(1).toInt()));
   else
-    connectToHost
+    m_remote_socket->connectToHost
       (QHostAddress(list.value(0)),
        static_cast<quint16> (list.value(1).toInt()));
 }
@@ -1410,8 +1426,8 @@ void spot_on_lite_daemon_child_client::slot_broadcast_capabilities(void)
      QByteArray::number(data.toBase64().length() +
 			QString("type=0014&content=\r\n\r\n\r\n").length()));
   results.replace("%2", data.toBase64());
-  write(results);
-  flush();
+  m_remote_socket->write(results);
+  m_remote_socket->flush();
 }
 
 void spot_on_lite_daemon_child_client::slot_connected(void)
@@ -1440,7 +1456,6 @@ void spot_on_lite_daemon_child_client::slot_disconnected(void)
       if(m_local_socket)
 	m_local_socket->deleteLater();
 
-      m_local_socket = 0;
       stop_threads_and_timers();
       QCoreApplication::exit(0);
     }
@@ -1450,7 +1465,9 @@ void spot_on_lite_daemon_child_client::slot_keep_alive_timer_timeout(void)
 {
   log(QString("spot_on_lite_daemon_child_client::"
 	      "slot_keep_alive_timer_timeout(): peer %1:%2 "
-	      "aborting!").arg(peerAddress().toString()).arg(peerPort()));
+	      "aborting!").
+      arg(m_remote_socket->peerAddress().toString()).
+      arg(m_remote_socket->peerPort()));
 
   if(m_client_role)
     {
@@ -1468,7 +1485,6 @@ void spot_on_lite_daemon_child_client::slot_keep_alive_timer_timeout(void)
       if(m_local_socket)
 	m_local_socket->deleteLater();
 
-      m_local_socket = 0;
       stop_threads_and_timers();
       QCoreApplication::exit(0);
     }
@@ -1530,7 +1546,7 @@ void spot_on_lite_daemon_child_client::slot_local_socket_ready_read(void)
 
 void spot_on_lite_daemon_child_client::slot_ready_read(void)
 {
-  QByteArray data(readAll());
+  QByteArray data(m_remote_socket->readAll());
 
   if(data.isEmpty())
     return;
@@ -1571,13 +1587,15 @@ void spot_on_lite_daemon_child_client::
 slot_ssl_errors(const QList<QSslError> &errors)
 {
   Q_UNUSED(errors);
-  ignoreSslErrors();
+
+  if(m_protocol == "tcp")
+    qobject_cast<QSslSocket *> (m_remote_socket)->ignoreSslErrors();
 }
 
 void spot_on_lite_daemon_child_client::slot_write_data(const QByteArray &data)
 {
-  write(data);
-  flush();
+  m_remote_socket->write(data);
+  m_remote_socket->flush();
 }
 
 void spot_on_lite_daemon_child_client::stop_threads_and_timers(void)
