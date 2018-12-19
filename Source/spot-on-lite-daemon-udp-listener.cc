@@ -47,6 +47,10 @@ spot_on_lite_daemon_udp_listener::spot_on_lite_daemon_udp_listener
 	  SIGNAL(timeout(void)),
 	  this,
 	  SLOT(slot_start_timeout(void)));
+  connect(this,
+	  SIGNAL(readyRead(void)),
+	  this,
+	  SLOT(slot_ready_read(void)));
   m_configuration = configuration;
   m_max_pending_connections = 30;
   m_parent = parent;
@@ -58,12 +62,10 @@ spot_on_lite_daemon_udp_listener::
 {
 }
 
-#if QT_VERSION >= 0x050000
-void spot_on_lite_daemon_udp_listener::incomingConnection
-(qintptr socket_descriptor)
+#if QT_VERSION < 0x050000
+void spot_on_lite_daemon_udp_listener::new_connection(int socket_descriptor)
 #else
-void spot_on_lite_daemon_udp_listener::incomingConnection
-(int socket_descriptor)
+void spot_on_lite_daemon_udp_listener::new_connection(qintptr socket_descriptor)
 #endif
 {
   if(!m_parent)
@@ -155,6 +157,26 @@ void spot_on_lite_daemon_udp_listener::incomingConnection
 	  if(errno != EINTR)
 	    break;
       */
+    }
+}
+
+void spot_on_lite_daemon_udp_listener::slot_ready_read(void)
+{
+  while(hasPendingDatagrams())
+    {
+      QByteArray datagram;
+      QHostAddress peer_address;
+      quint16 peer_port = 0;
+
+      datagram.resize
+	(static_cast<int> (qMax(static_cast<qint64> (0),
+				pendingDatagramSize())));
+      readDatagram(datagram.data(), datagram.size(), &peer_address, &peer_port);
+
+      if(!m_clients.contains(QString(peer_port) +
+			     peer_address.scopeId() +
+			     peer_address.toString()))
+	new_connection(socketDescriptor());
     }
 }
 
