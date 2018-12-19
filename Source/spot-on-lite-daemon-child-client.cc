@@ -56,7 +56,7 @@ extern "C"
 
 #include <limits>
 
-#include "spot-on-lite-daemon-child-tcp-client.h"
+#include "spot-on-lite-daemon-child-client.h"
 
 static int hash_algorithm_key_length(const QByteArray &algorithm)
 {
@@ -66,8 +66,7 @@ static int hash_algorithm_key_length(const QByteArray &algorithm)
     return 0;
 }
 
-spot_on_lite_daemon_child_tcp_client::
-spot_on_lite_daemon_child_tcp_client
+spot_on_lite_daemon_child_client::spot_on_lite_daemon_child_client
 (const QString &certificates_file_name,
  const QString &congestion_control_file_name,
  const QString &end_of_message_marker,
@@ -134,8 +133,8 @@ spot_on_lite_daemon_child_tcp_client
 	  ** Fatal error!
 	  */
 
-	  log("spot_on_lite_daemon_child_tcp_client::"
-	      "spot_on_lite_daemon_child_tcp_client(): "
+	  log("spot_on_lite_daemon_child_client::"
+	      "spot_on_lite_daemon_child_client(): "
 	      "invalid socket descriptor.");
 	  QTimer::singleShot(2500, this, SLOT(slot_disconnected(void)));
 	  return;
@@ -223,14 +222,13 @@ spot_on_lite_daemon_child_tcp_client
     }
 }
 
-spot_on_lite_daemon_child_tcp_client::
-~spot_on_lite_daemon_child_tcp_client()
+spot_on_lite_daemon_child_client::~spot_on_lite_daemon_child_client()
 {
   stop_threads_and_timers();
 }
 
-QHash<QByteArray, QString>spot_on_lite_daemon_child_tcp_client::
-remote_identities(bool *ok)
+QHash<QByteArray, QString>spot_on_lite_daemon_child_client::
+  remote_identities(bool *ok)
 {
   if(ok)
     *ok = true;
@@ -285,7 +283,7 @@ remote_identities(bool *ok)
   return hash;
 }
 
-QList<QByteArray> spot_on_lite_daemon_child_tcp_client::
+QList<QByteArray> spot_on_lite_daemon_child_client::
 local_certificate_configuration(void)
 {
   QList<QByteArray> list;
@@ -318,7 +316,7 @@ local_certificate_configuration(void)
   return list;
 }
 
-QList<QSslCipher> spot_on_lite_daemon_child_tcp_client::
+QList<QSslCipher> spot_on_lite_daemon_child_client::
 default_ssl_ciphers(void) const
 {
   QList<QSslCipher> list;
@@ -360,7 +358,7 @@ default_ssl_ciphers(void) const
 #ifdef TLS1_2_VERSION
 	  if(!(ctx = SSL_CTX_new(TLSv1_2_client_method())))
 	    {
-	      log("spot_on_lite_daemon_child_tcp_client::"
+	      log("spot_on_lite_daemon_child_client::"
 		  "default_ssl_ciphers(): "
 		  "SSL_CTX_new(TLSv1_2_client_method()) failure.");
 	      goto done_label;
@@ -372,7 +370,7 @@ default_ssl_ciphers(void) const
 #ifdef TLS1_1_VERSION
 	  if(!(ctx = SSL_CTX_new(TLSv1_1_method())))
 	    {
-	      log("spot_on_lite_daemon_child_tcp_client::"
+	      log("spot_on_lite_daemon_child_client::"
 		  "default_ssl_ciphers(): SSL_CTX_new(TLSv1_1_method()) "
 		  "failure.");
 	      goto done_label;
@@ -384,7 +382,7 @@ default_ssl_ciphers(void) const
 	  if(!(ctx = SSL_CTX_new(TLSv1_method())))
 	    {
 	      log
-		("spot_on_lite_daemon_child_tcp_client::"
+		("spot_on_lite_daemon_child_client::"
 		 "default_ssl_ciphers(): SSL_CTX_new(TLSv1_method()) failure.");
 	      goto done_label;
 	    }
@@ -395,7 +393,7 @@ default_ssl_ciphers(void) const
 	  if(!(ctx = SSL_CTX_new(SSLv3_method())))
 	    {
 	      log
-		("spot_on_lite_daemon_child_tcp_client::"
+		("spot_on_lite_daemon_child_client::"
 		 "default_ssl_ciphers(): SSL_CTX_new(SSLv3_method()) failure.");
 	      goto done_label;
 	    }
@@ -405,7 +403,7 @@ default_ssl_ciphers(void) const
 
       if(!ctx)
 	{
-	  log("spot_on_lite_daemon_child_tcp_client::"
+	  log("spot_on_lite_daemon_child_client::"
 	      "default_ssl_ciphers(): ctx is zero!");
 	  continue;
 	}
@@ -414,14 +412,14 @@ default_ssl_ciphers(void) const
 				 m_ssl_control_string.toLatin1().
 				 constData()) == 0)
 	{
-	  log("spot_on_lite_daemon_child_tcp_client::"
+	  log("spot_on_lite_daemon_child_client::"
 	      "default_ssl_ciphers(): SSL_CTX_set_cipher_list() failure.");
 	  goto done_label;
 	}
 
       if(!(ssl = SSL_new(ctx)))
 	{
-	  log("spot_on_lite_daemon_child_tcp_client::"
+	  log("spot_on_lite_daemon_child_client::"
 	      "default_ssl_ciphers(): SSL_new() failure.");
 	  goto done_label;
 	}
@@ -471,14 +469,14 @@ default_ssl_ciphers(void) const
     }
 
   if(list.isEmpty())
-    log("spot_on_lite_daemon_child_tcp_client::default_ssl_ciphers(): "
+    log("spot_on_lite_daemon_child_client::default_ssl_ciphers(): "
 	"empty cipher list.");
 
   return list;
 }
 
-bool spot_on_lite_daemon_child_tcp_client::memcmp(const QByteArray &a,
-						  const QByteArray &b)
+bool spot_on_lite_daemon_child_client::memcmp(const QByteArray &a,
+					      const QByteArray &b)
 {
   int length = qMax(a.length(), b.length());
   int rc = 0;
@@ -489,8 +487,7 @@ bool spot_on_lite_daemon_child_tcp_client::memcmp(const QByteArray &a,
   return rc == 0;
 }
 
-bool spot_on_lite_daemon_child_tcp_client::record_congestion
-(const QByteArray &data)
+bool spot_on_lite_daemon_child_client::record_congestion(const QByteArray &data)
 {
   bool added = false;
   quint64 db_connection_id = db_id();
@@ -535,7 +532,7 @@ bool spot_on_lite_daemon_child_tcp_client::record_congestion
   return added;
 }
 
-quint64 spot_on_lite_daemon_child_tcp_client::db_id(void)
+quint64 spot_on_lite_daemon_child_client::db_id(void)
 {
   QWriteLocker lock(&m_db_id_mutex);
 
@@ -543,8 +540,7 @@ quint64 spot_on_lite_daemon_child_tcp_client::db_id(void)
   return m_db_id;
 }
 
-void spot_on_lite_daemon_child_tcp_client::
-create_remote_identities_database(void)
+void spot_on_lite_daemon_child_client::create_remote_identities_database(void)
 {
   quint64 db_connection_id = db_id();
 
@@ -571,7 +567,7 @@ create_remote_identities_database(void)
   QSqlDatabase::removeDatabase(QString::number(db_connection_id));
 }
 
-void spot_on_lite_daemon_child_tcp_client::generate_certificate
+void spot_on_lite_daemon_child_client::generate_certificate
 (RSA *rsa,
  QByteArray &certificate,
  const long int days,
@@ -763,7 +759,7 @@ void spot_on_lite_daemon_child_tcp_client::generate_certificate
   free(common_name);
 }
 
-void spot_on_lite_daemon_child_tcp_client::generate_ssl_tls(void)
+void spot_on_lite_daemon_child_client::generate_ssl_tls(void)
 {
   BIGNUM *f4 = 0;
   BIO *private_memory = 0;
@@ -880,7 +876,7 @@ void spot_on_lite_daemon_child_tcp_client::generate_ssl_tls(void)
       public_key.replace
 	(0, public_key.length(), QByteArray(public_key.length(), 0));
       public_key.clear();
-      log(QString("spot_on_lite_daemon_child_tcp_client::"
+      log(QString("spot_on_lite_daemon_child_client::"
 		  "generate_ssl_tls(): error (%1) occurred.").arg(error));
     }
   else
@@ -898,7 +894,7 @@ void spot_on_lite_daemon_child_tcp_client::generate_ssl_tls(void)
   free(public_buffer);
 }
 
-void spot_on_lite_daemon_child_tcp_client::log(const QString &error) const
+void spot_on_lite_daemon_child_client::log(const QString &error) const
 {
   QString e(error.trimmed());
 
@@ -921,7 +917,7 @@ void spot_on_lite_daemon_child_tcp_client::log(const QString &error) const
     }
 }
 
-void spot_on_lite_daemon_child_tcp_client::prepare_local_socket(void)
+void spot_on_lite_daemon_child_client::prepare_local_socket(void)
 {
   {
     QWriteLocker lock(&m_local_content_mutex);
@@ -952,7 +948,7 @@ void spot_on_lite_daemon_child_tcp_client::prepare_local_socket(void)
   m_local_socket->connectToServer(m_local_server_file_name);
 }
 
-void spot_on_lite_daemon_child_tcp_client::prepare_ssl_tls_configuration
+void spot_on_lite_daemon_child_client::prepare_ssl_tls_configuration
 (const QList<QByteArray> &list)
 {
   QSslConfiguration configuration;
@@ -996,12 +992,12 @@ void spot_on_lite_daemon_child_tcp_client::prepare_ssl_tls_configuration
 	** Error!
 	*/
 
-	log("spot_on_lite_daemon_child_tcp_client::"
+	log("spot_on_lite_daemon_child_client::"
 	    "prepare_ssl_tls_configuration(): empty private key.");
     }
 }
 
-void spot_on_lite_daemon_child_tcp_client::process_data(void)
+void spot_on_lite_daemon_child_client::process_data(void)
 {
   {
     QReadLocker lock(&m_local_content_mutex);
@@ -1112,7 +1108,7 @@ void spot_on_lite_daemon_child_tcp_client::process_data(void)
     }
 }
 
-void spot_on_lite_daemon_child_tcp_client::process_remote_content(void)
+void spot_on_lite_daemon_child_client::process_remote_content(void)
 {
   if(m_client_role ||
      m_end_of_message_marker.isEmpty() ||
@@ -1144,7 +1140,7 @@ void spot_on_lite_daemon_child_tcp_client::process_remote_content(void)
     }
 }
 
-void spot_on_lite_daemon_child_tcp_client::purge_containers(void)
+void spot_on_lite_daemon_child_client::purge_containers(void)
 {
   {
     QWriteLocker lock(&m_local_content_mutex);
@@ -1160,7 +1156,7 @@ void spot_on_lite_daemon_child_tcp_client::purge_containers(void)
   purge_remote_identities();
 }
 
-void spot_on_lite_daemon_child_tcp_client::purge_remote_identities(void)
+void spot_on_lite_daemon_child_client::purge_remote_identities(void)
 {
 #ifdef __arm__
   QWriteLocker lock(&m_remote_identities_mutex);
@@ -1191,7 +1187,7 @@ void spot_on_lite_daemon_child_tcp_client::purge_remote_identities(void)
 #endif
 }
 
-void spot_on_lite_daemon_child_tcp_client::record_certificate
+void spot_on_lite_daemon_child_client::record_certificate
 (const QByteArray &certificate,
  const QByteArray &private_key,
  const QByteArray &public_key)
@@ -1233,7 +1229,7 @@ void spot_on_lite_daemon_child_tcp_client::record_certificate
   QSqlDatabase::removeDatabase(QString::number(db_connection_id));
 }
 
-void spot_on_lite_daemon_child_tcp_client::record_remote_identity
+void spot_on_lite_daemon_child_client::record_remote_identity
 (const QByteArray &data)
 {
   if(m_client_role)
@@ -1305,7 +1301,7 @@ void spot_on_lite_daemon_child_tcp_client::record_remote_identity
     }
 }
 
-void spot_on_lite_daemon_child_tcp_client::remove_expired_identities(void)
+void spot_on_lite_daemon_child_client::remove_expired_identities(void)
 {
 #ifdef __arm__
   QWriteLocker lock(&m_remote_identities_mutex);
@@ -1346,7 +1342,7 @@ void spot_on_lite_daemon_child_tcp_client::remove_expired_identities(void)
 #endif
 }
 
-void spot_on_lite_daemon_child_tcp_client::
+void spot_on_lite_daemon_child_client::
 set_ssl_ciphers(const QList<QSslCipher> &ciphers,
 		QSslConfiguration &configuration) const
 {
@@ -1362,12 +1358,12 @@ set_ssl_ciphers(const QList<QSslCipher> &ciphers,
     configuration.setCiphers(preferred);
 }
 
-void spot_on_lite_daemon_child_tcp_client::slot_attempt_local_connection(void)
+void spot_on_lite_daemon_child_client::slot_attempt_local_connection(void)
 {
   prepare_local_socket();
 }
 
-void spot_on_lite_daemon_child_tcp_client::slot_attempt_remote_connection(void)
+void spot_on_lite_daemon_child_client::slot_attempt_remote_connection(void)
 {
   /*
   ** Attempt a client connection.
@@ -1388,7 +1384,7 @@ void spot_on_lite_daemon_child_tcp_client::slot_attempt_remote_connection(void)
        static_cast<quint16> (list.value(1).toInt()));
 }
 
-void spot_on_lite_daemon_child_tcp_client::slot_broadcast_capabilities(void)
+void spot_on_lite_daemon_child_client::slot_broadcast_capabilities(void)
 {
   /*
   ** Capabilities
@@ -1418,14 +1414,14 @@ void spot_on_lite_daemon_child_tcp_client::slot_broadcast_capabilities(void)
   flush();
 }
 
-void spot_on_lite_daemon_child_tcp_client::slot_connected(void)
+void spot_on_lite_daemon_child_client::slot_connected(void)
 {
   m_attempt_local_connection_timer.start();
   m_attempt_remote_connection_timer.stop();
   m_capabilities_timer.start(m_silence / 2);
 }
 
-void spot_on_lite_daemon_child_tcp_client::slot_disconnected(void)
+void spot_on_lite_daemon_child_client::slot_disconnected(void)
 {
   if(m_client_role)
     {
@@ -1450,9 +1446,9 @@ void spot_on_lite_daemon_child_tcp_client::slot_disconnected(void)
     }
 }
 
-void spot_on_lite_daemon_child_tcp_client::slot_keep_alive_timer_timeout(void)
+void spot_on_lite_daemon_child_client::slot_keep_alive_timer_timeout(void)
 {
-  log(QString("spot_on_lite_daemon_child_tcp_client::"
+  log(QString("spot_on_lite_daemon_child_client::"
 	      "slot_keep_alive_timer_timeout(): peer %1:%2 "
 	      "aborting!").arg(peerAddress().toString()).arg(peerPort()));
 
@@ -1478,7 +1474,7 @@ void spot_on_lite_daemon_child_tcp_client::slot_keep_alive_timer_timeout(void)
     }
 }
 
-void spot_on_lite_daemon_child_tcp_client::slot_local_socket_connected(void)
+void spot_on_lite_daemon_child_client::slot_local_socket_connected(void)
 {
   if(!m_local_socket)
     return;
@@ -1495,13 +1491,13 @@ void spot_on_lite_daemon_child_tcp_client::slot_local_socket_connected(void)
   process_remote_content();
 }
 
-void spot_on_lite_daemon_child_tcp_client::slot_local_socket_disconnected(void)
+void spot_on_lite_daemon_child_client::slot_local_socket_disconnected(void)
 {
   if(!m_attempt_local_connection_timer.isActive())
     m_attempt_local_connection_timer.start();
 }
 
-void spot_on_lite_daemon_child_tcp_client::slot_local_socket_ready_read(void)
+void spot_on_lite_daemon_child_client::slot_local_socket_ready_read(void)
 {
   if(m_local_socket)
     {
@@ -1529,10 +1525,10 @@ void spot_on_lite_daemon_child_tcp_client::slot_local_socket_ready_read(void)
 
   if(m_process_data_future.isFinished())
     m_process_data_future = QtConcurrent::run
-      (this, &spot_on_lite_daemon_child_tcp_client::process_data);
+      (this, &spot_on_lite_daemon_child_client::process_data);
 }
 
-void spot_on_lite_daemon_child_tcp_client::slot_ready_read(void)
+void spot_on_lite_daemon_child_client::slot_ready_read(void)
 {
   QByteArray data(readAll());
 
@@ -1564,28 +1560,27 @@ void spot_on_lite_daemon_child_tcp_client::slot_ready_read(void)
   process_remote_content();
 }
 
-void spot_on_lite_daemon_child_tcp_client::slot_remove_expired_identities(void)
+void spot_on_lite_daemon_child_client::slot_remove_expired_identities(void)
 {
   if(m_expired_identities_future.isFinished())
     m_expired_identities_future = QtConcurrent::run
-      (this, &spot_on_lite_daemon_child_tcp_client::remove_expired_identities);
+      (this, &spot_on_lite_daemon_child_client::remove_expired_identities);
 }
 
-void spot_on_lite_daemon_child_tcp_client::
+void spot_on_lite_daemon_child_client::
 slot_ssl_errors(const QList<QSslError> &errors)
 {
   Q_UNUSED(errors);
   ignoreSslErrors();
 }
 
-void spot_on_lite_daemon_child_tcp_client::
-slot_write_data(const QByteArray &data)
+void spot_on_lite_daemon_child_client::slot_write_data(const QByteArray &data)
 {
   write(data);
   flush();
 }
 
-void spot_on_lite_daemon_child_tcp_client::stop_threads_and_timers(void)
+void spot_on_lite_daemon_child_client::stop_threads_and_timers(void)
 {
   m_attempt_local_connection_timer.stop();
   m_attempt_remote_connection_timer.stop();

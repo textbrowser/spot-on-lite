@@ -36,7 +36,7 @@ extern "C"
 
 #include <iostream>
 
-#include "spot-on-lite-daemon-child-tcp-client.h"
+#include "spot-on-lite-daemon-child-client.h"
 
 #ifdef SPOTON_LITE_DAEMON_CHILD_ECL_SUPPORTED
 #ifdef FALSE
@@ -369,14 +369,19 @@ int main(int argc, char *argv[])
 	if(protocol.isEmpty())
 	  protocol = "tcp";
       }
+    else if(argv && argv[i] && strcmp(argv[i], "--udp") == 0)
+      {
+	if(protocol.isEmpty())
+	  protocol = "tcp";
+      }
 
   QCoreApplication qapplication(argc, argv);
 
   try
     {
-      if(protocol == "tcp")
+      if(protocol == "tcp" || protocol == "udp")
 	{
-	  spot_on_lite_daemon_child_tcp_client client
+	  spot_on_lite_daemon_child_client client
 	    (certificates_file_name,
 	     congestion_control_file_name,
 	     end_of_message_marker,
