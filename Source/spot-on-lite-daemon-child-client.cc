@@ -126,18 +126,14 @@ spot_on_lite_daemon_child_client::spot_on_lite_daemon_child_client
 
   if(m_client_role)
     {
-      if(m_protocol == "tcp")
-	connect(qobject_cast<QSslSocket *> (m_remote_socket),
-		SIGNAL(connected(void)),
-		this,
-		SLOT(slot_connected(void)));
-      else
-	slot_connected();
-
       connect(&m_attempt_remote_connection_timer,
 	      SIGNAL(timeout(void)),
 	      this,
 	      SLOT(slot_attempt_remote_connection(void)));
+      connect(m_remote_socket,
+	      SIGNAL(connected(void)),
+	      this,
+	      SLOT(slot_connected(void)));
     }
   else
     {
@@ -178,13 +174,10 @@ spot_on_lite_daemon_child_client::spot_on_lite_daemon_child_client
 	  SIGNAL(timeout(void)),
 	  this,
 	  SLOT(slot_keep_alive_timer_timeout(void)));
-
-  if(m_protocol == "tcp")
-    connect(qobject_cast<QSslSocket *> (m_remote_socket),
-	    SIGNAL(disconnected(void)),
-	    this,
-	    SLOT(slot_disconnected(void)));
-
+  connect(m_remote_socket,
+	  SIGNAL(disconnected(void)),
+	  this,
+	  SLOT(slot_disconnected(void)));
   connect(m_remote_socket,
 	  SIGNAL(readyRead(void)),
 	  this,
