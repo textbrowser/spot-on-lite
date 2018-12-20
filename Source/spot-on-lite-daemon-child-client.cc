@@ -1478,11 +1478,18 @@ void spot_on_lite_daemon_child_client::slot_disconnected(void)
 
 void spot_on_lite_daemon_child_client::slot_keep_alive_timer_timeout(void)
 {
-  log(QString("spot_on_lite_daemon_child_client::"
-	      "slot_keep_alive_timer_timeout(): peer %1:%2 "
-	      "aborting!").
-      arg(m_remote_socket->peerAddress().toString()).
-      arg(m_remote_socket->peerPort()));
+  if(m_remote_socket->peerAddress().isNull())
+    log(QString("spot_on_lite_daemon_child_client::"
+		"slot_keep_alive_timer_timeout(): peer %1:%2 "
+		"aborting!").
+	arg(m_peer_address.toString()).
+	arg(m_peer_port));
+  else
+    log(QString("spot_on_lite_daemon_child_client::"
+		"slot_keep_alive_timer_timeout(): peer %1:%2 "
+		"aborting!").
+	arg(m_remote_socket->peerAddress().toString()).
+	arg(m_remote_socket->peerPort()));
 
   if(m_client_role)
     {
