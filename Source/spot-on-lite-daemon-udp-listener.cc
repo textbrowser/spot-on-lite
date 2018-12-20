@@ -166,14 +166,16 @@ void spot_on_lite_daemon_udp_listener::slot_ready_read(void)
 {
   while(hasPendingDatagrams())
     {
-      QByteArray datagram;
+      QByteArray data;
       QHostAddress peer_address;
       quint16 peer_port = 0;
 
-      datagram.resize
-	(static_cast<int> (qMax(static_cast<qint64> (0),
-				pendingDatagramSize())));
-      readDatagram(datagram.data(), datagram.size(), &peer_address, &peer_port);
+      data.resize(static_cast<int> (qMax(static_cast<qint64> (0),
+					 pendingDatagramSize())));
+      readDatagram(data.data(),
+		   static_cast<qint64> (data.size()),
+		   &peer_address,
+		   &peer_port);
 
       if(m_clients.size() >= m_max_pending_connections)
 	continue;

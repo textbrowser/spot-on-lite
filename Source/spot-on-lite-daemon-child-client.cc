@@ -1568,7 +1568,18 @@ void spot_on_lite_daemon_child_client::slot_local_socket_ready_read(void)
 
 void spot_on_lite_daemon_child_client::slot_ready_read(void)
 {
-  QByteArray data(m_remote_socket->readAll());
+  QByteArray data;
+
+  if(!m_client_role && m_protocol == "udp")
+    {
+      QUdpSocket *socket = qobject_cast<QUdpSocket *> (m_remote_socket);
+      qint64 size = socket->pendingDatagramSize();
+
+      data.resize(static_cast<int> (qMax(static_cast<qint64> (0), size)));
+      socket->readDatagram(data.data(), static_cast<qint64> (data.size()));
+    }
+  else
+    data = m_remote_socket->readAll();
 
   if(data.isEmpty())
     return;
