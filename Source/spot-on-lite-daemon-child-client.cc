@@ -137,9 +137,11 @@ spot_on_lite_daemon_child_client::spot_on_lite_daemon_child_client
     }
   else
     {
-      if(!m_remote_socket->setSocketDescriptor(socket_descriptor) ||
-	 !(m_remote_socket->state() == QAbstractSocket::BoundState ||
-	   m_remote_socket->state() == QAbstractSocket::ConnectedState))
+      if(!m_remote_socket->
+	 setSocketDescriptor(socket_descriptor,
+			     m_protocol == "tcp" ?
+			     QAbstractSocket::ConnectedState :
+			     QAbstractSocket::BoundState))
 	{
 	  /*
 	  ** Fatal error!
