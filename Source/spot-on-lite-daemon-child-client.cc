@@ -73,6 +73,7 @@ spot_on_lite_daemon_child_client::spot_on_lite_daemon_child_client
  const QString &local_server_file_name,
  const QString &log_file_name,
  const QString &peer_address,
+ const QString &peer_scope_identity,
  const QString &protocol,
  const QString &remote_identities_file_name,
  const QString &server_identity,
@@ -102,6 +103,7 @@ spot_on_lite_daemon_child_client::spot_on_lite_daemon_child_client
     m_maximum_accumulated_bytes = 8 * 1024 * 1024;
 
   m_peer_address = QHostAddress(peer_address);
+  m_peer_address.setScopeId(peer_scope_identity);
   m_peer_port = peer_port;
   m_protocol = protocol;
   m_remote_identities_file_name = remote_identities_file_name;
@@ -1288,7 +1290,14 @@ void spot_on_lite_daemon_child_client::record_remote_identity
 #ifdef __arm__
       QWriteLocker lock(&m_remote_identities_mutex);
 
-      m_remote_identities[identity] = QDateTime::currentDateTime().toTime_t();
+      if(!m_remote_identities.contains(identity))
+	{
+	  if(m_remote_identities.size() < 2048)
+	    m_remote_identities[identity] =
+	      QDateTime::currentDateTime().toTime_t();
+	}
+      else
+	m_remote_identities[identity] = QDateTime::currentDateTime().toTime_t();
 #else
       create_remote_identities_database();
 

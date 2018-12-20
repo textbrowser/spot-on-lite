@@ -58,6 +58,7 @@ class spot_on_lite_daemon_child_client: public QObject
      const QString &local_server_file_name,
      const QString &log_file_name,
      const QString &peer_address,
+     const QString &peer_scope_identity,
      const QString &protocol,
      const QString &remote_identities_file_name,
      const QString &server_identity,

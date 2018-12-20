@@ -122,6 +122,7 @@ int main(int argc, char *argv[])
   QString local_server_file_name("");
   QString log_file_name("");
   QString peer_address("");
+  QString peer_scope_identity("");
   QString protocol("");
   QString remote_identities_file_name("");
   QString server_identity("");
@@ -301,6 +302,23 @@ int main(int argc, char *argv[])
 	      }
 	  }
       }
+    else if(argv && argv[i] && strcmp(argv[i], "--peer-scope-identity") == 0)
+      {
+	if(peer_scope_identity.isEmpty())
+	  {
+	    i += 1;
+
+	    if(argc > i && argv[i])
+	      peer_scope_identity = QString::fromUtf8
+		(QByteArray::fromBase64(argv[i]));
+	    else
+	      {
+		std::cerr << "Invalid peer-scope-identity usage. Exiting."
+			  << std::endl;
+		return EXIT_FAILURE;
+	      }
+	  }
+      }
     else if(argv && argv[i] &&
 	    strcmp(argv[i], "--remote-identities-file") == 0)
       {
@@ -422,6 +440,7 @@ int main(int argc, char *argv[])
 	     local_server_file_name,
 	     log_file_name,
 	     peer_address,
+	     peer_scope_identity,
 	     protocol,
 	     remote_identities_file_name,
 	     server_identity,

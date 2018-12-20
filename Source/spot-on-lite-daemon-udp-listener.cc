@@ -123,7 +123,9 @@ void spot_on_lite_daemon_udp_listener::new_connection
 		"--maximum--accumulated-bytes",
 		QString::number(maximum_accumulated_bytes).toStdString().data(),
 		"--peer-address",
-		peer_address.toString().toLatin1().toBase64().data(),
+		peer_address.toString().toLatin1().toBase64().constData(),
+		"--peer-scope-identity",
+		peer_address.scopeId().toUtf8().toBase64().constData(),
 		"--peer-port",
 		QString::number(peer_port).toStdString().data(),
 		"--remote-identities-file",
@@ -172,6 +174,9 @@ void spot_on_lite_daemon_udp_listener::slot_ready_read(void)
 	(static_cast<int> (qMax(static_cast<qint64> (0),
 				pendingDatagramSize())));
       readDatagram(datagram.data(), datagram.size(), &peer_address, &peer_port);
+
+      if(m_clients.size() >= m_max_pending_connections)
+	continue;
 
       if(peer_address.isNull())
 	continue;
