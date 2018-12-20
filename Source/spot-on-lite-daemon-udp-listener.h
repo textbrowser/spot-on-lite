@@ -43,9 +43,9 @@ class spot_on_lite_daemon_udp_listener: public QUdpSocket
   ~spot_on_lite_daemon_udp_listener();
 
  private:
-  QHash<QString, char> m_clients;
+  QHash<QString, pid_t> m_clients;
   QString m_configuration;
-  QTimer m_start_timer;
+  QTimer m_general_timer;
   int m_max_pending_connections;
   spot_on_lite_daemon *m_parent;
 #if QT_VERSION < 0x050000
@@ -59,8 +59,8 @@ class spot_on_lite_daemon_udp_listener: public QUdpSocket
 #endif
 
  private slots:
+  void slot_general_timeout(void);
   void slot_ready_read(void);
-  void slot_start_timeout(void);
 };
 
 #endif

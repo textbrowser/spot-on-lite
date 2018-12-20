@@ -11,6 +11,7 @@ Completed Items
 - Partition datagrams.
 - Process accumulated data which may have arrived
   while a local socket is not connected.
+- Purge entries from UDP's m_clients.
 - Record certificate data.
 - Remote peers.
 - Remove expired identities.
@@ -23,4 +24,3 @@ Remaining Items
 - DTLS.
 - IPv6 scope identities?
 - Optionally share identities in client mode.
-- Purge entries from UDP's m_clients.

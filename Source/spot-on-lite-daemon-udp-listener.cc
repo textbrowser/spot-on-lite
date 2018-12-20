@@ -27,6 +27,7 @@
 
 extern "C"
 {
+#include <signal.h>
 #include <unistd.h>
 }
 
@@ -42,18 +43,18 @@ spot_on_lite_daemon_udp_listener::spot_on_lite_daemon_udp_listener
   ** The configuration is assumed to be correct.
   */
 
-  connect(&m_start_timer,
+  connect(&m_general_timer,
 	  SIGNAL(timeout(void)),
 	  this,
-	  SLOT(slot_start_timeout(void)));
+	  SLOT(slot_general_timeout(void)));
   connect(this,
 	  SIGNAL(readyRead(void)),
 	  this,
 	  SLOT(slot_ready_read(void)));
   m_configuration = configuration;
+  m_general_timer.start(5000);
   m_max_pending_connections = 30;
   m_parent = parent;
-  m_start_timer.start(5000);
 }
 
 spot_on_lite_daemon_udp_listener::~spot_on_lite_daemon_udp_listener()
@@ -154,11 +155,46 @@ void spot_on_lite_daemon_udp_listener::new_connection
     {
       ::close(sd);
 
+      if(pid != -1)
+	m_clients[QString::number(peer_port) +
+		  peer_address.scopeId() +
+		  peer_address.toString()] = pid;
+
       /*
 	while(waitpid(pid, NULL, WNOHANG) == -1)
 	  if(errno != EINTR)
 	    break;
       */
+    }
+}
+
+void spot_on_lite_daemon_udp_listener::slot_general_timeout(void)
+{
+  QMutableHashIterator<QString, pid_t> it(m_clients);
+
+  while(it.hasNext())
+    {
+      it.next();
+
+      if(kill(it.value(), 0) == -1)
+	if(errno == ESRCH)
+	  it.remove();
+    }
+
+  if(state() != QAbstractSocket::BoundState)
+    {
+      /*
+      ** 0 - IP Address
+      ** 1 - Port
+      ** 2 - Backlog
+      */
+
+      QStringList list(m_configuration.split(",", QString::KeepEmptyParts));
+      QUdpSocket::BindMode flags = QUdpSocket::ReuseAddressHint |
+	QUdpSocket::ShareAddress;
+
+      if(bind(QHostAddress(list.value(0)), list.value(1).toUShort(), flags))
+	m_max_pending_connections = list.value(2).toInt();
     }
 }
 
@@ -186,30 +222,6 @@ void spot_on_lite_daemon_udp_listener::slot_ready_read(void)
       if(!m_clients.contains(QString::number(peer_port) +
 			     peer_address.scopeId() +
 			     peer_address.toString()))
-	{
-	  m_clients[QString::number(peer_port) +
-		    peer_address.scopeId() +
-		    peer_address.toString()] = 0;
-	  new_connection(peer_address, socketDescriptor(), peer_port);
-	}
+	new_connection(peer_address, socketDescriptor(), peer_port);
     }
-}
-
-void spot_on_lite_daemon_udp_listener::slot_start_timeout(void)
-{
-  if(state() == QAbstractSocket::BoundState)
-    return;
-
-  /*
-  ** 0 - IP Address
-  ** 1 - Port
-  ** 2 - Backlog
-  */
-
-  QStringList list(m_configuration.split(",", QString::KeepEmptyParts));
-  QUdpSocket::BindMode flags = QUdpSocket::ReuseAddressHint |
-    QUdpSocket::ShareAddress;
-
-  if(bind(QHostAddress(list.value(0)), list.value(1).toUShort(), flags))
-    m_max_pending_connections = list.value(2).toInt();
 }
