@@ -1576,16 +1576,22 @@ void spot_on_lite_daemon_child_client::slot_ready_read(void)
 
       while(socket->hasPendingDatagrams())
 	{
+	  QHostAddress peer_address;
 	  QByteArray buffer;
 	  qint64 size = socket->pendingDatagramSize();
+	  quint16 peer_port = 0;
 
 	  buffer.resize
 	    (static_cast<int> (qMax(static_cast<qint64> (0), size)));
 	  socket->readDatagram
-	    (buffer.data(), static_cast<qint64> (buffer.size()));
+	    (buffer.data(),
+	     static_cast<qint64> (buffer.size()),
+	     &peer_address,
+	     &peer_port);
 
 	  if(!buffer.isEmpty())
-	    data.append(buffer);
+	    if(m_peer_address == peer_address && m_peer_port == peer_port)
+	      data.append(buffer);
 	}
     }
   else
