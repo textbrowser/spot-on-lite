@@ -176,6 +176,11 @@ void spot_on_lite_daemon_udp_listener::slot_general_timeout(void)
     {
       it.next();
 
+      /*
+      ** The PID (it.value()) of the child process may
+      ** have been recycled by the operating system.
+      */
+
       if(kill(it.value(), 0) == -1)
 	if(errno == ESRCH)
 	  it.remove();
