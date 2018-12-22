@@ -138,13 +138,18 @@ spot_on_lite_daemon_child_client::spot_on_lite_daemon_child_client
 	      this,
 	      SLOT(slot_connected(void)));
 
-      int sd = static_cast<int> (m_remote_socket->socketDescriptor());
       socklen_t optlen = sizeof(m_maximum_accumulated_bytes);
 
-      setsockopt
-	(sd, SOL_SOCKET, SO_RCVBUF, &m_maximum_accumulated_bytes, optlen);
-      setsockopt
-	(sd, SOL_SOCKET, SO_SNDBUF, &m_maximum_accumulated_bytes, optlen);
+      setsockopt(socket_descriptor,
+		 SOL_SOCKET,
+		 SO_RCVBUF,
+		 &m_maximum_accumulated_bytes,
+		 optlen);
+      setsockopt(socket_descriptor,
+		 SOL_SOCKET,
+		 SO_SNDBUF,
+		 &m_maximum_accumulated_bytes,
+		 optlen);
     }
   else
     {
