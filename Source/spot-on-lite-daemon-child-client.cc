@@ -113,6 +113,7 @@ spot_on_lite_daemon_child_client::spot_on_lite_daemon_child_client
   else
     m_remote_socket = new QUdpSocket(this);
 
+  m_remote_socket->setReadBufferSize(m_maximum_accumulated_bytes);
   m_server_identity = server_identity;
   m_silence = 1000 * qBound(15, silence, 3600);
   m_ssl_control_string = ssl_control_string.trimmed();
@@ -948,6 +949,7 @@ void spot_on_lite_daemon_child_client::prepare_local_socket(void)
     m_local_socket->deleteLater();
 
   m_local_socket = new QLocalSocket(this);
+  m_local_socket->setReadBufferSize(m_maximum_accumulated_bytes);
   connect(m_local_socket,
 	  SIGNAL(connected(void)),
 	  &m_attempt_local_connection_timer,

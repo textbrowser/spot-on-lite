@@ -885,6 +885,8 @@ void spot_on_lite_daemon::slot_new_local_connection(void)
 
   if(!socket)
     return;
+  else
+    socket->setReadBufferSize(m_maximum_accumulated_bytes);
 
   int sockfd = static_cast<int> (socket->socketDescriptor());
   socklen_t optlen = sizeof(m_local_so_sndbuf);
