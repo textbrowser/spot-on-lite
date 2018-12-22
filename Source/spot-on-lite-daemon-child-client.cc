@@ -1544,6 +1544,7 @@ void spot_on_lite_daemon_child_client::slot_local_socket_connected(void)
   int sd = static_cast<int> (m_local_socket->socketDescriptor());
   socklen_t optlen = sizeof(m_local_so_sndbuf);
 
+  setsockopt(sd, SOL_SOCKET, SO_RCVBUF, &m_local_so_sndbuf, optlen);
   setsockopt(sd, SOL_SOCKET, SO_SNDBUF, &m_local_so_sndbuf, optlen);
 
   /*
