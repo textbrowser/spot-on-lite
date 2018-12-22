@@ -78,7 +78,11 @@ void spot_on_lite_daemon_udp_listener::new_connection
   QString server_identity
     (QString("%1:%2").arg(localAddress().toString()).arg(localPort()));
   QStringList list(m_configuration.split(",", QString::KeepEmptyParts));
+  int maximum_accumulated_bytes = m_parent->maximum_accumulated_bytes();
+  socklen_t optlen = sizeof(maximum_accumulated_bytes);
 
+  setsockopt(sd, SOL_SOCKET, SO_RCVBUF, &maximum_accumulated_bytes, optlen);
+  setsockopt(sd, SOL_SOCKET, SO_SNDBUF, &maximum_accumulated_bytes, optlen);
   client = new (std::nothrow) spot_on_lite_daemon_child_client
     (m_parent->certificates_file_name(),
      m_parent->congestion_control_file_name(),
@@ -122,6 +126,14 @@ void spot_on_lite_daemon_udp_listener::slot_general_timeout(void)
 
   if(state() != QAbstractSocket::BoundState)
     {
+      int maximum_accumulated_bytes = m_parent ?
+	m_parent->maximum_accumulated_bytes() : 8388608;
+      int sd = static_cast<int> (socketDescriptor());
+      socklen_t optlen = sizeof(maximum_accumulated_bytes);
+
+      setsockopt(sd, SOL_SOCKET, SO_RCVBUF, &maximum_accumulated_bytes, optlen);
+      setsockopt(sd, SOL_SOCKET, SO_SNDBUF, &maximum_accumulated_bytes, optlen);
+
       /*
       ** 0 - IP Address
       ** 1 - Port
@@ -133,28 +145,7 @@ void spot_on_lite_daemon_udp_listener::slot_general_timeout(void)
 	QUdpSocket::ShareAddress;
 
       if(bind(QHostAddress(list.value(0)), list.value(1).toUShort(), flags))
-	{
-	  if(m_parent)
-	    {
-	      int maximum_accumulated_bytes = m_parent->
-		maximum_accumulated_bytes();
-	      int sockfd = static_cast<int> (socketDescriptor());
-	      socklen_t optlen = sizeof(maximum_accumulated_bytes);
-
-	      setsockopt(sockfd,
-			 SOL_SOCKET,
-			 SO_RCVBUF,
-			 &maximum_accumulated_bytes,
-			 optlen);
-	      setsockopt(sockfd,
-			 SOL_SOCKET,
-			 SO_SNDBUF,
-			 &maximum_accumulated_bytes,
-			 optlen);
-	    }
-
-	  m_max_pending_connections = list.value(2).toInt();
-	}
+	m_max_pending_connections = list.value(2).toInt();
     }
 }
 

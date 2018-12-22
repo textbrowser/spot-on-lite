@@ -113,13 +113,6 @@ spot_on_lite_daemon_child_client::spot_on_lite_daemon_child_client
   else
     m_remote_socket = new QUdpSocket(this);
 
-  int sockfd = static_cast<int> (m_remote_socket->socketDescriptor());
-  socklen_t optlen = sizeof(m_maximum_accumulated_bytes);
-
-  setsockopt
-    (sockfd, SOL_SOCKET, SO_RCVBUF, &m_maximum_accumulated_bytes, optlen);
-  setsockopt
-    (sockfd, SOL_SOCKET, SO_SNDBUF, &m_maximum_accumulated_bytes, optlen);
   m_remote_socket->setReadBufferSize(m_maximum_accumulated_bytes);
   m_server_identity = server_identity;
   m_silence = 1000 * qBound(15, silence, 3600);
@@ -144,6 +137,14 @@ spot_on_lite_daemon_child_client::spot_on_lite_daemon_child_client
 	      SIGNAL(connected(void)),
 	      this,
 	      SLOT(slot_connected(void)));
+
+      int sd = static_cast<int> (m_remote_socket->socketDescriptor());
+      socklen_t optlen = sizeof(m_maximum_accumulated_bytes);
+
+      setsockopt
+	(sd, SOL_SOCKET, SO_RCVBUF, &m_maximum_accumulated_bytes, optlen);
+      setsockopt
+	(sd, SOL_SOCKET, SO_SNDBUF, &m_maximum_accumulated_bytes, optlen);
     }
   else
     {
@@ -1535,10 +1536,10 @@ void spot_on_lite_daemon_child_client::slot_local_socket_connected(void)
   if(!m_local_socket)
     return;
 
-  int sockfd = static_cast<int> (m_local_socket->socketDescriptor());
+  int sd = static_cast<int> (m_local_socket->socketDescriptor());
   socklen_t optlen = sizeof(m_local_so_sndbuf);
 
-  setsockopt(sockfd, SOL_SOCKET, SO_SNDBUF, &m_local_so_sndbuf, optlen);
+  setsockopt(sd, SOL_SOCKET, SO_SNDBUF, &m_local_so_sndbuf, optlen);
 
   /*
   ** We may have remote content.
