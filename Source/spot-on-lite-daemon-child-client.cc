@@ -149,6 +149,7 @@ spot_on_lite_daemon_child_client::spot_on_lite_daemon_child_client
 	  ** Fatal error!
 	  */
 
+	  ::close(socket_descriptor);
 	  log("spot_on_lite_daemon_child_client::"
 	      "spot_on_lite_daemon_child_client(): "
 	      "invalid socket descriptor.");
@@ -1472,7 +1473,11 @@ void spot_on_lite_daemon_child_client::slot_disconnected(void)
 	m_local_socket->deleteLater();
 
       stop_threads_and_timers();
-      QCoreApplication::exit(0);
+
+      if(m_protocol != "udp")
+	QCoreApplication::exit(0);
+      else
+	deleteLater();
     }
 }
 
@@ -1508,7 +1513,11 @@ void spot_on_lite_daemon_child_client::slot_keep_alive_timer_timeout(void)
 	m_local_socket->deleteLater();
 
       stop_threads_and_timers();
-      QCoreApplication::exit(0);
+
+      if(m_protocol != "udp")
+	QCoreApplication::exit(0);
+      else
+	deleteLater();
     }
 }
 

@@ -27,13 +27,13 @@
 
 extern "C"
 {
-#include <signal.h>
 #include <unistd.h>
 }
 
 #include <QStringList>
 
 #include "spot-on-lite-daemon.h"
+#include "spot-on-lite-daemon-child-client.h"
 #include "spot-on-lite-daemon-udp-listener.h"
 
 spot_on_lite_daemon_udp_listener::spot_on_lite_daemon_udp_listener
@@ -61,129 +61,62 @@ spot_on_lite_daemon_udp_listener::~spot_on_lite_daemon_udp_listener()
 {
 }
 
-#if QT_VERSION < 0x050000
 void spot_on_lite_daemon_udp_listener::new_connection
 (const QHostAddress &peer_address,
- const int socket_descriptor,
  const quint16 peer_port)
-#else
-void spot_on_lite_daemon_udp_listener::new_connection
-(const QHostAddress &peer_address,
- const qintptr socket_descriptor,
- const quint16 peer_port)
-#endif
 {
   if(!m_parent)
     return;
 
-  int sd = dup(static_cast<int> (socket_descriptor));
+  int sd = dup(static_cast<int> (socketDescriptor()));
 
   if(sd == -1)
     return;
 
+  QPointer<spot_on_lite_daemon_child_client> client;
+  QString server_identity
+    (QString("%1:%2").arg(localAddress().toString()).arg(localPort()));
   QStringList list(m_configuration.split(",", QString::KeepEmptyParts));
-  int maximum_accumulated_bytes = m_parent->maximum_accumulated_bytes();
-  pid_t pid = 0;
-  std::string certificates_file_name
-    (m_parent->certificates_file_name().toStdString());
-  std::string command
-    (m_parent->child_process_file_name().toStdString());
-  std::string congestion_control_file_name
-    (m_parent->congestion_control_file_name().toStdString());
-  std::string ld_library_path
-    (m_parent->child_process_ld_library_path().toStdString());
-  std::string local_server_file_name
-    (m_parent->local_server_file_name().toStdString());
-  std::string log_file_name(m_parent->log_file_name().toStdString());
-  std::string remote_identities_file_name
-    (m_parent->remote_identities_file_name().toStdString());
-  std::string server_identity(QString("%1:%2").
-			      arg(localAddress().toString()).
-			      arg(localPort()).toStdString());
 
-  if((pid = fork()) == 0)
-    {
-      const char *envp[] = {ld_library_path.data(), NULL};
+  client = new (std::nothrow) spot_on_lite_daemon_child_client
+    (m_parent->certificates_file_name(),
+     m_parent->congestion_control_file_name(),
+     list.value(7),
+     m_parent->local_server_file_name(),
+     m_parent->log_file_name(),
+     peer_address.toString(),
+     peer_address.scopeId(),
+     "udp",
+     m_parent->remote_identities_file_name(),
+     server_identity,
+     list.value(3),
+     list.value(9).toInt(),
+     list.value(8).toInt(),
+     m_parent->maximum_accumulated_bytes(),
+     list.value(5).toInt(),
+     sd,
+     list.value(4).toInt(),
+     peer_port);
 
-      if(execle(command.data(),
-		command.data(),
-		"--certificates-file",
-		certificates_file_name.data(),
-		"--congestion-control-file",
-		congestion_control_file_name.data(),
-		"--end-of-message-marker",
-		list.value(7).toUtf8().toBase64().data(),
-		"--identities-lifetime",
-		list.value(9).toStdString().data(),
-		"--local-server-file",
-		local_server_file_name.data(),
-		"--local-so-sndbuf",
-		list.value(8).toStdString().data(),
-		"--log-file",
-		log_file_name.data(),
-		"--maximum--accumulated-bytes",
-		QString::number(maximum_accumulated_bytes).toStdString().data(),
-		"--peer-address",
-		peer_address.toString().toLatin1().toBase64().constData(),
-		"--peer-scope-identity",
-		peer_address.scopeId().toUtf8().toBase64().constData(),
-		"--peer-port",
-		QString::number(peer_port).toStdString().data(),
-		"--remote-identities-file",
-		remote_identities_file_name.data(),
-		"--server-identity",
-		server_identity.data(),
-		"--silence-timeout",
-		list.value(5).toStdString().data(),
-		"--socket-descriptor",
-		QString::number(sd).toStdString().data(),
-		"--ssl-tls-control-string",
-		list.value(3).toStdString().data(),
-		"--ssl-tls-key-size",
-		list.value(4).toStdString().data(),
-		"--udp",
-		NULL,
-		envp) == -1)
-	{
-	  ::close(sd);
-	  _exit(EXIT_FAILURE);
-	}
-
-      _exit(EXIT_SUCCESS);
-    }
+  if(client)
+    m_clients[QString::number(peer_port) +
+	      peer_address.scopeId() +
+	      peer_address.toString()] = client;
   else
-    {
-      ::close(sd);
-
-      if(pid != -1)
-	m_clients[QString::number(peer_port) +
-		  peer_address.scopeId() +
-		  peer_address.toString()] = pid;
-
-      /*
-	while(waitpid(pid, NULL, WNOHANG) == -1)
-	  if(errno != EINTR)
-	    break;
-      */
-    }
+    ::close(sd);
 }
 
 void spot_on_lite_daemon_udp_listener::slot_general_timeout(void)
 {
-  QMutableHashIterator<QString, pid_t> it(m_clients);
+  QMutableHashIterator
+    <QString, QPointer<spot_on_lite_daemon_child_client> > it(m_clients);
 
   while(it.hasNext())
     {
       it.next();
 
-      /*
-      ** The PID (it.value()) of the child process may
-      ** have been recycled by the operating system.
-      */
-
-      if(kill(it.value(), 0) == -1)
-	if(errno == ESRCH)
-	  it.remove();
+      if(!it.value())
+	it.remove();
     }
 
   if(state() != QAbstractSocket::BoundState)
@@ -227,6 +160,6 @@ void spot_on_lite_daemon_udp_listener::slot_ready_read(void)
       if(!m_clients.contains(QString::number(peer_port) +
 			     peer_address.scopeId() +
 			     peer_address.toString()))
-	new_connection(peer_address, socketDescriptor(), peer_port);
+	new_connection(peer_address, peer_port);
     }
 }

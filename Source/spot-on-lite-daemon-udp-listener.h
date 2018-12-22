@@ -28,10 +28,12 @@
 #ifndef _spot_on_lite_daemon_udp_listener_h_
 #define _spot_on_lite_daemon_udp_listener_h_
 
+#include <QPointer>
 #include <QTimer>
 #include <QUdpSocket>
 
 class spot_on_lite_daemon;
+class spot_on_lite_daemon_child_client;
 
 class spot_on_lite_daemon_udp_listener: public QUdpSocket
 {
@@ -43,20 +45,13 @@ class spot_on_lite_daemon_udp_listener: public QUdpSocket
   ~spot_on_lite_daemon_udp_listener();
 
  private:
-  QHash<QString, pid_t> m_clients;
+  QHash<QString, QPointer<spot_on_lite_daemon_child_client> > m_clients;
   QString m_configuration;
   QTimer m_general_timer;
   int m_max_pending_connections;
   spot_on_lite_daemon *m_parent;
-#if QT_VERSION < 0x050000
   void new_connection(const QHostAddress &peer_address,
-		      const int socket_descriptor,
 		      const quint16 peer_port);
-#else
-  void new_connection(const QHostAddress &peer_address,
-		      const qintptr socket_descriptor,
-		      const quint16 peer_port);
-#endif
 
  private slots:
   void slot_general_timeout(void);

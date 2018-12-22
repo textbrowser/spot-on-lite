@@ -1,4 +1,7 @@
+CONFIG += qt warn_on
 CONFIG -= app_bundle
+CXX = clang++-6.0
+LANGUAGE = C++
 QMAKE_CXXFLAGS_RELEASE -= -O2
 
 freebsd-* {
@@ -57,12 +60,8 @@ unix {
 purge.commands = rm -f */*~ *~
 }
 
-CONFIG += qt warn_on
-
 QMAKE_DISTCLEAN += -r temp
 QMAKE_EXTRA_TARGETS = purge
-
-LANGUAGE = C++
 QT += network sql
 TEMPLATE = app
 
@@ -70,6 +69,43 @@ greaterThan(QT_MAJOR_VERSION, 4) {
 QT += concurrent
 }
 
+libshalisp.target = spot-on-lite-daemon-sha.a
+libshalisp.commands = cd Source && ecl -norc -eval "'(require :asdf)'" -eval "'(push \"./\" asdf:*central-registry*)'" -eval "'(asdf:make-build :spot-on-lite-daemon-sha :type :static-library :move-here \"./\" :init-name \"init_lib_SPOT_ON_LITE_DAEMON_SHA\")'" -eval "'(quit)'" && cd ..
+libshalisp.depends =
+
+exists(/usr/bin/ecl) {
+DEFINES += SPOTON_LITE_DAEMON_CHILD_ECL_SUPPORTED
+LIBS += -lecl
+LIBS += Source/spot-on-lite-daemon-sha.a
+PRE_TARGETDEPS += spot-on-lite-daemon-sha.a
+QMAKE_CFLAGS += `ecl-config --cflags`
+QMAKE_CXXFLAGS += `ecl-config --cflags`
+QMAKE_EXTRA_TARGETS += libshalisp
+QMAKE_LFLAGS += `ecl-config --ldflags`
+}
+
+exists(/usr/local/bin/ecl) {
+DEFINES += SPOTON_LITE_DAEMON_CHILD_ECL_SUPPORTED
+LIBS += -lecl
+LIBS += Source/spot-on-lite-daemon-sha.a
+PRE_TARGETDEPS += spot-on-lite-daemon-sha.a
+QMAKE_CFLAGS += `ecl-config --cflags`
+QMAKE_CXXFLAGS += `ecl-config --cflags`
+QMAKE_EXTRA_TARGETS += libshalisp
+QMAKE_LFLAGS += `ecl-config --ldflags`
+}
+
+macx {
+INCLUDEPATH += /usr/local/opt/openssl/include
+LIBS += -L/usr/local/opt/openssl/lib
+}
+
+QMAKE_CLEAN += Source/spot-on-lite-daemon-sha.a \
+               Source/spot-on-lite-daemon-sha.fas \
+               Source/spot-on-lite-daemon-sha.lib
+
+INCLUDEPATH += Source
+LIBS += -lcrypto -lssl
 MOC_DIR = temp/moc
 OBJECTS_DIR = temp/obj
 RCC_DIR = temp/rcc
