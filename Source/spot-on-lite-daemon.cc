@@ -891,6 +891,7 @@ void spot_on_lite_daemon::slot_new_local_connection(void)
   int sockfd = static_cast<int> (socket->socketDescriptor());
   socklen_t optlen = sizeof(m_local_so_sndbuf);
 
+  setsockopt(sockfd, SOL_SOCKET, SO_RCVBUF, &m_local_so_sndbuf, optlen);
   setsockopt(sockfd, SOL_SOCKET, SO_SNDBUF, &m_local_so_sndbuf, optlen);
   m_local_sockets[socket] = 0;
   connect(socket,

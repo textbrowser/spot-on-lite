@@ -27,6 +27,7 @@
 
 extern "C"
 {
+#include <sys/socket.h>
 #include <unistd.h>
 }
 
@@ -132,7 +133,28 @@ void spot_on_lite_daemon_udp_listener::slot_general_timeout(void)
 	QUdpSocket::ShareAddress;
 
       if(bind(QHostAddress(list.value(0)), list.value(1).toUShort(), flags))
-	m_max_pending_connections = list.value(2).toInt();
+	{
+	  if(m_parent)
+	    {
+	      int maximum_accumulated_bytes = m_parent->
+		maximum_accumulated_bytes();
+	      int sockfd = static_cast<int> (socketDescriptor());
+	      socklen_t optlen = sizeof(maximum_accumulated_bytes);
+
+	      setsockopt(sockfd,
+			 SOL_SOCKET,
+			 SO_RCVBUF,
+			 &maximum_accumulated_bytes,
+			 optlen);
+	      setsockopt(sockfd,
+			 SOL_SOCKET,
+			 SO_SNDBUF,
+			 &maximum_accumulated_bytes,
+			 optlen);
+	    }
+
+	  m_max_pending_connections = list.value(2).toInt();
+	}
     }
 }
 

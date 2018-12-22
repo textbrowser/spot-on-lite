@@ -113,6 +113,13 @@ spot_on_lite_daemon_child_client::spot_on_lite_daemon_child_client
   else
     m_remote_socket = new QUdpSocket(this);
 
+  int sockfd = static_cast<int> (m_remote_socket->socketDescriptor());
+  socklen_t optlen = sizeof(m_maximum_accumulated_bytes);
+
+  setsockopt
+    (sockfd, SOL_SOCKET, SO_RCVBUF, &m_maximum_accumulated_bytes, optlen);
+  setsockopt
+    (sockfd, SOL_SOCKET, SO_SNDBUF, &m_maximum_accumulated_bytes, optlen);
   m_remote_socket->setReadBufferSize(m_maximum_accumulated_bytes);
   m_server_identity = server_identity;
   m_silence = 1000 * qBound(15, silence, 3600);
@@ -1600,9 +1607,10 @@ void spot_on_lite_daemon_child_client::slot_ready_read(void)
 	     &peer_address,
 	     &peer_port);
 
-	  if(!buffer.isEmpty())
-	    if(m_peer_address == peer_address && m_peer_port == peer_port)
-	      data.append(buffer);
+	  if(m_peer_address == peer_address && m_peer_port == peer_port)
+	    data.append
+	      (buffer.
+	       mid(0, qAbs(m_maximum_accumulated_bytes - data.length())));
 	}
     }
   else
@@ -1610,6 +1618,8 @@ void spot_on_lite_daemon_child_client::slot_ready_read(void)
 
   if(data.isEmpty())
     return;
+  else
+    data = data.mid(0, m_maximum_accumulated_bytes);
 
   if(m_client_role || m_end_of_message_marker.isEmpty())
     {
