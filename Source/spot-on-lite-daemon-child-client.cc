@@ -1689,7 +1689,17 @@ void spot_on_lite_daemon_child_client::stop_threads_and_timers(void)
 void spot_on_lite_daemon_child_client::write(const QByteArray &data)
 {
   if(m_protocol == "tcp")
-    m_remote_socket->write(data);
+    {
+      int i = 0;
+      static const int maximum_packet_size = 8192;
+
+      while(data.size() > 1)
+	{
+	  m_remote_socket->write(data.mid(i, maximum_packet_size));
+	  m_remote_socket->waitForBytesWritten(2500);
+	  i += maximum_packet_size;
+	}
+    }
   else
     {
       int i = 0;
