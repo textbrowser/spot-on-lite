@@ -1693,7 +1693,7 @@ void spot_on_lite_daemon_child_client::write(const QByteArray &data)
       int i = 0;
       static const int maximum_packet_size = 8192;
 
-      while(data.size() > 1)
+      while(data.size() > i)
 	{
 	  m_remote_socket->write(data.mid(i, maximum_packet_size));
 	  m_remote_socket->waitForBytesWritten(2500);
