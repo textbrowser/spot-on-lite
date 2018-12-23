@@ -133,7 +133,7 @@ void spot_on_lite_daemon_tcp_listener::incomingConnection
 		list.value(8).toStdString().data(),
 		"--log-file",
 		log_file_name.data(),
-		"--maximum--accumulated-bytes",
+		"--maximum-accumulated-bytes",
 		QString::number(maximum_accumulated_bytes).toStdString().data(),
 		"--remote-identities-file",
 		remote_identities_file_name.data(),

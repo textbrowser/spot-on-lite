@@ -267,7 +267,7 @@ void spot_on_lite_daemon::prepare_peers(void)
 		<< list.value(8)
 		<< "--log-file"
 		<< m_log_file_name
-		<< "--maximum--accumulated-bytes"
+		<< "--maximum-accumulated-bytes"
 		<< QString::number(m_maximum_accumulated_bytes)
 		<< "--remote-identities-file"
 		<< m_remote_identities_file_name
