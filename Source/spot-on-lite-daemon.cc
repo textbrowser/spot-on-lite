@@ -955,10 +955,7 @@ void spot_on_lite_daemon::slot_ready_read(void)
       it.next();
 
       if(it.key() != socket)
-	{
-	  it.key()->write(data);
-	  it.key()->flush();
-	}
+	it.key()->write(data);
     }
 }
 

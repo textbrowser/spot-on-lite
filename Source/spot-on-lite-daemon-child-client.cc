@@ -1173,10 +1173,7 @@ void spot_on_lite_daemon_child_client::process_remote_content(void)
 	}
 
       if(record_congestion(data))
-	{
-	  m_local_socket->write(data);
-	  m_local_socket->flush();
-	}
+	m_local_socket->write(data);
     }
 }
 
@@ -1634,10 +1631,7 @@ void spot_on_lite_daemon_child_client::slot_ready_read(void)
 
       if(record_congestion(data))
 	if(m_local_socket)
-	  {
 	    m_local_socket->write(data);
-	    m_local_socket->flush();
-	  }
 
       return;
     }
@@ -1712,6 +1706,4 @@ void spot_on_lite_daemon_child_client::write(const QByteArray &data)
 	  i += maximum_datagram_size;
 	}
     }
-
-  m_remote_socket->flush();
 }
