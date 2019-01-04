@@ -105,7 +105,7 @@ spot_on_lite_daemon_child_client::spot_on_lite_daemon_child_client
   m_peer_address = QHostAddress(peer_address);
   m_peer_address.setScopeId(peer_scope_identity);
   m_peer_port = peer_port;
-  m_protocol = protocol;
+  m_protocol = protocol.toLower().trimmed();
   m_remote_identities_file_name = remote_identities_file_name;
 
   if(m_protocol == "tcp")
