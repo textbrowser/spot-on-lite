@@ -584,7 +584,7 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
 	QHostAddress hostAddress(list.at(0));
 	bool entry_ok = true;
 
-	if(hostAddress.isNull())
+	if(list.at(0).isEmpty())
 	  {
 	    entry_ok = false;
 
