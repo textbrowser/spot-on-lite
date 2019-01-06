@@ -1441,7 +1441,7 @@ void spot_on_lite_daemon_child_client::slot_broadcast_capabilities(void)
 
   data.append(uuid.toString());
   data.append("\n");
-  data.append(QByteArray::number(m_maximum_accumulated_bytes / 4));
+  data.append(QByteArray::number(m_maximum_accumulated_bytes));
   data.append("\n");
   data.append("full");
   results.append("POST HTTP/1.1\r\n"
