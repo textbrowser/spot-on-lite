@@ -173,6 +173,7 @@ spot_on_lite_daemon_child_client::spot_on_lite_daemon_child_client
 
       m_attempt_local_connection_timer.start();
       m_capabilities_timer.start(m_silence / 2);
+      m_remote_socket->setSocketOption(QAbstractSocket::LowDelayOption, 1);
     }
 
   m_expired_identities_timer.start(15000);
@@ -1463,6 +1464,7 @@ void spot_on_lite_daemon_child_client::slot_connected(void)
   m_attempt_local_connection_timer.start();
   m_attempt_remote_connection_timer.stop();
   m_capabilities_timer.start(m_silence / 2);
+  m_remote_socket->setSocketOption(QAbstractSocket::LowDelayOption, 1);
 }
 
 void spot_on_lite_daemon_child_client::slot_disconnected(void)
