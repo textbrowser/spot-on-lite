@@ -22,5 +22,6 @@ Completed Items
 Remaining Items
 
 - DTLS.
+- Disable Nagle's algorithm.
 - IPv6 scope identities?
 - Optionally share identities in client mode.
