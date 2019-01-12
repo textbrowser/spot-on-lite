@@ -5,15 +5,13 @@ LANGUAGE = C++
 QMAKE_CXXFLAGS_RELEASE -= -O2
 
 freebsd-* {
-QMAKE_CXXFLAGS_RELEASE += -fPIE -fstack-protector-all -fwrapv \
-                          -mtune=generic -O3 \
+QMAKE_CXXFLAGS_RELEASE += -fPIE -fstack-protector-all -fwrapv -O3 \
 			  -Wall -Wcast-align -Wcast-qual \
 			  -Wextra \
 			  -Woverloaded-virtual -Wpointer-arith \
                           -Wstack-protector -Wstrict-overflow=5
 } else:linux-* {
 QMAKE_CXXFLAGS_RELEASE += -fPIE -fstack-protector-all -fwrapv -pie -O3 \
-                          -mtune=generic \
                           -Wall -Wcast-qual \
                           -Wextra \
                           -Wno-class-memaccess \
@@ -21,8 +19,7 @@ QMAKE_CXXFLAGS_RELEASE += -fPIE -fstack-protector-all -fwrapv -pie -O3 \
                           -Woverloaded-virtual -Wpointer-arith \
                           -Wstack-protector
 } else:macx {
-QMAKE_CXXFLAGS_RELEASE += -fPIE -fstack-protector-all -fwrapv \
-                          -mtune=native -O3 \
+QMAKE_CXXFLAGS_RELEASE += -fPIE -fstack-protector-all -fwrapv -O3 \
                           -Wall -Wcast-align -Wcast-qual \
                           -Wextra \
                           -Wno-unused-variable \
