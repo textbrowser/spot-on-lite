@@ -6,14 +6,14 @@ QMAKE_CXXFLAGS_RELEASE -= -O2
 
 freebsd-* {
 QMAKE_CXXFLAGS_RELEASE += -fPIE -fstack-protector-all -fwrapv \
-                          -mtune=native -O3 \
+                          -mtune=generic -O3 \
 			  -Wall -Wcast-align -Wcast-qual \
 			  -Wextra \
 			  -Woverloaded-virtual -Wpointer-arith \
                           -Wstack-protector -Wstrict-overflow=5
 } else:linux-* {
 QMAKE_CXXFLAGS_RELEASE += -fPIE -fstack-protector-all -fwrapv -pie -O3 \
-                          -mtune=native \
+                          -mtune=generic \
                           -Wall -Wcast-qual \
                           -Wextra \
                           -Wno-class-memaccess \
