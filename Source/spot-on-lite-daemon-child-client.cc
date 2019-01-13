@@ -1077,7 +1077,7 @@ void spot_on_lite_daemon_child_client::process_data(void)
     }
   while(!m_process_data_future.isCanceled());
 
-  QVector<QByteArray> vector;
+  QCache<int, QByteArray> cache;
   int index = 0;
 
   {
@@ -1090,66 +1090,90 @@ void spot_on_lite_daemon_child_client::process_data(void)
 	return;
       }
     else
-      while((index = m_local_content.indexOf(m_end_of_message_marker)) >= 0)
-	{
-	  if(m_process_data_future.isCanceled())
-	    goto done_label;
-	  else if(vector.size() > 128)
-	    break;
-
-	  vector << m_local_content.mid
-	    (0, index + m_end_of_message_marker.length());
-	  m_local_content.remove(0, vector.last().length());
-	  m_local_content_elapsed_timer.invalidate();
-	}
-  }
-
-  if(m_process_data_future.isCanceled() || vector.isEmpty())
-    goto done_label;
-
-  for(int i = 0; i < vector.size() && !m_process_data_future.isCanceled(); i++)
-    if((index = vector[i].indexOf("content=")) >= 0)
       {
-	QByteArray data(vector[i].mid(8 + index).trimmed());
-	QByteArray hash;
+	int i = 0;
 
-	if(data.contains("\n")) // Spot-On
+	cache.setMaxCost(m_maximum_accumulated_bytes);
+
+	while((index = m_local_content.indexOf(m_end_of_message_marker)) >= 0)
 	  {
-	    QList<QByteArray> list(data.split('\n'));
+	    if(cache.maxCost() < cache.totalCost())
+	      break;
+	    else if(m_process_data_future.isCanceled())
+	      goto done_label;
 
-	    if(list.size() >= 3)
-	      {
-		data = QByteArray::fromBase64(list.at(0)) +
-		       QByteArray::fromBase64(list.at(1));
-		hash = QByteArray::fromBase64(list.at(2)); // Destination.
-	      }
-	    else
-	      continue;
-	  }
-	else
-	  {
-	    data = QByteArray::fromBase64(data);
-	    hash = data.mid(data.length() - 64);
-	    data = data.mid(0, data.length() - hash.length());
-	  }
+	    QByteArray *bytes = new QByteArray
+	      (m_local_content.
+	       mid(0, index + m_end_of_message_marker.length()));
 
-	QHashIterator<QByteArray, QString> it(identities);
-
-	while(it.hasNext() && !m_process_data_future.isCanceled())
-	  {
-	    it.next();
-
-	    if(memcmp(hash, m_sha_512.sha_512_hmac(data, it.key())))
-	      {
-		emit write_signal(vector[i]);
-		break;
-	      }
+	    cache.insert(i, bytes, bytes->length());
+	    i += 1;
+	    m_local_content.remove(0, bytes->length());
+	    m_local_content_elapsed_timer.invalidate();
 	  }
       }
-    else
-      emit write_signal(vector[i]);
+  }
+
+  if(cache.isEmpty() || m_process_data_future.isCanceled())
+    goto done_label;
+
+  for(int i = 0; i < cache.size(); i++)
+    {
+      QByteArray *bytes(cache.take(i));
+
+      if(!bytes)
+	continue;
+
+      if((index = bytes->indexOf("content=")) >= 0)
+	{
+	  QByteArray data(bytes->mid(8 + index).trimmed());
+	  QByteArray hash;
+
+	  if(data.contains("\n")) // Spot-On
+	    {
+	      QList<QByteArray> list(data.split('\n'));
+
+	      if(list.size() >= 3)
+		{
+		  data = QByteArray::fromBase64(list.at(0)) +
+		         QByteArray::fromBase64(list.at(1));
+		  hash = QByteArray::fromBase64(list.at(2)); // Destination.
+		}
+	      else
+		{
+		  delete bytes;
+		  continue;
+		}
+	    }
+	  else
+	    {
+	      data = QByteArray::fromBase64(data);
+	      hash = data.mid(data.length() - 64);
+	      data = data.mid(0, data.length() - hash.length());
+	    }
+
+	  QHashIterator<QByteArray, QString> it(identities);
+
+	  while(it.hasNext() && !m_process_data_future.isCanceled())
+	    {
+	      it.next();
+
+	      if(memcmp(hash, m_sha_512.sha_512_hmac(data, it.key())))
+		{
+		  emit write_signal(*bytes);
+		  break;
+		}
+	    }
+	}
+      else
+	emit write_signal(*bytes);
+
+      delete bytes;
+    }
 
  done_label:
+
+  cache.clear();
 
   if(m_process_data_future.isCanceled())
     {
