@@ -1090,25 +1090,18 @@ void spot_on_lite_daemon_child_client::process_data(void)
 	return;
       }
     else
-      {
-	int i = 0;
+      while((index = m_local_content.indexOf(m_end_of_message_marker)) >= 0)
+	{
+	  if(m_process_data_future.isCanceled())
+	    goto done_label;
+	  else if(vector.size() > 128)
+	    break;
 
-	vector.resize(64);
-
-	while((index = m_local_content.indexOf(m_end_of_message_marker)) >= 0)
-	  {
-	    if(i >= vector.size())
-	      break;
-	    else if(m_process_data_future.isCanceled())
-	      goto done_label;
-
-	    vector[i] = m_local_content.mid
-	      (0, index + m_end_of_message_marker.length());
-	    i += 1;
-	    m_local_content.remove(0, vector[i].length());
-	    m_local_content_elapsed_timer.invalidate();
-	  }
-      }
+	  vector << m_local_content.mid
+	    (0, index + m_end_of_message_marker.length());
+	  m_local_content.remove(0, vector.last().length());
+	  m_local_content_elapsed_timer.invalidate();
+	}
   }
 
   if(m_process_data_future.isCanceled() || vector.isEmpty())
