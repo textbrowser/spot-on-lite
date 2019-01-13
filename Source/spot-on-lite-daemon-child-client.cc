@@ -1727,6 +1727,7 @@ void spot_on_lite_daemon_child_client::stop_threads_and_timers(void)
   m_capabilities_timer.stop();
   m_expired_identities_future.cancel();
   m_expired_identities_timer.stop();
+  m_general_timer.stop();
   m_keep_alive_timer.stop();
   m_process_data_future.cancel();
 
