@@ -107,8 +107,10 @@ static QByteArray s_sha_512_k[] =
 
 spot_on_lite_daemon_sha::spot_on_lite_daemon_sha(void)
 {
+  m_K.resize(80);
+
   for(size_t i = 0; i <= 79; i++)
-    m_K << qFromBigEndian<quint64>
+    m_K[i] = qFromBigEndian<quint64>
       (reinterpret_cast<const uchar *> (QByteArray::fromHex(s_sha_512_k[i]).
 					constData()));
 }
@@ -161,7 +163,7 @@ QByteArray spot_on_lite_daemon_sha::sha_512(const QByteArray &data) const
   */
 
   QByteArray number(8, 0);
-  QVector<quint64> H;
+  QVector<quint64> H(8);
   int N = qCeil(static_cast<double> (data.size() + 17) / 128.0);
 
   /*
@@ -179,21 +181,21 @@ QByteArray spot_on_lite_daemon_sha::sha_512(const QByteArray &data) const
   ** Initializing H (5.3.5).
   */
 
-  H << qFromBigEndian<quint64>
+  H[0] = qFromBigEndian<quint64>
     (reinterpret_cast<const uchar *> (s_sha_512_h[0].constData()));
-  H << qFromBigEndian<quint64>
+  H[1] = qFromBigEndian<quint64>
     (reinterpret_cast<const uchar *> (s_sha_512_h[1].constData()));
-  H << qFromBigEndian<quint64>
+  H[2] = qFromBigEndian<quint64>
     (reinterpret_cast<const uchar *> (s_sha_512_h[2].constData()));
-  H << qFromBigEndian<quint64>
+  H[3] = qFromBigEndian<quint64>
     (reinterpret_cast<const uchar *> (s_sha_512_h[3].constData()));
-  H << qFromBigEndian<quint64>
+  H[4] = qFromBigEndian<quint64>
     (reinterpret_cast<const uchar *> (s_sha_512_h[4].constData()));
-  H << qFromBigEndian<quint64>
+  H[5] = qFromBigEndian<quint64>
     (reinterpret_cast<const uchar *> (s_sha_512_h[5].constData()));
-  H << qFromBigEndian<quint64>
+  H[6] = qFromBigEndian<quint64>
     (reinterpret_cast<const uchar *> (s_sha_512_h[6].constData()));
-  H << qFromBigEndian<quint64>
+  H[7] = qFromBigEndian<quint64>
     (reinterpret_cast<const uchar *> (s_sha_512_h[7].constData()));
 
   /*
@@ -202,54 +204,54 @@ QByteArray spot_on_lite_daemon_sha::sha_512(const QByteArray &data) const
 
   for(int i = 0; i < N; i++)
     {
-      QVector<quint64> M;
+      QVector<quint64> M(16);
 
-      M << qFromBigEndian<quint64>
+      M[0] = qFromBigEndian<quint64>
 	(reinterpret_cast<const uchar *> (hash.mid(128 * i + 0, 8).
 					  constData()));
-      M << qFromBigEndian<quint64>
+      M[1] = qFromBigEndian<quint64>
 	(reinterpret_cast<const uchar *> (hash.mid(128 * i + 8, 8).
 					  constData()));
-      M << qFromBigEndian<quint64>
+      M[2] = qFromBigEndian<quint64>
 	(reinterpret_cast<const uchar *> (hash.mid(128 * i + 16, 8).
 					  constData()));
-      M << qFromBigEndian<quint64>
+      M[3] = qFromBigEndian<quint64>
 	(reinterpret_cast<const uchar *> (hash.mid(128 * i + 24, 8).
 					  constData()));
-      M << qFromBigEndian<quint64>
+      M[4] = qFromBigEndian<quint64>
 	(reinterpret_cast<const uchar *> (hash.mid(128 * i + 32, 8).
 					  constData()));
-      M << qFromBigEndian<quint64>
+      M[5] = qFromBigEndian<quint64>
 	(reinterpret_cast<const uchar *> (hash.mid(128 * i + 40, 8).
 					  constData()));
-      M << qFromBigEndian<quint64>
+      M[6] = qFromBigEndian<quint64>
 	(reinterpret_cast<const uchar *> (hash.mid(128 * i + 48, 8).
 					  constData()));
-      M << qFromBigEndian<quint64>
+      M[7] = qFromBigEndian<quint64>
 	(reinterpret_cast<const uchar *> (hash.mid(128 * i + 56, 8).
 					  constData()));
-      M << qFromBigEndian<quint64>
+      M[8] = qFromBigEndian<quint64>
 	(reinterpret_cast<const uchar *> (hash.mid(128 * i + 64, 8).
 					  constData()));
-      M << qFromBigEndian<quint64>
+      M[9] = qFromBigEndian<quint64>
 	(reinterpret_cast<const uchar *> (hash.mid(128 * i + 72, 8).
 					  constData()));
-      M << qFromBigEndian<quint64>
+      M[10] = qFromBigEndian<quint64>
 	(reinterpret_cast<const uchar *> (hash.mid(128 * i + 80, 8).
 					  constData()));
-      M << qFromBigEndian<quint64>
+      M[11] = qFromBigEndian<quint64>
 	(reinterpret_cast<const uchar *> (hash.mid(128 * i + 88, 8).
 					  constData()));
-      M << qFromBigEndian<quint64>
+      M[12] = qFromBigEndian<quint64>
 	(reinterpret_cast<const uchar *> (hash.mid(128 * i + 96, 8).
 					  constData()));
-      M << qFromBigEndian<quint64>
+      M[13] = qFromBigEndian<quint64>
 	(reinterpret_cast<const uchar *> (hash.mid(128 * i + 104, 8).
 					  constData()));
-      M << qFromBigEndian<quint64>
+      M[14] = qFromBigEndian<quint64>
 	(reinterpret_cast<const uchar *> (hash.mid(128 * i + 112, 8).
 					  constData()));
-      M << qFromBigEndian<quint64>
+      M[15] = qFromBigEndian<quint64>
 	(reinterpret_cast<const uchar *> (hash.mid(128 * i + 120, 8).
 					  constData()));
 
