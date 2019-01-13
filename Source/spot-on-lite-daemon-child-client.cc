@@ -1077,7 +1077,7 @@ void spot_on_lite_daemon_child_client::process_data(void)
     }
   while(!m_process_data_future.isCanceled());
 
-  QList<QByteArray> list;
+  QVector<QByteArray> vector;
   int index = 0;
 
   {
@@ -1090,34 +1090,48 @@ void spot_on_lite_daemon_child_client::process_data(void)
 	return;
       }
     else
-      while((index = m_local_content.indexOf(m_end_of_message_marker)) >= 0)
-	{
-	  if(m_process_data_future.isCanceled())
-	    goto done_label;
+      {
+	int i = 0;
 
-	  list << m_local_content.mid
-	    (0, index + m_end_of_message_marker.length());
-	  m_local_content.remove(0, list.last().length());
-	  m_local_content_elapsed_timer.invalidate();
-	}
+	vector.resize(64);
+
+	while((index = m_local_content.indexOf(m_end_of_message_marker)) >= 0)
+	  {
+	    if(i >= vector.size())
+	      break;
+	    else if(m_process_data_future.isCanceled())
+	      goto done_label;
+
+	    vector[i] = m_local_content.mid
+	      (0, index + m_end_of_message_marker.length());
+	    i += 1;
+	    m_local_content.remove(0, vector[i].length());
+	    m_local_content_elapsed_timer.invalidate();
+	  }
+      }
   }
 
-  if(list.isEmpty() || m_process_data_future.isCanceled())
+  if(m_process_data_future.isCanceled() || vector.isEmpty())
     goto done_label;
 
-  for(int i = 0; i < list.size() && !m_process_data_future.isCanceled(); i++)
-    if((index = list.at(i).indexOf("content=")) >= 0)
+  for(int i = 0; i < vector.size() && !m_process_data_future.isCanceled(); i++)
+    if((index = vector[i].indexOf("content=")) >= 0)
       {
-	QByteArray data(list.at(i).mid(8 + index).trimmed());
+	QByteArray data(vector[i].mid(8 + index).trimmed());
 	QByteArray hash;
 
 	if(data.contains("\n")) // Spot-On
 	  {
 	    QList<QByteArray> list(data.split('\n'));
 
-	    data = QByteArray::fromBase64(list.value(0)) +
-	           QByteArray::fromBase64(list.value(1));
-	    hash = QByteArray::fromBase64(list.value(2)); // Destination.
+	    if(list.size() >= 3)
+	      {
+		data = QByteArray::fromBase64(list.at(0)) +
+		       QByteArray::fromBase64(list.at(1));
+		hash = QByteArray::fromBase64(list.at(2)); // Destination.
+	      }
+	    else
+	      continue;
 	  }
 	else
 	  {
@@ -1134,13 +1148,13 @@ void spot_on_lite_daemon_child_client::process_data(void)
 
 	    if(memcmp(hash, m_sha_512.sha_512_hmac(data, it.key())))
 	      {
-		emit write_signal(list.at(i));
+		emit write_signal(vector[i]);
 		break;
 	      }
 	  }
       }
     else
-      emit write_signal(list.at(i));
+      emit write_signal(vector[i]);
 
  done_label:
 
