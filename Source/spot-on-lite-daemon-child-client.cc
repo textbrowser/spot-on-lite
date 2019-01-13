@@ -966,7 +966,6 @@ void spot_on_lite_daemon_child_client::prepare_local_socket(void)
     QWriteLocker lock(&m_local_content_mutex);
 
     m_local_content.clear();
-    m_local_content_elapsed_timer.invalidate();
   }
 
   if(m_local_socket)
@@ -1088,7 +1087,6 @@ void spot_on_lite_daemon_child_client::process_data(void)
       {
 	emit write_signal(m_local_content);
 	m_local_content.clear();
-	m_local_content_elapsed_timer.invalidate();
 	return;
       }
     else
@@ -1100,7 +1098,7 @@ void spot_on_lite_daemon_child_client::process_data(void)
 	  list << m_local_content.mid
 	    (0, index + m_end_of_message_marker.length());
 	  m_local_content.remove(0, list.last().length());
-	  m_local_content_elapsed_timer.start();
+	  m_local_content_elapsed_timer.invalidate();
 	}
   }
 
@@ -1151,14 +1149,16 @@ void spot_on_lite_daemon_child_client::process_data(void)
       QWriteLocker lock(&m_local_content_mutex);
 
       m_local_content.clear();
-      m_local_content_elapsed_timer.invalidate();
     }
   else
     {
-      QReadLocker lock(&m_local_content_mutex);
+      QWriteLocker lock(&m_local_content_mutex);
 
       if(!m_local_content.isEmpty())
-	emit read_signal();
+	{
+	  emit read_signal();
+	  m_local_content_elapsed_timer.start();
+	}
     }
 }
 
@@ -1177,7 +1177,7 @@ void spot_on_lite_daemon_child_client::process_remote_content(void)
     {
       data = m_remote_content.mid(0, index + m_end_of_message_marker.length());
       m_remote_content.remove(0, data.length());
-      m_remote_content_elapsed_timer.start();
+      m_remote_content_elapsed_timer.invalidate();
 
       if(data.contains("type=0014&content="))
 	continue;
@@ -1190,6 +1190,9 @@ void spot_on_lite_daemon_child_client::process_remote_content(void)
       if(record_congestion(data))
 	m_local_socket->write(data);
     }
+
+  if(!m_remote_content.isEmpty())
+    m_remote_content_elapsed_timer.start();
 }
 
 void spot_on_lite_daemon_child_client::purge_containers(void)
@@ -1198,14 +1201,12 @@ void spot_on_lite_daemon_child_client::purge_containers(void)
     QWriteLocker lock(&m_local_content_mutex);
 
     m_local_content.clear();
-    m_local_content_elapsed_timer.invalidate();
   }
 
   if(m_local_socket)
     m_local_socket->deleteLater();
 
   m_remote_content.clear();
-  m_remote_content_elapsed_timer.invalidate();
   purge_remote_identities();
 }
 
@@ -1607,17 +1608,11 @@ void spot_on_lite_daemon_child_client::slot_local_socket_ready_read(void)
 	  QWriteLocker lock(&m_local_content_mutex);
 
 	  if(m_local_content.length() >= m_maximum_accumulated_bytes)
-	    {
-	      m_local_content.clear();
-	      m_local_content_elapsed_timer.invalidate();
-	    }
+	    m_local_content.clear();
 
 	  m_local_content.append
 	    (data.mid(0, qAbs(m_maximum_accumulated_bytes -
 			      m_local_content.length())));
-
-	  if(!m_local_content_elapsed_timer.isValid())
-	    m_local_content_elapsed_timer.start();
 	}
     }
 
@@ -1684,18 +1679,11 @@ void spot_on_lite_daemon_child_client::slot_ready_read(void)
   m_keep_alive_timer.start();
 
   if(m_remote_content.length() >= m_maximum_accumulated_bytes)
-    {
-      m_remote_content.clear();
-      m_remote_content_elapsed_timer.invalidate();
-    }
+    m_remote_content.clear();
 
   m_remote_content.
     append(data.mid(0, qAbs(m_maximum_accumulated_bytes -
 			    m_remote_content.length())));
-
-  if(!m_remote_content_elapsed_timer.isValid())
-    m_remote_content_elapsed_timer.start();
-
   process_remote_content();
 }
 
