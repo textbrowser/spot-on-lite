@@ -1105,10 +1105,11 @@ void spot_on_lite_daemon_child_client::process_data(void)
 	    QByteArray *bytes = new QByteArray
 	      (m_local_content.
 	       mid(0, index + m_end_of_message_marker.length()));
+	    int length = bytes->length();
 
 	    cache.insert(i, bytes, bytes->length());
 	    i += 1;
-	    m_local_content.remove(0, bytes->length());
+	    m_local_content.remove(0, length);
 	    m_local_content_elapsed_timer.invalidate();
 	  }
       }
