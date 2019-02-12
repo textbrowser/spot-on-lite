@@ -114,9 +114,16 @@ spot_on_lite_daemon_child_client::spot_on_lite_daemon_child_client
   m_remote_identities_file_name = remote_identities_file_name;
 
   if(m_protocol == "tcp")
-    m_remote_socket = new QSslSocket(this);
+    m_remote_socket = new (std::nothrow) QSslSocket(this);
   else
-    m_remote_socket = new QUdpSocket(this);
+    m_remote_socket = new (std::nothrow) QUdpSocket(this);
+
+  if(!m_remote_socket)
+    {
+      ::close(socket_descriptor);
+      deleteLater();
+      return;
+    }
 
   m_remote_socket->setReadBufferSize(m_maximum_accumulated_bytes);
   m_server_identity = server_identity;
@@ -142,19 +149,6 @@ spot_on_lite_daemon_child_client::spot_on_lite_daemon_child_client
 	      SIGNAL(connected(void)),
 	      this,
 	      SLOT(slot_connected(void)));
-
-      socklen_t optlen = sizeof(m_maximum_accumulated_bytes);
-
-      setsockopt(socket_descriptor,
-		 SOL_SOCKET,
-		 SO_RCVBUF,
-		 &m_maximum_accumulated_bytes,
-		 optlen);
-      setsockopt(socket_descriptor,
-		 SOL_SOCKET,
-		 SO_SNDBUF,
-		 &m_maximum_accumulated_bytes,
-		 optlen);
     }
   else
     {
@@ -971,7 +965,11 @@ void spot_on_lite_daemon_child_client::prepare_local_socket(void)
   if(m_local_socket)
     m_local_socket->deleteLater();
 
-  m_local_socket = new QLocalSocket(this);
+  m_local_socket = new (std::nothrow) QLocalSocket(this);
+
+  if(!m_local_socket)
+    return;
+
   m_local_socket->setReadBufferSize(m_maximum_accumulated_bytes);
   connect(m_local_socket,
 	  SIGNAL(connected(void)),
@@ -1102,9 +1100,13 @@ void spot_on_lite_daemon_child_client::process_data(void)
 	    else if(m_process_data_future.isCanceled())
 	      goto done_label;
 
-	    QByteArray *bytes = new QByteArray
+	    QByteArray *bytes = new (std::nothrow) QByteArray
 	      (m_local_content.
 	       mid(0, index + m_end_of_message_marker.length()));
+
+	    if(!bytes)
+	      break;
+
 	    int length = bytes->length();
 
 	    cache.insert(i, bytes, bytes->length());
@@ -1514,27 +1516,31 @@ void spot_on_lite_daemon_child_client::slot_connected(void)
   m_attempt_remote_connection_timer.stop();
   m_capabilities_timer.start(m_silence / 2);
   m_remote_socket->setSocketOption(QAbstractSocket::LowDelayOption, 1);
+
+  int sd = static_cast<int> (m_remote_socket->socketDescriptor());
+  socklen_t optlen = sizeof(m_maximum_accumulated_bytes);
+
+  setsockopt(sd, SOL_SOCKET, SO_RCVBUF, &m_maximum_accumulated_bytes, optlen);
+  setsockopt(sd, SOL_SOCKET, SO_SNDBUF, &m_maximum_accumulated_bytes, optlen);
 }
 
 void spot_on_lite_daemon_child_client::slot_disconnected(void)
 {
   if(m_client_role)
     {
-      m_remote_socket->abort();
-
       if(!m_attempt_remote_connection_timer.isActive())
 	m_attempt_remote_connection_timer.start();
 
       m_capabilities_timer.stop();
+      m_remote_socket->abort();
       purge_containers();
     }
   else
     {
-      m_remote_socket->abort();
-
       if(m_local_socket)
 	m_local_socket->deleteLater();
 
+      m_remote_socket->abort();
       stop_threads_and_timers();
 
       if(m_protocol != "udp")
