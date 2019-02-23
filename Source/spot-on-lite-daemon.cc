@@ -184,17 +184,14 @@ void spot_on_lite_daemon::log(const QString &error) const
 void spot_on_lite_daemon::prepare_listeners(void)
 {
   while(!m_listeners.isEmpty())
-    if(m_listeners.first())
-      m_listeners.takeFirst()->deleteLater();
-    else
-      m_listeners.removeFirst();
+    m_listeners.takeFirst()->deleteLater();
 
   for(int i = 0; i < m_listeners_properties.size(); i++)
     if(m_listeners_properties.at(i).contains("tcp"))
-      m_listeners << new (std::nothrow) spot_on_lite_daemon_tcp_listener
+      m_listeners << new spot_on_lite_daemon_tcp_listener
 	(m_listeners_properties.at(i), this);
     else
-      m_listeners << new (std::nothrow) spot_on_lite_daemon_udp_listener
+      m_listeners << new spot_on_lite_daemon_udp_listener
 	(m_listeners_properties.at(i), this);
 }
 
@@ -287,10 +284,7 @@ void spot_on_lite_daemon::prepare_peers(void)
       else
 	arguments << "--udp";
 
-      QProcess *process = new (std::nothrow) QProcess(this);
-
-      if(!process)
-	continue;
+      QProcess *process = new QProcess(this);
 
       process->setProcessEnvironment(process_environment);
       process->setProperty("arguments", arguments);
@@ -926,10 +920,7 @@ void spot_on_lite_daemon::slot_process_finished
   QStringList arguments(process->property("arguments").toStringList());
 
   process->deleteLater();
-
-  if(!(process = new (std::nothrow) QProcess(this)))
-     return;
-
+  process = new QProcess(this);
   process->setProcessEnvironment(process_environment);
   process->setProperty("arguments", arguments);
   connect(process,

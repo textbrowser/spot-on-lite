@@ -83,7 +83,7 @@ void spot_on_lite_daemon_udp_listener::new_connection
 
   setsockopt(sd, SOL_SOCKET, SO_RCVBUF, &maximum_accumulated_bytes, optlen);
   setsockopt(sd, SOL_SOCKET, SO_SNDBUF, &maximum_accumulated_bytes, optlen);
-  client = new (std::nothrow) spot_on_lite_daemon_child_client
+  client = new spot_on_lite_daemon_child_client
     (m_parent->certificates_file_name(),
      m_parent->congestion_control_file_name(),
      list.value(7),
@@ -102,13 +102,9 @@ void spot_on_lite_daemon_udp_listener::new_connection
      sd,
      list.value(4).toInt(),
      peer_port);
-
-  if(client)
-    m_clients[QString::number(peer_port) +
-	      peer_address.scopeId() +
-	      peer_address.toString()] = client;
-  else
-    ::close(sd);
+  m_clients[QString::number(peer_port) +
+	    peer_address.scopeId() +
+	    peer_address.toString()] = client;
 }
 
 void spot_on_lite_daemon_udp_listener::slot_general_timeout(void)

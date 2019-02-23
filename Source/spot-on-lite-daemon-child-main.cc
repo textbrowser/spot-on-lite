@@ -427,12 +427,11 @@ int main(int argc, char *argv[])
 	  protocol = "udp";
       }
 
-  QCoreApplication qapplication(argc, argv);
-
   try
     {
       if(protocol == "tcp" || protocol == "udp")
 	{
+	  QCoreApplication qapplication(argc, argv);
 	  spot_on_lite_daemon_child_client client
 	    (certificates_file_name,
 	     congestion_control_file_name,
@@ -460,6 +459,12 @@ int main(int argc, char *argv[])
     {
       std::cerr << "Spot-On-Lite-Daemon-Child memory failure! "
 		<< "Aborting!" << std::endl;
+      rc = EXIT_FAILURE;
+    }
+  catch(...)
+    {
+      std::cerr << "Spot-On-Lite-Daemon-Child exception. Aborting!"
+		<< std::endl;
       rc = EXIT_FAILURE;
     }
 

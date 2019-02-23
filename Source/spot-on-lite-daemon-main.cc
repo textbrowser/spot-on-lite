@@ -300,6 +300,11 @@ int main(int argc, char *argv[])
 		<< "Aborting!" << std::endl;
       rc = EXIT_FAILURE;
     }
+  catch(...)
+    {
+      std::cerr << "Spot-On-Lite-Daemon exception. Aborting!" << std::endl;
+      rc = EXIT_FAILURE;
+    }
 
   return rc;
 }
