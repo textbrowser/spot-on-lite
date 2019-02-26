@@ -132,6 +132,7 @@ static int prepare_signal_handlers(void)
   ** Ignore SIGHUP.
   */
 
+  memset(&act, 0, sizeof(struct sigaction));
   act.sa_handler = SIG_IGN;
   sigemptyset(&act.sa_mask);
   act.sa_flags = 0;
@@ -143,6 +144,7 @@ static int prepare_signal_handlers(void)
   ** Ignore SIGPIPE.
   */
 
+  memset(&act, 0, sizeof(struct sigaction));
   act.sa_handler = SIG_IGN;
   sigemptyset(&act.sa_mask);
   act.sa_flags = 0;
@@ -162,6 +164,7 @@ static int prepare_signal_handlers(void)
     {
       struct sigaction act;
 
+      memset(&act, 0, sizeof(struct sigaction));
       act.sa_handler = spot_on_lite_daemon::handler_signal;
       sigemptyset(&act.sa_mask);
       act.sa_flags = 0;

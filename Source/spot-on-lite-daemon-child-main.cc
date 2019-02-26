@@ -73,6 +73,7 @@ static int prepare_signal_handlers(void)
   ** Ignore SIGHUP.
   */
 
+  memset(&act, 0, sizeof(struct sigaction));
   act.sa_handler = SIG_IGN;
   sigemptyset(&act.sa_mask);
   act.sa_flags = 0;
@@ -84,6 +85,7 @@ static int prepare_signal_handlers(void)
   ** Ignore SIGPIPE.
   */
 
+  memset(&act, 0, sizeof(struct sigaction));
   act.sa_handler = SIG_IGN;
   sigemptyset(&act.sa_mask);
   act.sa_flags = 0;
@@ -95,6 +97,7 @@ static int prepare_signal_handlers(void)
   ** Monitor SIGUSR2.
   */
 
+  memset(&act, 0, sizeof(struct sigaction));
   act.sa_handler = handler_signal;
   sigemptyset(&act.sa_mask);
   act.sa_flags = 0;
