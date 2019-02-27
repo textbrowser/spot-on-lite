@@ -9,7 +9,8 @@ QMAKE_CXXFLAGS_RELEASE += -fPIE -fstack-protector-all -fwrapv -O3 \
 			  -Wall -Wcast-align -Wcast-qual \
 			  -Wextra \
 			  -Woverloaded-virtual -Wpointer-arith \
-                          -Wstack-protector -Wstrict-overflow=5 -pedantic
+                          -Wstack-protector -Wstrict-overflow=5 -pedantic \
+			  -std=c++11
 } else:linux-* {
 QMAKE_CXXFLAGS_RELEASE += -fPIE -fstack-protector-all -fwrapv -pie -O3 \
                           -Wall -Wcast-qual \
@@ -17,14 +18,14 @@ QMAKE_CXXFLAGS_RELEASE += -fPIE -fstack-protector-all -fwrapv -pie -O3 \
                           -Wno-class-memaccess \
                           -Wno-unused-variable \
                           -Woverloaded-virtual -Wpointer-arith \
-                          -Wstack-protector -pedantic
+                          -Wstack-protector -pedantic -std=c++11
 } else:macx {
 QMAKE_CXXFLAGS_RELEASE += -fPIE -fstack-protector-all -fwrapv -O3 \
                           -Wall -Wcast-align -Wcast-qual \
                           -Wextra \
                           -Wno-unused-variable \
                           -Woverloaded-virtual -Wpointer-arith \
-                          -Wstack-protector -pedantic
+                          -Wstack-protector -pedantic -std=c++
 } else:netbsd-* {
 INCLUDEPATH += /usr/pkg/qt4/include/QtCore \
                /usr/pkg/qt4/include/QtNetwork \
@@ -35,7 +36,7 @@ QMAKE_CXXFLAGS_RELEASE += -fPIE -fwrapv -pie -O3 \
                           -Wextra \
                           -Wno-unused-variable \
                           -Woverloaded-virtual -Wpointer-arith \
-                          -Wstack-protector -pedantic
+                          -Wstack-protector -pedantic -std=c++11
 QMAKE_MOC = /usr/pkg/qt4/bin/moc
 } else:openbsd-* {
 QMAKE_CXXFLAGS_RELEASE += -fPIE -fstack-protector-all -fwrapv -pie -O3 \
@@ -43,14 +44,14 @@ QMAKE_CXXFLAGS_RELEASE += -fPIE -fstack-protector-all -fwrapv -pie -O3 \
                           -Wextra \
                           -Wno-unused-variable \
                           -Woverloaded-virtual -Wpointer-arith \
-                          -Wstack-protector -pedantic
+                          -Wstack-protector -pedantic -std=c++11
 } else:unix {
 QMAKE_CXXFLAGS_RELEASE += -fPIE -fwrapv -pie -O3 \
                           -Wall -Wcast-qual \
                           -Wextra \
                           -Wno-unused-variable \
                           -Woverloaded-virtual -Wpointer-arith \
-                          -Wstack-protector -pedantic
+                          -Wstack-protector -pedantic -std=c++11
 }
 
 unix {
