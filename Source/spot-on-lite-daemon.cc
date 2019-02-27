@@ -80,6 +80,10 @@ spot_on_lite_daemon::spot_on_lite_daemon
 	  SIGNAL(timeout(void)),
 	  this,
 	  SLOT(slot_purge_congestion_control_timeout(void)));
+  connect(&m_peer_process_timer,
+	  SIGNAL(timeout(void)),
+	  this,
+	  SLOT(slot_peer_process_timeout(void)));
   connect(&m_start_timer,
 	  SIGNAL(timeout(void)),
 	  this,
@@ -101,20 +105,17 @@ spot_on_lite_daemon::spot_on_lite_daemon(void):QObject()
 
 spot_on_lite_daemon::~spot_on_lite_daemon()
 {
-  foreach(QProcess *process, findChildren<QProcess *> ())
-    {
-      disconnect(process, SIGNAL(finished(int, QProcess::ExitStatus)));
-      process->setParent(0);
-      process->terminate();
-    }
-
   QFile::remove(m_congestion_control_file_name);
   QFile::remove(m_remote_identities_file_name);
   m_congestion_control_future.cancel();
   m_congestion_control_future.waitForFinished();
+  m_congestion_control_timer.stop();
 
   if(m_local_server)
     QLocalServer::removeServer(m_local_server->fullServerName());
+
+  m_peer_process_timer.stop();
+  m_start_timer.stop();
 }
 
 QString spot_on_lite_daemon::certificates_file_name(void) const
@@ -233,70 +234,72 @@ void spot_on_lite_daemon::prepare_peers(void)
 {
   for(int i = 0; i < m_peers_properties.size(); i++)
     {
-      QProcessEnvironment process_environment
-	(QProcessEnvironment::systemEnvironment());
+      if(m_peer_pids.contains(i))
+	if(!kill(m_peer_pids.value(i), 0))
+	  continue;
+
       QString server_identity;
-      QStringList arguments;
       QStringList list
 	(m_peers_properties.at(i).split(",", QString::KeepEmptyParts));
-
+      pid_t pid = 0;
+      std::string command(m_child_process_file_name.toStdString());
 #ifdef Q_OS_MAC
-      process_environment.insert
-	("DYLD_LIBRARY_PATH",
-	 m_child_process_ld_library_path.remove("DYLD_LIBRARY_PATH="));
+      std::string ld_library_path
+	(m_child_process_ld_library_path.remove("DYLD_LIBRARY_PATH=").
+	 toStdString());
 #else
-      process_environment.insert
-	("LD_LIBRARY_PATH",
-	 m_child_process_ld_library_path.remove("LD_LIBRARY_PATH"));
+      std::string ld_library_path
+	(m_child_process_ld_library_path.remove("LD_LIBRARY_PATH").
+	 toStdString());
 #endif
+
       server_identity = QString("%1:%2").arg(list.value(0)).arg(list.value(1));
-      arguments << "--certificates-file"
-		<< m_certificates_file_name
-		<< "--congestion-control-file"
-		<< m_congestion_control_file_name
-		<< "--end-of-message-marker"
-		<< list.value(7).toUtf8().toBase64()
-		<< "--identities-lifetime"
-		<< list.value(9)
-		<< "--local-server-file"
-		<< local_server_file_name()
-		<< "--local-so-sndbuf"
-		<< list.value(8)
-		<< "--log-file"
-		<< m_log_file_name
-		<< "--maximum-accumulated-bytes"
-		<< QString::number(m_maximum_accumulated_bytes)
-		<< "--remote-identities-file"
-		<< m_remote_identities_file_name
-		<< "--server-identity"
-		<< server_identity
-		<< "--silence-timeout"
-		<< list.value(5)
-		<< "--socket-descriptor"
-		<< "-1"
-		<< "--ssl-tls-control-string"
-		<< list.value(3)
-		<< "--ssl-tls-key-size"
-		<< list.value(4);
 
-      if(m_peers_properties.at(i).contains("tcp"))
-	arguments << "--tcp";
+      if((pid = fork()) == 0)
+	{
+	  const char *envp[] = {ld_library_path.data(), NULL};
+
+	  if(execle(command.data(),
+		    command.data(),
+		    "--certificates-file",
+		    m_certificates_file_name.toStdString().data(),
+		    "--congestion-control-file",
+		    m_congestion_control_file_name.toStdString().data(),
+		    "--end-of-message-marker",
+		    list.value(7).toUtf8().toBase64().data(),
+		    "--identities-lifetime",
+		    list.value(9).toStdString().data(),
+		    "--local-server-file",
+		    local_server_file_name().toStdString().data(),
+		    "--local-so-sndbuf",
+		    list.value(8).toStdString().data(),
+		    "--log-file",
+		    m_log_file_name.toStdString().data(),
+		    "--maximum-accumulated-bytes",
+		    QString::number(m_maximum_accumulated_bytes).
+		    toStdString().data(),
+		    "--remote-identities-file",
+		    m_remote_identities_file_name.toStdString().data(),
+		    "--server-identity",
+		    server_identity.toStdString().data(),
+		    "--silence-timeout",
+		    list.value(5).toStdString().data(),
+		    "--socket-descriptor",
+		    "-1",
+		    "--ssl-tls-control-string",
+		    list.value(3).toStdString().data(),
+		    "--ssl-tls-key-size",
+		    list.value(4).toStdString().data(),
+		    m_peers_properties.at(i).contains("tcp") ?
+		    "--tcp" : "--udp",
+		    NULL,
+		    envp) == -1)
+	    _exit(EXIT_FAILURE);
+
+	  _exit(EXIT_SUCCESS);
+	}
       else
-	arguments << "--udp";
-
-      QProcess *process = new QProcess(this);
-
-      process->setProcessEnvironment(process_environment);
-      process->setProperty("arguments", arguments);
-      connect(process,
-	      SIGNAL(error(QProcess::ProcessError)),
-	      this,
-	      SLOT(slot_process_finished(void)));
-      connect(process,
-	      SIGNAL(finished(int, QProcess::ExitStatus)),
-	      this,
-	      SLOT(slot_process_finished(void)));
-      process->start(m_child_process_file_name, arguments);
+	m_peer_pids[i] = pid;
     }
 }
 
@@ -905,33 +908,9 @@ void spot_on_lite_daemon::slot_new_local_connection(void)
 	  SLOT(slot_ready_read(void)));
 }
 
-void spot_on_lite_daemon::slot_process_finished(void)
+void spot_on_lite_daemon::slot_peer_process_timeout(void)
 {
-  /*
-  ** A brief pause may be necessary. Yes?
-  */
-
-  QProcess *process = qobject_cast<QProcess *> (sender());
-
-  if(!process)
-    return;
-
-  QProcessEnvironment process_environment(process->processEnvironment());
-  QStringList arguments(process->property("arguments").toStringList());
-
-  process->deleteLater();
-  process = new QProcess(this);
-  process->setProcessEnvironment(process_environment);
-  process->setProperty("arguments", arguments);
-  connect(process,
-	  SIGNAL(error(QProcess::ProcessError)),
-	  this,
-	  SLOT(slot_process_finished(void)));
-  connect(process,
-	  SIGNAL(finished(int, QProcess::ExitStatus)),
-	  this,
-	  SLOT(slot_process_finished(void)));
-  process->start(m_child_process_file_name, arguments);
+  prepare_peers();
 }
 
 void spot_on_lite_daemon::slot_purge_congestion_control_timeout(void)
@@ -1000,11 +979,12 @@ void spot_on_lite_daemon::start(void)
     }
 
   m_local_sockets.clear();
+  m_peer_pids.clear();
+  m_peer_process_timer.start(2500);
   m_peers_properties.clear();
   process_configuration_file(0);
   prepare_listeners();
   prepare_local_socket_server();
-  prepare_peers();
 }
 
 void spot_on_lite_daemon::validate_configuration_file

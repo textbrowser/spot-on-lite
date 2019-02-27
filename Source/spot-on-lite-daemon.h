@@ -58,13 +58,14 @@ class spot_on_lite_daemon: public QObject
   static void handler_signal(int signal_number);
   void log(const QString &error) const;
   void start(void);
-  void validate_configuration_file(const QString &configuration_file_name,
-				   bool *ok);
+  void validate_configuration_file
+    (const QString &configuration_file_name, bool *ok);
 
  private:
   QAtomicInt m_congestion_control_lifetime;
   QFuture<void> m_congestion_control_future;
   QHash<QLocalSocket *, char> m_local_sockets;
+  QHash<int, pid_t> m_peer_pids;
   QList<QObject *> m_listeners;
   QPointer<QLocalServer> m_local_server;
   QSocketNotifier *m_signal_usr1_socket_notifier;
@@ -77,6 +78,7 @@ class spot_on_lite_daemon: public QObject
   QString m_log_file_name;
   QString m_remote_identities_file_name;
   QTimer m_congestion_control_timer;
+  QTimer m_peer_process_timer;
   QTimer m_start_timer;
   QVector<QString> m_listeners_properties;
   QVector<QString> m_peers_properties;
@@ -92,7 +94,7 @@ class spot_on_lite_daemon: public QObject
  private slots:
   void slot_local_socket_disconnected(void);
   void slot_new_local_connection(void);
-  void slot_process_finished(void);
+  void slot_peer_process_timeout(void);
   void slot_purge_congestion_control_timeout(void);
   void slot_ready_read(void);
   void slot_signal_usr1(void);

@@ -158,15 +158,7 @@ void spot_on_lite_daemon_tcp_listener::incomingConnection
       _exit(EXIT_SUCCESS);
     }
   else
-    {
-      ::close(sd);
-
-      /*
-	while(waitpid(pid, NULL, WNOHANG) == -1)
-	  if(errno != EINTR)
-	    break;
-      */
-    }
+    ::close(sd);
 }
 
 void spot_on_lite_daemon_tcp_listener::slot_start_timeout(void)
