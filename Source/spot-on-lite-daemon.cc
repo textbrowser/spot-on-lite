@@ -289,9 +289,13 @@ void spot_on_lite_daemon::prepare_peers(void)
       process->setProcessEnvironment(process_environment);
       process->setProperty("arguments", arguments);
       connect(process,
+	      SIGNAL(error(QProcess::ProcessError)),
+	      this,
+	      SLOT(slot_process_finished(void)));
+      connect(process,
 	      SIGNAL(finished(int, QProcess::ExitStatus)),
 	      this,
-	      SLOT(slot_process_finished(int, QProcess::ExitStatus)));
+	      SLOT(slot_process_finished(void)));
       process->start(m_child_process_file_name, arguments);
     }
 }
@@ -901,15 +905,11 @@ void spot_on_lite_daemon::slot_new_local_connection(void)
 	  SLOT(slot_ready_read(void)));
 }
 
-void spot_on_lite_daemon::slot_process_finished
-(int exit_code, QProcess::ExitStatus exit_status)
+void spot_on_lite_daemon::slot_process_finished(void)
 {
   /*
-  ** A brief pause may be necessary.
+  ** A brief pause may be necessary. Yes?
   */
-
-  Q_UNUSED(exit_code);
-  Q_UNUSED(exit_status);
 
   QProcess *process = qobject_cast<QProcess *> (sender());
 
@@ -924,9 +924,13 @@ void spot_on_lite_daemon::slot_process_finished
   process->setProcessEnvironment(process_environment);
   process->setProperty("arguments", arguments);
   connect(process,
+	  SIGNAL(error(QProcess::ProcessError)),
+	  this,
+	  SLOT(slot_process_finished(void)));
+  connect(process,
 	  SIGNAL(finished(int, QProcess::ExitStatus)),
 	  this,
-	  SLOT(slot_process_finished(int, QProcess::ExitStatus)));
+	  SLOT(slot_process_finished(void)));
   process->start(m_child_process_file_name, arguments);
 }
 

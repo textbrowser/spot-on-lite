@@ -92,7 +92,7 @@ class spot_on_lite_daemon: public QObject
  private slots:
   void slot_local_socket_disconnected(void);
   void slot_new_local_connection(void);
-  void slot_process_finished(int exit_code, QProcess::ExitStatus exit_status);
+  void slot_process_finished(void);
   void slot_purge_congestion_control_timeout(void);
   void slot_ready_read(void);
   void slot_signal_usr1(void);
