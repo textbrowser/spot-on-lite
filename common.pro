@@ -25,7 +25,7 @@ QMAKE_CXXFLAGS_RELEASE += -fPIE -fstack-protector-all -fwrapv -O3 \
                           -Wextra \
                           -Wno-unused-variable \
                           -Woverloaded-virtual -Wpointer-arith \
-                          -Wstack-protector -pedantic -std=c++
+                          -Wstack-protector -pedantic -std=c++11
 } else:netbsd-* {
 INCLUDEPATH += /usr/pkg/qt4/include/QtCore \
                /usr/pkg/qt4/include/QtNetwork \
