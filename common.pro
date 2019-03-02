@@ -12,7 +12,8 @@ QMAKE_CXXFLAGS_RELEASE += -fPIE -fstack-protector-all -fwrapv -O3 \
                           -Wstack-protector -Wstrict-overflow=5 -pedantic \
 			  -std=c++11
 } else:linux-* {
-QMAKE_CXXFLAGS_RELEASE += -fPIE -fstack-protector-all -fwrapv -pie -O3 \
+QMAKE_CXXFLAGS_RELEASE += -fPIE -fstack-protector-all -funroll-loops -fwrapv \
+                          -march=native -pie -O3 \
                           -Wall -Wcast-qual \
                           -Wextra \
                           -Wno-class-memaccess \
