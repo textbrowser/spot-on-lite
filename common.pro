@@ -13,7 +13,7 @@ QMAKE_CXXFLAGS_RELEASE += -fPIE -fstack-protector-all -fwrapv \
 			  -std=c++11
 } else:linux-* {
 QMAKE_CXXFLAGS_RELEASE += -fPIE -fstack-protector-all -funroll-loops -fwrapv \
-                          -march=generic -pie -O3 \
+                          -pie -O3 \
                           -Wall -Wcast-qual -Wextra \
                           -Wno-class-memaccess -Wno-unused-variable \
                           -Woverloaded-virtual -Wpointer-arith \
