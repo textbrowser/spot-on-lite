@@ -6,14 +6,14 @@ QMAKE_CXXFLAGS_RELEASE -= -O2
 
 freebsd-* {
 QMAKE_CXXFLAGS_RELEASE += -fPIE -fstack-protector-all -fwrapv \
-                          -march=native -O3 \
+                          -march=generic -O3 \
 			  -Wall -Wcast-align -Wcast-qual -Wextra \
 			  -Woverloaded-virtual -Wpointer-arith \
                           -Wstack-protector -Wstrict-overflow=5 -pedantic \
 			  -std=c++11
 } else:linux-* {
 QMAKE_CXXFLAGS_RELEASE += -fPIE -fstack-protector-all -funroll-loops -fwrapv \
-                          -march=native -pie -O3 \
+                          -march=generic -pie -O3 \
                           -Wall -Wcast-qual -Wextra \
                           -Wno-class-memaccess -Wno-unused-variable \
                           -Woverloaded-virtual -Wpointer-arith \
