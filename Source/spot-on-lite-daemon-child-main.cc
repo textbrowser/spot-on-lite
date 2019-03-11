@@ -436,7 +436,8 @@ int main(int argc, char *argv[])
 	{
 	  QCoreApplication qapplication(argc, argv);
 	  spot_on_lite_daemon_child_client client
-	    (certificates_file_name,
+	    (QByteArray(),
+	     certificates_file_name,
 	     congestion_control_file_name,
 	     end_of_message_marker,
 	     local_server_file_name,

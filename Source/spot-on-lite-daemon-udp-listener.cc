@@ -63,7 +63,8 @@ spot_on_lite_daemon_udp_listener::~spot_on_lite_daemon_udp_listener()
 }
 
 void spot_on_lite_daemon_udp_listener::new_connection
-(const QHostAddress &peer_address,
+(const QByteArray &data,
+ const QHostAddress &peer_address,
  const quint16 peer_port)
 {
   if(!m_parent)
@@ -84,7 +85,8 @@ void spot_on_lite_daemon_udp_listener::new_connection
   setsockopt(sd, SOL_SOCKET, SO_RCVBUF, &maximum_accumulated_bytes, optlen);
   setsockopt(sd, SOL_SOCKET, SO_SNDBUF, &maximum_accumulated_bytes, optlen);
   client = new spot_on_lite_daemon_child_client
-    (m_parent->certificates_file_name(),
+    (data,
+     m_parent->certificates_file_name(),
      m_parent->congestion_control_file_name(),
      list.value(7),
      m_parent->local_server_file_name(),
@@ -152,23 +154,31 @@ void spot_on_lite_daemon_udp_listener::slot_ready_read(void)
       QByteArray data;
       QHostAddress peer_address;
       quint16 peer_port = 0;
+      qint64 size = qMax(static_cast<qint64> (0), pendingDatagramSize());
 
-      data.resize(static_cast<int> (qMax(static_cast<qint64> (0),
-					 pendingDatagramSize())));
-      readDatagram(data.data(),
-		   static_cast<qint64> (data.size()),
-		   &peer_address,
-		   &peer_port);
+      data.resize(static_cast<int> (size));
+
+      if(readDatagram(data.data(), size, &peer_address, &peer_port) <= 0)
+	continue;
 
       if(m_clients.size() >= m_max_pending_connections)
 	continue;
-
-      if(peer_address.isNull())
+      else if(peer_address.isNull())
 	continue;
 
       if(!m_clients.contains(QString::number(peer_port) +
 			     peer_address.scopeId() +
 			     peer_address.toString()))
-	new_connection(peer_address, peer_port);
+	new_connection(data, peer_address, peer_port);
+      else
+	{
+	  QPointer<spot_on_lite_daemon_child_client> client
+	    (m_clients.value(QString::number(peer_port) +
+			     peer_address.scopeId() +
+			     peer_address.toString(), 0));
+
+	  if(client)
+	    client->data_received(data);
+	}
     }
 }

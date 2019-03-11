@@ -34,6 +34,9 @@ extern "C"
 }
 
 #include <QAbstractSocket>
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 12, 0))
+#include <QDtls>
+#endif
 #include <QElapsedTimer>
 #include <QFuture>
 #include <QHostAddress>
@@ -53,7 +56,8 @@ class spot_on_lite_daemon_child_client: public QObject
 
  public:
   spot_on_lite_daemon_child_client
-    (const QString &certificates_file_name,
+    (const QByteArray &initial_data,
+     const QString &certificates_file_name,
      const QString &congestion_control_file_name,
      const QString &end_of_message_marker,
      const QString &local_server_file_name,
@@ -73,6 +77,7 @@ class spot_on_lite_daemon_child_client: public QObject
      const quint16 peer_port);
   ~spot_on_lite_daemon_child_client();
   static bool memcmp(const QByteArray &a, const QByteArray &b);
+  void data_received(const QByteArray &data);
 
  private:
   QByteArray m_local_content;
@@ -87,11 +92,15 @@ class spot_on_lite_daemon_child_client: public QObject
   QHostAddress m_peer_address;
   QPointer<QLocalSocket> m_local_socket;
   QPointer<QAbstractSocket> m_remote_socket;
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 12, 0))
+  QPointer<QDtls> m_dtls;
+#endif
   QReadWriteLock m_local_content_mutex;
   QReadWriteLock m_db_id_mutex;
 #ifdef __arm__
   QReadWriteLock m_remote_identities_mutex;
 #endif
+  QSslConfiguration m_ssl_configuration;
   QString m_certificates_file_name;
   QString m_congestion_control_file_name;
   QString m_end_of_message_marker;
@@ -128,9 +137,13 @@ class spot_on_lite_daemon_child_client: public QObject
 			    QString &error);
   void generate_ssl_tls(void);
   void log(const QString &error) const;
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 12, 0))
+  void prepare_dtls(void);
+#endif
   void prepare_local_socket(void);
   void prepare_ssl_tls_configuration(const QList<QByteArray> &list);
   void process_data(void);
+  void process_read_data(const QByteArray &data);
   void process_remote_content(void);
   void purge_containers(void);
   void purge_remote_identities(void);
@@ -151,6 +164,11 @@ class spot_on_lite_daemon_child_client: public QObject
   void slot_connected(void);
   void slot_disconnected(void);
   void slot_general_timer_timeout(void);
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 12, 0))
+  void slot_handshake_timeout(void);
+#else
+  void slot_handshake_timeout(void);
+#endif
   void slot_keep_alive_timer_timeout(void);
   void slot_local_socket_connected(void);
   void slot_local_socket_disconnected(void);

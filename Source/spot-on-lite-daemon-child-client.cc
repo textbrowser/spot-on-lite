@@ -69,7 +69,8 @@ static int hash_algorithm_key_length(const QByteArray &algorithm)
 static qint64 END_OF_MESSAGE_MARKER_WINDOW = 15000;
 
 spot_on_lite_daemon_child_client::spot_on_lite_daemon_child_client
-(const QString &certificates_file_name,
+(const QByteArray &initial_data,
+ const QString &certificates_file_name,
  const QString &congestion_control_file_name,
  const QString &end_of_message_marker,
  const QString &local_server_file_name,
@@ -207,28 +208,31 @@ spot_on_lite_daemon_child_client::spot_on_lite_daemon_child_client
 	  this,
 	  SLOT(slot_write_data(const QByteArray &)));
 
-  if(m_protocol == "tcp" &&
-     !m_ssl_control_string.isEmpty() &&
-     m_ssl_key_size > 0)
+  if(!m_ssl_control_string.isEmpty() && m_ssl_key_size > 0)
     {
 #if OPENSSL_VERSION_NUMBER < 0x10100000L || defined(Q_OS_OPENBSD)
       SSL_library_init(); // Always returns 1.
 #else
       OPENSSL_init_ssl(0, NULL);
 #endif
-      connect(qobject_cast<QSslSocket *> (m_remote_socket),
-	      SIGNAL(sslErrors(const QList<QSslError> &)),
-	      this,
-	      SLOT(slot_ssl_errors(const QList<QSslError> &)));
+      if(m_protocol == "tcp")
+	connect(qobject_cast<QSslSocket *> (m_remote_socket),
+		SIGNAL(sslErrors(const QList<QSslError> &)),
+		this,
+		SLOT(slot_ssl_errors(const QList<QSslError> &)));
 
       if(m_client_role)
 	{
 	  generate_ssl_tls();
 
-	  QStringList list(m_server_identity.split(":"));
+	  if(m_protocol == "tcp")
+	    {
+	      QStringList list(m_server_identity.split(":"));
 
-	  qobject_cast<QSslSocket *> (m_remote_socket)->connectToHostEncrypted
-	    (list.value(0), static_cast<quint16> (list.value(1).toInt()));
+	      qobject_cast<QSslSocket *> (m_remote_socket)->
+		connectToHostEncrypted
+		(list.value(0), static_cast<quint16> (list.value(1).toInt()));
+	    }
 	}
       else
 	{
@@ -239,7 +243,24 @@ spot_on_lite_daemon_child_client::spot_on_lite_daemon_child_client
 	  else
 	    prepare_ssl_tls_configuration(list);
 
-	  qobject_cast<QSslSocket *> (m_remote_socket)->startServerEncryption();
+	  if(m_protocol == "tcp")
+	    qobject_cast<QSslSocket *> (m_remote_socket)->
+	      startServerEncryption();
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 12, 0))
+	  else
+	    {
+	      prepare_dtls();
+
+	      if(m_dtls)
+		if(!m_dtls->
+		   doHandshake(qobject_cast<QUdpSocket *> (m_remote_socket),
+			       initial_data))
+		  log(QString("spot_on_lite_daemon_child_client::"
+			      "spot_on_lite_daemon_child_client: "
+			      "doHandshake() failure (%1).").
+		      arg(m_dtls->dtlsErrorString()));
+	    }
+#endif
 	}
     }
   else if(m_client_role)
@@ -597,6 +618,25 @@ void spot_on_lite_daemon_child_client::create_remote_identities_database(void)
   QSqlDatabase::removeDatabase(QString::number(db_connection_id));
 }
 
+void spot_on_lite_daemon_child_client::data_received(const QByteArray &data)
+{
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 12, 0))
+  if(m_dtls && m_protocol == "udp")
+    {
+      QUdpSocket *socket = qobject_cast<QUdpSocket *> (m_remote_socket);
+
+      if(m_dtls->isConnectionEncrypted())
+	process_read_data(m_dtls->decryptDatagram(socket, data));
+      else if(!m_dtls->doHandshake(socket, data))
+	log(QString("spot_on_lite_daemon_child_client::write_data(): "
+		    "doHandshake() failure (%1).").
+	    arg(m_dtls->dtlsErrorString()));
+    }
+#else
+  Q_UNUSED(data);
+#endif
+}
+
 void spot_on_lite_daemon_child_client::generate_certificate
 (RSA *rsa,
  QByteArray &certificate,
@@ -947,6 +987,29 @@ void spot_on_lite_daemon_child_client::log(const QString &error) const
     }
 }
 
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 12, 0))
+void spot_on_lite_daemon_child_client::prepare_dtls(void)
+{
+  if(m_dtls)
+    m_dtls->deleteLater();
+
+  if(m_ssl_key_size == 0)
+    return;
+
+  if(m_client_role)
+    m_dtls = new QDtls(QSslSocket::SslClientMode, this);
+  else
+    m_dtls = new QDtls(QSslSocket::SslServerMode, this);
+
+  connect(m_dtls,
+	  SIGNAL(handshakeTimeout(void)),
+	  this,
+	  SLOT(slot_handshake_timeout(void)));
+  m_dtls->setDtlsConfiguration(m_ssl_configuration);
+  m_dtls->setPeer(m_peer_address, m_peer_port);
+}
+#endif
+
 void spot_on_lite_daemon_child_client::prepare_local_socket(void)
 {
   {
@@ -982,47 +1045,58 @@ void spot_on_lite_daemon_child_client::prepare_local_socket(void)
 void spot_on_lite_daemon_child_client::prepare_ssl_tls_configuration
 (const QList<QByteArray> &list)
 {
-  if(m_protocol != "tcp")
-    return;
-
-  QSslConfiguration configuration;
-
-  configuration.setLocalCertificate(QSslCertificate(list.value(0)));
+  m_ssl_configuration.setLocalCertificate(QSslCertificate(list.value(0)));
 
 #if QT_VERSION < 0x050000
-  if(configuration.localCertificate().isValid())
+  if(m_ssl_configuration.localCertificate().isValid())
 #else
-  if(!configuration.localCertificate().isNull())
+  if(!m_ssl_configuration.localCertificate().isNull())
 #endif
     {
-      configuration.setPrivateKey(QSslKey(list.value(1), QSsl::Rsa));
+      m_ssl_configuration.setPrivateKey(QSslKey(list.value(1), QSsl::Rsa));
 
-      if(!configuration.privateKey().isNull())
+      if(!m_ssl_configuration.privateKey().isNull())
 	{
 #if QT_VERSION >= 0x040800
-	  configuration.setSslOption(QSsl::SslOptionDisableCompression, true);
-	  configuration.setSslOption
+	  m_ssl_configuration.setSslOption
+	    (QSsl::SslOptionDisableCompression, true);
+	  m_ssl_configuration.setSslOption
 	    (QSsl::SslOptionDisableEmptyFragments, true);
-	  configuration.setSslOption
+	  m_ssl_configuration.setSslOption
 	    (QSsl::SslOptionDisableLegacyRenegotiation, true);
-	  configuration.setSslOption
+	  m_ssl_configuration.setSslOption
 	    (QSsl::SslOptionDisableSessionTickets, true);
 #if QT_VERSION >= 0x050200
-	  configuration.setSslOption
+	  m_ssl_configuration.setSslOption
 	     (QSsl::SslOptionDisableSessionPersistence, true);
-	  configuration.setSslOption
+	  m_ssl_configuration.setSslOption
 	     (QSsl::SslOptionDisableSessionSharing, true);
 #endif
 #endif
 #if QT_VERSION >= 0x050000
-	  set_ssl_ciphers(configuration.supportedCiphers(), configuration);
-#else
 	  set_ssl_ciphers
-	    (qobject_cast<QSslSocket *> (m_remote_socket)->supportedCiphers(),
-	     configuration);
+	    (m_ssl_configuration.supportedCiphers(), m_ssl_configuration);
+
+	  if(m_protocol == "udp")
+	    {
+	      if(m_client_role)
+		m_ssl_configuration.setProtocol(QSsl::DtlsV1_2OrLater);
+	      else
+		{
+		  m_ssl_configuration.setDtlsCookieVerificationEnabled(false);
+		  m_ssl_configuration.setPeerVerifyMode(QSslSocket::VerifyNone);
+		  m_ssl_configuration.setProtocol(QSsl::DtlsV1_2OrLater);
+		}
+	    }
+#else
+	  if(m_protocol == "tcp")
+	    set_ssl_ciphers
+	      (qobject_cast<QSslSocket *> (m_remote_socket)->supportedCiphers(),
+	       m_ssl_configuration);
 #endif
-	  qobject_cast<QSslSocket *>
-	    (m_remote_socket)->setSslConfiguration(configuration);
+	  if(m_protocol == "tcp")
+	    qobject_cast<QSslSocket *>
+	      (m_remote_socket)->setSslConfiguration(m_ssl_configuration);
 	}
       else
 	/*
@@ -1179,6 +1253,38 @@ void spot_on_lite_daemon_child_client::process_data(void)
 	  m_local_content_elapsed_timer.start();
 	}
     }
+}
+
+void spot_on_lite_daemon_child_client::process_read_data
+(const QByteArray &d)
+{
+  QByteArray data(d);
+
+  if(data.isEmpty())
+    return;
+  else
+    data = data.mid(0, m_maximum_accumulated_bytes);
+
+  if(m_client_role || m_end_of_message_marker.isEmpty())
+    {
+      m_keep_alive_timer.start();
+
+      if(record_congestion(data))
+	if(m_local_socket)
+	    m_local_socket->write(data);
+
+      return;
+    }
+
+  m_keep_alive_timer.start();
+
+  if(m_remote_content.length() >= m_maximum_accumulated_bytes)
+    m_remote_content.clear();
+
+  m_remote_content.
+    append(data.mid(0, qAbs(m_maximum_accumulated_bytes -
+			    m_remote_content.length())));
+  process_remote_content();
 }
 
 void spot_on_lite_daemon_child_client::process_remote_content(void)
@@ -1454,12 +1560,32 @@ void spot_on_lite_daemon_child_client::slot_attempt_remote_connection(void)
 
   QStringList list(m_server_identity.split(":"));
 
-  if(m_protocol == "tcp" &&
-     !m_ssl_control_string.isEmpty() &&
-     m_ssl_key_size > 0)
-    qobject_cast<QSslSocket *> (m_remote_socket)->connectToHostEncrypted
-      (list.value(0),
-       static_cast<quint16> (list.value(1).toInt()));
+  if(!m_ssl_control_string.isEmpty() && m_ssl_key_size > 0)
+    {
+      if(m_protocol == "tcp")
+	qobject_cast<QSslSocket *> (m_remote_socket)->connectToHostEncrypted
+	  (list.value(0),
+	   static_cast<quint16> (list.value(1).toInt()));
+      else
+	{
+	  m_remote_socket->connectToHost
+	    (QHostAddress(list.value(0)),
+	     static_cast<quint16> (list.value(1).toInt()));
+
+	  if(!m_remote_socket->waitForConnected(10000))
+	    return;
+
+	  prepare_dtls();
+
+	  if(m_dtls)
+	    if(!m_dtls->
+	       doHandshake(qobject_cast<QUdpSocket *> (m_remote_socket)))
+	      log(QString("spot_on_lite_daemon_child_client::"
+			  "slot_attempt_remote_connection(): "
+			  "doHandshake() failure (%1).").
+		  arg(m_dtls->dtlsErrorString()));
+	}
+    }
   else
     m_remote_socket->connectToHost
       (QHostAddress(list.value(0)),
@@ -1555,6 +1681,18 @@ void spot_on_lite_daemon_child_client::slot_general_timer_timeout(void)
 	m_remote_content_elapsed_timer.invalidate();
       }
 }
+
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 12, 0))
+void spot_on_lite_daemon_child_client::slot_handshake_timeout(void)
+{
+  if(m_dtls)
+    m_dtls->handleTimeout(qobject_cast<QUdpSocket *> (m_remote_socket));
+}
+#else
+void spot_on_lite_daemon_child_client::slot_handshake_timeout(void)
+{
+}
+#endif
 
 void spot_on_lite_daemon_child_client::slot_keep_alive_timer_timeout(void)
 {
@@ -1653,61 +1791,28 @@ void spot_on_lite_daemon_child_client::slot_local_socket_ready_read(void)
 
 void spot_on_lite_daemon_child_client::slot_ready_read(void)
 {
-  QByteArray data;
+  QByteArray data(m_remote_socket->readAll());
 
-  if(!m_client_role && m_protocol == "udp")
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 12, 0))
+  if(!data.isEmpty() && m_dtls && m_protocol == "udp")
     {
       QUdpSocket *socket = qobject_cast<QUdpSocket *> (m_remote_socket);
 
-      while(socket->hasPendingDatagrams())
+      if(m_dtls->isConnectionEncrypted())
+	data = m_dtls->decryptDatagram(socket, data);
+      else
 	{
-	  QHostAddress peer_address;
-	  QByteArray buffer;
-	  qint64 size = socket->pendingDatagramSize();
-	  quint16 peer_port = 0;
+	  if(!m_dtls->doHandshake(socket, data))
+	    log(QString("spot_on_lite_daemon_child_client::"
+			"slot_ready_read(): doHandshake() failure (%1).").
+		arg(m_dtls->dtlsErrorString()));
 
-	  buffer.resize
-	    (static_cast<int> (qMax(static_cast<qint64> (0), size)));
-	  socket->readDatagram
-	    (buffer.data(),
-	     static_cast<qint64> (buffer.size()),
-	     &peer_address,
-	     &peer_port);
-
-	  if(m_peer_address == peer_address && m_peer_port == peer_port)
-	    data.append
-	      (buffer.
-	       mid(0, qAbs(m_maximum_accumulated_bytes - data.length())));
+	  return;
 	}
     }
-  else
-    data = m_remote_socket->readAll();
+#endif
 
-  if(data.isEmpty())
-    return;
-  else
-    data = data.mid(0, m_maximum_accumulated_bytes);
-
-  if(m_client_role || m_end_of_message_marker.isEmpty())
-    {
-      m_keep_alive_timer.start();
-
-      if(record_congestion(data))
-	if(m_local_socket)
-	    m_local_socket->write(data);
-
-      return;
-    }
-
-  m_keep_alive_timer.start();
-
-  if(m_remote_content.length() >= m_maximum_accumulated_bytes)
-    m_remote_content.clear();
-
-  m_remote_content.
-    append(data.mid(0, qAbs(m_maximum_accumulated_bytes -
-			    m_remote_content.length())));
-  process_remote_content();
+  process_read_data(data);
 }
 
 void spot_on_lite_daemon_child_client::slot_remove_expired_identities(void)
@@ -1770,6 +1875,13 @@ void spot_on_lite_daemon_child_client::write(const QByteArray &data)
 
       while(data.size() > i)
 	{
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 12, 0))
+	  if(m_dtls)
+	    m_dtls->writeDatagramEncrypted
+	      (qobject_cast<QUdpSocket *> (m_remote_socket),
+	       data.mid(i, maximum_datagram_size));
+	  else
+#endif
 	  if(m_client_role)
 	    m_remote_socket->write(data.mid(i, maximum_datagram_size));
 	  else
