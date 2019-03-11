@@ -225,13 +225,29 @@ spot_on_lite_daemon_child_client::spot_on_lite_daemon_child_client
 	{
 	  generate_ssl_tls();
 
-	  if(m_protocol == "tcp")
-	    {
-	      QStringList list(m_server_identity.split(":"));
+	  QStringList list(m_server_identity.split(":"));
 
-	      qobject_cast<QSslSocket *> (m_remote_socket)->
-		connectToHostEncrypted
-		(list.value(0), static_cast<quint16> (list.value(1).toInt()));
+	  m_peer_address = QHostAddress(list.value(0));
+	  m_peer_port = static_cast<quint16> (list.value(1).toInt());
+
+	  if(m_protocol == "tcp")
+	    qobject_cast<QSslSocket *> (m_remote_socket)->
+	      connectToHostEncrypted(m_peer_address.toString(), m_peer_port);
+	  else
+	    {
+	      m_remote_socket->connectToHost(m_peer_address, m_peer_port);
+	      m_remote_socket->waitForConnected(10000);
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 12, 0))
+	      prepare_dtls();
+
+	      if(m_dtls)
+		if(!m_dtls->
+		   doHandshake(qobject_cast<QUdpSocket *> (m_remote_socket)))
+		  log(QString("spot_on_lite_daemon_child_client::"
+			      "spot_on_lite_daemon_child_client(): "
+			      "doHandshake() failure (%1).").
+		      arg(m_dtls->dtlsErrorString()));
+#endif
 	    }
 	}
       else
@@ -267,9 +283,9 @@ spot_on_lite_daemon_child_client::spot_on_lite_daemon_child_client
     {
       QStringList list(m_server_identity.split(":"));
 
-      m_remote_socket->connectToHost
-	(QHostAddress(list.value(0)),
-	 static_cast<quint16> (list.value(1).toInt()));
+      m_peer_address = QHostAddress(list.value(0));
+      m_peer_port = static_cast<quint16> (list.value(1).toInt());
+      m_remote_socket->connectToHost(m_peer_address, m_peer_port);
     }
 }
 
@@ -628,7 +644,7 @@ void spot_on_lite_daemon_child_client::data_received(const QByteArray &data)
       if(m_dtls->isConnectionEncrypted())
 	process_read_data(m_dtls->decryptDatagram(socket, data));
       else if(!m_dtls->doHandshake(socket, data))
-	log(QString("spot_on_lite_daemon_child_client::write_data(): "
+	log(QString("spot_on_lite_daemon_child_client::data_received(): "
 		    "doHandshake() failure (%1).").
 	    arg(m_dtls->dtlsErrorString()));
     }
@@ -1080,7 +1096,10 @@ void spot_on_lite_daemon_child_client::prepare_ssl_tls_configuration
 	  if(m_protocol == "udp")
 	    {
 	      if(m_client_role)
-		m_ssl_configuration.setProtocol(QSsl::DtlsV1_2OrLater);
+		{
+		  m_ssl_configuration.setPeerVerifyMode(QSslSocket::VerifyNone);
+		  m_ssl_configuration.setProtocol(QSsl::DtlsV1_2OrLater);
+		}
 	      else
 		{
 		  m_ssl_configuration.setDtlsCookieVerificationEnabled(false);
@@ -1558,23 +1577,19 @@ void spot_on_lite_daemon_child_client::slot_attempt_remote_connection(void)
   if(m_remote_socket->state() != QAbstractSocket::UnconnectedState)
     return;
 
-  QStringList list(m_server_identity.split(":"));
-
   if(!m_ssl_control_string.isEmpty() && m_ssl_key_size > 0)
     {
       if(m_protocol == "tcp")
 	qobject_cast<QSslSocket *> (m_remote_socket)->connectToHostEncrypted
-	  (list.value(0),
-	   static_cast<quint16> (list.value(1).toInt()));
+	  (m_peer_address.toString(), m_peer_port);
       else
 	{
-	  m_remote_socket->connectToHost
-	    (QHostAddress(list.value(0)),
-	     static_cast<quint16> (list.value(1).toInt()));
+	  m_remote_socket->connectToHost(m_peer_address, m_peer_port);
 
 	  if(!m_remote_socket->waitForConnected(10000))
 	    return;
 
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 12, 0))
 	  prepare_dtls();
 
 	  if(m_dtls)
@@ -1584,12 +1599,11 @@ void spot_on_lite_daemon_child_client::slot_attempt_remote_connection(void)
 			  "slot_attempt_remote_connection(): "
 			  "doHandshake() failure (%1).").
 		  arg(m_dtls->dtlsErrorString()));
+#endif
 	}
     }
   else
-    m_remote_socket->connectToHost
-      (QHostAddress(list.value(0)),
-       static_cast<quint16> (list.value(1).toInt()));
+    m_remote_socket->connectToHost(m_peer_address, m_peer_port);
 }
 
 void spot_on_lite_daemon_child_client::slot_broadcast_capabilities(void)
@@ -1794,7 +1808,7 @@ void spot_on_lite_daemon_child_client::slot_ready_read(void)
   QByteArray data(m_remote_socket->readAll());
 
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 12, 0))
-  if(!data.isEmpty() && m_dtls && m_protocol == "udp")
+  if(!data.isEmpty() && m_dtls)
     {
       QUdpSocket *socket = qobject_cast<QUdpSocket *> (m_remote_socket);
 
