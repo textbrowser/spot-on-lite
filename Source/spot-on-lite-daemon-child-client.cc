@@ -276,6 +276,8 @@ spot_on_lite_daemon_child_client::spot_on_lite_daemon_child_client
 			      "doHandshake() failure (%1).").
 		      arg(m_dtls->dtlsErrorString()));
 	    }
+#else
+	  Q_UNUSED(initial_data);
 #endif
 	}
     }
@@ -1009,7 +1011,7 @@ void spot_on_lite_daemon_child_client::prepare_dtls(void)
   if(m_dtls)
     m_dtls->deleteLater();
 
-  if(m_ssl_key_size == 0)
+  if(m_protocol != "udp" || m_ssl_key_size == 0)
     return;
 
   if(m_client_role)
@@ -1699,7 +1701,7 @@ void spot_on_lite_daemon_child_client::slot_general_timer_timeout(void)
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 12, 0))
 void spot_on_lite_daemon_child_client::slot_handshake_timeout(void)
 {
-  if(m_dtls)
+  if(m_dtls && m_protocol == "udp")
     m_dtls->handleTimeout(qobject_cast<QUdpSocket *> (m_remote_socket));
 }
 #else
@@ -1808,7 +1810,7 @@ void spot_on_lite_daemon_child_client::slot_ready_read(void)
   QByteArray data(m_remote_socket->readAll());
 
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 12, 0))
-  if(!data.isEmpty() && m_dtls)
+  if(!data.isEmpty() && m_dtls && m_protocol == "udp")
     {
       QUdpSocket *socket = qobject_cast<QUdpSocket *> (m_remote_socket);
 
