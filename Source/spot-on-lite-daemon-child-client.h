@@ -96,7 +96,6 @@ class spot_on_lite_daemon_child_client: public QObject
   QPointer<QDtls> m_dtls;
 #endif
   QReadWriteLock m_local_content_mutex;
-  QReadWriteLock m_db_id_mutex;
 #ifdef __arm__
   QReadWriteLock m_remote_identities_mutex;
 #endif
@@ -123,8 +122,9 @@ class spot_on_lite_daemon_child_client: public QObject
   int m_silence;
   int m_ssl_key_size;
   quint16 m_peer_port;
-  quint64 m_db_id;
   spot_on_lite_daemon_sha m_sha_512;
+  static QReadWriteLock s_db_id_mutex;
+  static quint64 s_db_id;
   QHash<QByteArray, QString> remote_identities(bool *ok);
   QList<QByteArray> local_certificate_configuration(void);
   QList<QSslCipher> default_ssl_ciphers(void) const;

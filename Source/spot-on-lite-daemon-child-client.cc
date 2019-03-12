@@ -58,6 +58,9 @@ extern "C"
 
 #include "spot-on-lite-daemon-child-client.h"
 
+QReadWriteLock spot_on_lite_daemon_child_client::s_db_id_mutex;
+quint64 spot_on_lite_daemon_child_client::s_db_id = 0;
+
 static int hash_algorithm_key_length(const QByteArray &algorithm)
 {
   if(algorithm == "sha-512")
@@ -94,7 +97,6 @@ spot_on_lite_daemon_child_client::spot_on_lite_daemon_child_client
   m_certificates_file_name = certificates_file_name;
   m_client_role = socket_descriptor < 0;
   m_congestion_control_file_name = congestion_control_file_name;
-  m_db_id = 0;
   m_end_of_message_marker = end_of_message_marker;
   m_general_timer.start(5000);
   m_identity_lifetime = qBound(5, identities_lifetime, 600);
@@ -603,10 +605,10 @@ bool spot_on_lite_daemon_child_client::record_congestion(const QByteArray &data)
 
 quint64 spot_on_lite_daemon_child_client::db_id(void)
 {
-  QWriteLocker lock(&m_db_id_mutex);
+  QWriteLocker lock(&s_db_id_mutex);
 
-  m_db_id += 1;
-  return m_db_id;
+  s_db_id += 1;
+  return s_db_id;
 }
 
 void spot_on_lite_daemon_child_client::create_remote_identities_database(void)
