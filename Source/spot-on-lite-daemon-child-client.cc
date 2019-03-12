@@ -1096,7 +1096,7 @@ void spot_on_lite_daemon_child_client::prepare_ssl_tls_configuration
 #if QT_VERSION >= 0x050000
 	  set_ssl_ciphers
 	    (m_ssl_configuration.supportedCiphers(), m_ssl_configuration);
-
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 12, 0))
 	  if(m_protocol == "udp")
 	    {
 	      if(m_client_role)
@@ -1111,6 +1111,7 @@ void spot_on_lite_daemon_child_client::prepare_ssl_tls_configuration
 		  m_ssl_configuration.setProtocol(QSsl::DtlsV1_2OrLater);
 		}
 	    }
+#endif
 #else
 	  if(m_protocol == "tcp")
 	    set_ssl_ciphers
