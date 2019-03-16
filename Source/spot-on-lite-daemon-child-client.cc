@@ -1225,10 +1225,15 @@ void spot_on_lite_daemon_child_client::process_data(void)
 	    m_local_content_elapsed_timer.invalidate();
 	  }
       }
+
+    save_statistic
+      ("m_local_content", QString::number(m_local_content.length()));
   }
 
   if(cache.isEmpty() || m_process_data_future.isCanceled())
     goto done_label;
+
+  save_statistic("cache total cost", QString::number(cache.totalCost()));
 
   for(int i = 0; i < cache.size(); i++)
     {
@@ -1336,6 +1341,8 @@ void spot_on_lite_daemon_child_client::process_read_data
     append(data.mid(0, qAbs(m_maximum_accumulated_bytes -
 			    m_remote_content.length())));
   process_remote_content();
+  save_statistic
+    ("m_remote_content", QString::number(m_remote_content.length()));
 }
 
 void spot_on_lite_daemon_child_client::process_remote_content(void)
@@ -1369,6 +1376,9 @@ void spot_on_lite_daemon_child_client::process_remote_content(void)
 
   if(!m_remote_content.isEmpty())
     m_remote_content_elapsed_timer.start();
+
+  save_statistic
+    ("m_remote_content", QString::number(m_remote_content.length()));
 }
 
 void spot_on_lite_daemon_child_client::purge_containers(void)
@@ -1854,6 +1864,8 @@ void spot_on_lite_daemon_child_client::slot_local_socket_ready_read(void)
 	  m_local_content.append
 	    (data.mid(0, qAbs(m_maximum_accumulated_bytes -
 			      m_local_content.length())));
+	  save_statistic
+	    ("m_local_content", QString::number(m_local_content.length()));
 	}
     }
 
