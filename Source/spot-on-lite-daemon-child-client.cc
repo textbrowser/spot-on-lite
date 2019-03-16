@@ -296,6 +296,7 @@ spot_on_lite_daemon_child_client::spot_on_lite_daemon_child_client
 
 spot_on_lite_daemon_child_client::~spot_on_lite_daemon_child_client()
 {
+  purge_statistics();
   stop_threads_and_timers();
 }
 
@@ -1428,6 +1429,31 @@ void spot_on_lite_daemon_child_client::purge_remote_identities(void)
 #endif
 }
 
+void spot_on_lite_daemon_child_client::purge_statistics(void)
+{
+  quint64 db_connection_id = db_id();
+
+  {
+    QSqlDatabase db = QSqlDatabase::addDatabase
+      ("QSQLITE", QString::number(db_connection_id));
+
+    db.setDatabaseName(m_statistics_file_name);
+
+    if(db.open())
+      {
+	QSqlQuery query(db);
+
+	query.prepare("DELETE FROM statistics WHERE pid = ?");
+	query.addBindValue(QCoreApplication::applicationPid());
+	query.exec();
+      }
+
+    db.close();
+  }
+
+  QSqlDatabase::removeDatabase(QString::number(db_connection_id));
+}
+
 void spot_on_lite_daemon_child_client::record_certificate
 (const QByteArray &certificate,
  const QByteArray &private_key,
@@ -1743,6 +1769,7 @@ void spot_on_lite_daemon_child_client::slot_disconnected(void)
 	m_local_socket->deleteLater();
 
       m_remote_socket->abort();
+      purge_statistics();
       stop_threads_and_timers();
 
       if(m_protocol != "udp")
@@ -1816,6 +1843,7 @@ void spot_on_lite_daemon_child_client::slot_keep_alive_timer_timeout(void)
       if(m_local_socket)
 	m_local_socket->deleteLater();
 
+      purge_statistics();
       stop_threads_and_timers();
 
       if(m_protocol != "udp")

@@ -149,6 +149,7 @@ class spot_on_lite_daemon_child_client: public QObject
   void process_remote_content(void);
   void purge_containers(void);
   void purge_remote_identities(void);
+  void purge_statistics(void);
   void record_certificate(const QByteArray &certificate,
 			  const QByteArray &private_key,
 			  const QByteArray &public_key);
