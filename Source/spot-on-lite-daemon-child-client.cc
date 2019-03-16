@@ -655,8 +655,9 @@ void spot_on_lite_daemon_child_client::create_statistics_database(void)
 
 	query.exec("CREATE TABLE IF NOT EXISTS statistics ("
 		   "key TEXT NOT NULL, "
-		   "pid BIGINT NOT NULL PRIMARY KEY, "
-		   "value TEXT NOT NULL)");
+		   "pid BIGINT NOT NULL, "
+		   "value TEXT NOT NULL, "
+		   "PRIMARY KEY(key, pid)");
       }
 
     db.close();
