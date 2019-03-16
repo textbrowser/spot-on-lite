@@ -1579,6 +1579,40 @@ void spot_on_lite_daemon_child_client::remove_expired_identities(void)
 #endif
 }
 
+void spot_on_lite_daemon_child_client::save_statistic
+(const QString &key, const QString &value)
+{
+  create_statistics_database();
+
+  quint64 db_connection_id = db_id();
+
+  {
+    QSqlDatabase db = QSqlDatabase::addDatabase
+      ("QSQLITE", QString::number(db_connection_id));
+
+    db.setDatabaseName(m_statistics_file_name);
+
+    if(db.open())
+      {
+	QSqlQuery query(db);
+
+	query.exec("PRAGMA journal_mode = OFF");
+	query.exec("PRAGMA synchronous = OFF");
+	query.prepare("INSERT OR REPLACE INTO statistics "
+		      "(key, pid, value) "
+		      "VALUES (?, ?, ?)");
+	query.addBindValue(key);
+	query.addBindValue(QCoreApplication::applicationPid());
+	query.addBindValue(value);
+	query.exec();
+      }
+
+    db.close();
+  }
+
+  QSqlDatabase::removeDatabase(QString::number(db_connection_id));
+}
+
 void spot_on_lite_daemon_child_client::
 set_ssl_ciphers(const QList<QSslCipher> &ciphers,
 		QSslConfiguration &configuration) const
