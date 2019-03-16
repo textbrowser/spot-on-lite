@@ -126,6 +126,7 @@ spot_on_lite_daemon_child_client::spot_on_lite_daemon_child_client
   m_silence = 1000 * qBound(15, silence, 3600);
   m_ssl_control_string = ssl_control_string.trimmed();
   m_ssl_key_size = ssl_key_size;
+  m_statistics_file_name = "/tmp/spot-on-lite-daemon-statistics.sqlite";
 
   if(!(m_ssl_key_size == 2048 ||
        m_ssl_key_size == 3072 ||
@@ -630,6 +631,32 @@ void spot_on_lite_daemon_child_client::create_remote_identities_database(void)
 		   "date_time_inserted BIGINT NOT NULL, "
 		   "identity TEXT NOT NULL PRIMARY KEY, "
 		   "pid BIGINT NOT NULL)");
+      }
+
+    db.close();
+  }
+
+  QSqlDatabase::removeDatabase(QString::number(db_connection_id));
+}
+
+void spot_on_lite_daemon_child_client::create_statistics_database(void)
+{
+  quint64 db_connection_id = db_id();
+
+  {
+    QSqlDatabase db = QSqlDatabase::addDatabase
+      ("QSQLITE", QString::number(db_connection_id));
+
+    db.setDatabaseName(m_statistics_file_name);
+
+    if(db.open())
+      {
+	QSqlQuery query(db);
+
+	query.exec("CREATE TABLE IF NOT EXISTS statistics ("
+		   "key TEXT NOT NULL, "
+		   "pid BIGINT NOT NULL PRIMARY KEY, "
+		   "value TEXT NOT NULL)");
       }
 
     db.close();

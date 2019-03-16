@@ -76,6 +76,7 @@ spot_on_lite_daemon::spot_on_lite_daemon
   m_signal_usr1_socket_notifier = new QSocketNotifier
     (s_signal_usr1_fd[1], QSocketNotifier::Read, this);
   m_start_timer.start(5000);
+  m_statistics_file_name = "/tmp/spot-on-lite-daemon-statistics.sqlite";
   connect(&m_congestion_control_timer,
 	  SIGNAL(timeout(void)),
 	  this,
@@ -107,6 +108,7 @@ spot_on_lite_daemon::~spot_on_lite_daemon()
 {
   QFile::remove(m_congestion_control_file_name);
   QFile::remove(m_remote_identities_file_name);
+  QFile::remove(m_statistics_file_name);
   m_congestion_control_future.cancel();
   m_congestion_control_future.waitForFinished();
   m_congestion_control_timer.stop();

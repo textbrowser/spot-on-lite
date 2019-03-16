@@ -109,6 +109,7 @@ class spot_on_lite_daemon_child_client: public QObject
   QString m_remote_identities_file_name;
   QString m_server_identity;
   QString m_ssl_control_string;
+  QString m_statistics_file_name;
   QTimer m_attempt_local_connection_timer;
   QTimer m_attempt_remote_connection_timer;
   QTimer m_capabilities_timer;
@@ -131,6 +132,7 @@ class spot_on_lite_daemon_child_client: public QObject
   bool record_congestion(const QByteArray &data);
   quint64 db_id(void);
   void create_remote_identities_database(void);
+  void create_statistics_database(void);
   void generate_certificate(RSA *rsa,
 			    QByteArray &certificate,
 			    const long int days,

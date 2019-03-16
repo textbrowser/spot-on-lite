@@ -77,6 +77,7 @@ class spot_on_lite_daemon: public QObject
   QString m_local_socket_server_directory_name;
   QString m_log_file_name;
   QString m_remote_identities_file_name;
+  QString m_statistics_file_name;
   QTimer m_congestion_control_timer;
   QTimer m_peer_process_timer;
   QTimer m_start_timer;
