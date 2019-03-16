@@ -13,7 +13,7 @@ Completed Items
 - Partition datagrams.
 - Process accumulated data which may have arrived
   while a local socket is not connected.
-- Purge entries from UDP's m_clients.
+- Purge entries from UDP listener's m_clients.
 - Record certificate data.
 - Remote peers.
 - Remove expired identities.
