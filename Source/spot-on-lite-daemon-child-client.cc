@@ -1192,6 +1192,8 @@ void spot_on_lite_daemon_child_client::process_data(void)
     }
   while(!m_process_data_future.isCanceled());
 
+  save_statistic("identities", QString::number(identities.size()));
+
   QCache<int, QByteArray> cache;
   int index = 0;
 
