@@ -174,8 +174,6 @@ spot_on_lite_daemon_child_client::spot_on_lite_daemon_child_client
 
   m_expired_identities_timer.start(15000);
   m_keep_alive_timer.start(m_silence);
-  m_local_content.reserve(m_maximum_accumulated_bytes);
-  m_remote_content.reserve(m_maximum_accumulated_bytes);
   connect(&m_attempt_local_connection_timer,
 	  SIGNAL(timeout(void)),
 	  this,
