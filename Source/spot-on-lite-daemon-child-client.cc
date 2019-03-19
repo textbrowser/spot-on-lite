@@ -1315,8 +1315,7 @@ void spot_on_lite_daemon_child_client::process_data(void)
     }
 }
 
-void spot_on_lite_daemon_child_client::process_read_data
-(const QByteArray &d)
+void spot_on_lite_daemon_child_client::process_read_data(const QByteArray &d)
 {
   QByteArray data(d);
 
