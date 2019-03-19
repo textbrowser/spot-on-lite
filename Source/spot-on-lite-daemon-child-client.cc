@@ -1232,7 +1232,7 @@ void spot_on_lite_daemon_child_client::process_data(void)
       }
 
     save_statistic
-      ("m_local_content", QString::number(m_local_content.length()));
+      ("m_local_content", QString::number(m_local_content.capacity()));
   }
 
   if(cache.isEmpty() || m_process_data_future.isCanceled())
@@ -1351,7 +1351,7 @@ void spot_on_lite_daemon_child_client::process_read_data
 			    m_remote_content.length())));
   process_remote_content();
   save_statistic
-    ("m_remote_content", QString::number(m_remote_content.length()));
+    ("m_remote_content", QString::number(m_remote_content.capacity()));
 }
 
 void spot_on_lite_daemon_child_client::process_remote_content(void)
@@ -1388,7 +1388,7 @@ void spot_on_lite_daemon_child_client::process_remote_content(void)
     m_remote_content_elapsed_timer.start();
 
   save_statistic
-    ("m_remote_content", QString::number(m_remote_content.length()));
+    ("m_remote_content", QString::number(m_remote_content.capacity()));
 }
 
 void spot_on_lite_daemon_child_client::purge_containers(void)
@@ -1909,7 +1909,7 @@ void spot_on_lite_daemon_child_client::slot_local_socket_ready_read(void)
 	    (data.mid(0, qAbs(m_maximum_accumulated_bytes -
 			      m_local_content.length())));
 	  save_statistic
-	    ("m_local_content", QString::number(m_local_content.length()));
+	    ("m_local_content", QString::number(m_local_content.capacity()));
 	}
     }
 
