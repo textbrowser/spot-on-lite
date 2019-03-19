@@ -1065,6 +1065,7 @@ void spot_on_lite_daemon_child_client::prepare_local_socket(void)
     QWriteLocker lock(&m_local_content_mutex);
 
     m_local_content.clear();
+    m_local_content.squeeze();
   }
 
   if(m_local_socket)
@@ -1201,6 +1202,7 @@ void spot_on_lite_daemon_child_client::process_data(void)
       {
 	emit write_signal(m_local_content);
 	m_local_content.clear();
+	m_local_content.squeeze();
 	return;
       }
     else
@@ -1224,6 +1226,7 @@ void spot_on_lite_daemon_child_client::process_data(void)
 	    cache.insert(i, bytes, bytes->length());
 	    i += 1;
 	    m_local_content.remove(0, length);
+	    m_local_content.squeeze();
 	    m_local_content_elapsed_timer.invalidate();
 	  }
       }
@@ -1300,6 +1303,7 @@ void spot_on_lite_daemon_child_client::process_data(void)
       QWriteLocker lock(&m_local_content_mutex);
 
       m_local_content.clear();
+      m_local_content.squeeze();
     }
   else
     {
@@ -1337,7 +1341,10 @@ void spot_on_lite_daemon_child_client::process_read_data
   m_keep_alive_timer.start();
 
   if(m_remote_content.length() >= m_maximum_accumulated_bytes)
-    m_remote_content.clear();
+    {
+      m_remote_content.clear();
+      m_remote_content.squeeze();
+    }
 
   m_remote_content.
     append(data.mid(0, qAbs(m_maximum_accumulated_bytes -
@@ -1362,6 +1369,7 @@ void spot_on_lite_daemon_child_client::process_remote_content(void)
     {
       data = m_remote_content.mid(0, index + m_end_of_message_marker.length());
       m_remote_content.remove(0, data.length());
+      m_remote_content.squeeze();
       m_remote_content_elapsed_timer.invalidate();
 
       if(data.contains("type=0014&content="))
@@ -1389,12 +1397,14 @@ void spot_on_lite_daemon_child_client::purge_containers(void)
     QWriteLocker lock(&m_local_content_mutex);
 
     m_local_content.clear();
+    m_local_content.squeeze();
   }
 
   if(m_local_socket)
     m_local_socket->deleteLater();
 
   m_remote_content.clear();
+  m_remote_content.squeeze();
   purge_remote_identities();
 }
 
@@ -1788,6 +1798,7 @@ void spot_on_lite_daemon_child_client::slot_general_timer_timeout(void)
       if(m_local_content_elapsed_timer.hasExpired(END_OF_MESSAGE_MARKER_WINDOW))
 	{
 	  m_local_content.clear();
+	  m_local_content.squeeze();
 	  m_local_content_elapsed_timer.invalidate();
 	}
   }
@@ -1796,6 +1807,7 @@ void spot_on_lite_daemon_child_client::slot_general_timer_timeout(void)
     if(m_remote_content_elapsed_timer.hasExpired(END_OF_MESSAGE_MARKER_WINDOW))
       {
 	m_remote_content.clear();
+	m_remote_content.squeeze();
 	m_remote_content_elapsed_timer.invalidate();
       }
 }
@@ -1888,7 +1900,10 @@ void spot_on_lite_daemon_child_client::slot_local_socket_ready_read(void)
 	  QWriteLocker lock(&m_local_content_mutex);
 
 	  if(m_local_content.length() >= m_maximum_accumulated_bytes)
-	    m_local_content.clear();
+	    {
+	      m_local_content.clear();
+	      m_local_content.squeeze();
+	    }
 
 	  m_local_content.append
 	    (data.mid(0, qAbs(m_maximum_accumulated_bytes -
