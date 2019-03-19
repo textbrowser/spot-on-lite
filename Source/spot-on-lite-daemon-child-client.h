@@ -37,7 +37,6 @@ extern "C"
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 12, 0))
 #include <QDtls>
 #endif
-#include <QElapsedTimer>
 #include <QFuture>
 #include <QHostAddress>
 #include <QPointer>
@@ -82,8 +81,6 @@ class spot_on_lite_daemon_child_client: public QObject
  private:
   QByteArray m_local_content;
   QByteArray m_remote_content;
-  QElapsedTimer m_local_content_elapsed_timer;
-  QElapsedTimer m_remote_content_elapsed_timer;
   QFuture<void> m_expired_identities_future;
   QFuture<void> m_process_data_future;
 #ifdef __arm__
@@ -114,7 +111,6 @@ class spot_on_lite_daemon_child_client: public QObject
   QTimer m_attempt_remote_connection_timer;
   QTimer m_capabilities_timer;
   QTimer m_expired_identities_timer;
-  QTimer m_general_timer;
   QTimer m_keep_alive_timer;
   bool m_client_role;
   int m_identity_lifetime;
@@ -122,6 +118,8 @@ class spot_on_lite_daemon_child_client: public QObject
   int m_maximum_accumulated_bytes;
   int m_silence;
   int m_ssl_key_size;
+  qint64 m_local_content_last_parsed;
+  qint64 m_remote_content_last_parsed;
   quint16 m_peer_port;
   spot_on_lite_daemon_sha m_sha_512;
   static QReadWriteLock s_db_id_mutex;
@@ -167,7 +165,6 @@ class spot_on_lite_daemon_child_client: public QObject
   void slot_broadcast_capabilities(void);
   void slot_connected(void);
   void slot_disconnected(void);
-  void slot_general_timer_timeout(void);
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 12, 0))
   void slot_handshake_timeout(void);
 #else

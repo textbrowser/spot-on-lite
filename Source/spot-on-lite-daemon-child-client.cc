@@ -69,7 +69,7 @@ static int hash_algorithm_key_length(const QByteArray &algorithm)
     return 0;
 }
 
-static qint64 END_OF_MESSAGE_MARKER_WINDOW = 7500;
+static qint64 END_OF_MESSAGE_MARKER_WINDOW = 10000;
 
 spot_on_lite_daemon_child_client::spot_on_lite_daemon_child_client
 (const QByteArray &initial_data,
@@ -98,9 +98,8 @@ spot_on_lite_daemon_child_client::spot_on_lite_daemon_child_client
   m_client_role = socket_descriptor < 0;
   m_congestion_control_file_name = congestion_control_file_name;
   m_end_of_message_marker = end_of_message_marker;
-  m_general_timer.start(1500);
   m_identity_lifetime = qBound(5, identities_lifetime, 600);
-  m_local_content_elapsed_timer.invalidate();
+  m_local_content_last_parsed = QDateTime::currentMSecsSinceEpoch();
   m_local_server_file_name = local_server_file_name;
   m_local_so_sndbuf = qBound(4096, local_so_sndbuf, 65536);
   m_log_file_name = log_file_name;
@@ -113,7 +112,7 @@ spot_on_lite_daemon_child_client::spot_on_lite_daemon_child_client
   m_peer_address.setScopeId(peer_scope_identity);
   m_peer_port = peer_port;
   m_protocol = protocol.toLower().trimmed();
-  m_remote_content_elapsed_timer.invalidate();
+  m_remote_content_last_parsed = QDateTime::currentMSecsSinceEpoch();
   m_remote_identities_file_name = remote_identities_file_name;
 
   if(m_protocol == "tcp")
@@ -186,10 +185,6 @@ spot_on_lite_daemon_child_client::spot_on_lite_daemon_child_client
 	  SIGNAL(timeout(void)),
 	  this,
 	  SLOT(slot_remove_expired_identities(void)));
-  connect(&m_general_timer,
-	  SIGNAL(timeout(void)),
-	  this,
-	  SLOT(slot_general_timer_timeout(void)));
   connect(&m_keep_alive_timer,
 	  SIGNAL(timeout(void)),
 	  this,
@@ -1205,6 +1200,7 @@ void spot_on_lite_daemon_child_client::process_data(void)
 	emit write_signal(m_local_content);
 	m_local_content.clear();
 	m_local_content.squeeze();
+	m_local_content_last_parsed = QDateTime::currentMSecsSinceEpoch();
 	return;
       }
     else
@@ -1215,6 +1211,8 @@ void spot_on_lite_daemon_child_client::process_data(void)
 
 	while((index = m_local_content.indexOf(m_end_of_message_marker)) >= 0)
 	  {
+	    m_local_content_last_parsed = QDateTime::currentMSecsSinceEpoch();
+
 	    if(cache.maxCost() < cache.totalCost())
 	      break;
 	    else if(m_process_data_future.isCanceled())
@@ -1229,7 +1227,13 @@ void spot_on_lite_daemon_child_client::process_data(void)
 	    i += 1;
 	    m_local_content.remove(0, length);
 	    m_local_content.squeeze();
-	    m_local_content_elapsed_timer.invalidate();
+	  }
+
+	if(QDateTime::currentMSecsSinceEpoch() - m_local_content_last_parsed >
+	   END_OF_MESSAGE_MARKER_WINDOW)
+	  {
+	    m_local_content.clear();
+	    m_local_content.squeeze();
 	  }
       }
 
@@ -1309,15 +1313,10 @@ void spot_on_lite_daemon_child_client::process_data(void)
     }
   else
     {
-      QWriteLocker lock(&m_local_content_mutex);
+      QReadLocker lock(&m_local_content_mutex);
 
       if(!m_local_content.isEmpty())
-	{
-	  emit read_signal();
-
-	  if(!m_local_content_elapsed_timer.isValid())
-	    m_local_content_elapsed_timer.start();
-	}
+	emit read_signal();
     }
 }
 
@@ -1374,7 +1373,7 @@ void spot_on_lite_daemon_child_client::process_remote_content(void)
       data = m_remote_content.mid(0, index + m_end_of_message_marker.length());
       m_remote_content.remove(0, data.length());
       m_remote_content.squeeze();
-      m_remote_content_elapsed_timer.invalidate();
+      m_remote_content_last_parsed = QDateTime::currentMSecsSinceEpoch();
 
       if(data.contains("type=0014&content="))
 	continue;
@@ -1388,9 +1387,12 @@ void spot_on_lite_daemon_child_client::process_remote_content(void)
 	m_local_socket->write(data);
     }
 
-  if(!m_remote_content.isEmpty())
-    if(!m_remote_content_elapsed_timer.isValid())
-      m_remote_content_elapsed_timer.start();
+  if(QDateTime::currentMSecsSinceEpoch() - m_remote_content_last_parsed >
+     END_OF_MESSAGE_MARKER_WINDOW)
+    {
+      m_remote_content.clear();
+      m_remote_content.squeeze();
+    }
 
   save_statistic
     ("m_remote_content", QString::number(m_remote_content.capacity()));
@@ -1403,6 +1405,7 @@ void spot_on_lite_daemon_child_client::purge_containers(void)
 
     m_local_content.clear();
     m_local_content.squeeze();
+    m_local_content_last_parsed = 0;
   }
 
   if(m_local_socket)
@@ -1410,6 +1413,7 @@ void spot_on_lite_daemon_child_client::purge_containers(void)
 
   m_remote_content.clear();
   m_remote_content.squeeze();
+  m_remote_content_last_parsed = 0;
   purge_remote_identities();
 }
 
@@ -1758,6 +1762,7 @@ void spot_on_lite_daemon_child_client::slot_connected(void)
   m_attempt_local_connection_timer.start();
   m_attempt_remote_connection_timer.stop();
   m_capabilities_timer.start(m_silence / 2);
+  m_remote_content_last_parsed = QDateTime::currentMSecsSinceEpoch();
   m_remote_socket->setSocketOption(QAbstractSocket::LowDelayOption, 1);
 
   int sd = static_cast<int> (m_remote_socket->socketDescriptor());
@@ -1792,29 +1797,6 @@ void spot_on_lite_daemon_child_client::slot_disconnected(void)
       else
 	deleteLater();
     }
-}
-
-void spot_on_lite_daemon_child_client::slot_general_timer_timeout(void)
-{
-  {
-    QWriteLocker lock(&m_local_content_mutex);
-
-    if(m_local_content_elapsed_timer.isValid())
-      if(m_local_content_elapsed_timer.hasExpired(END_OF_MESSAGE_MARKER_WINDOW))
-	{
-	  m_local_content.clear();
-	  m_local_content.squeeze();
-	  m_local_content_elapsed_timer.invalidate();
-	}
-  }
-
-  if(m_remote_content_elapsed_timer.isValid())
-    if(m_remote_content_elapsed_timer.hasExpired(END_OF_MESSAGE_MARKER_WINDOW))
-      {
-	m_remote_content.clear();
-	m_remote_content.squeeze();
-	m_remote_content_elapsed_timer.invalidate();
-      }
 }
 
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 12, 0))
@@ -1874,6 +1856,8 @@ void spot_on_lite_daemon_child_client::slot_local_socket_connected(void)
 {
   if(!m_local_socket)
     return;
+
+  m_local_content_last_parsed = QDateTime::currentMSecsSinceEpoch();
 
   int sd = static_cast<int> (m_local_socket->socketDescriptor());
   socklen_t optlen = sizeof(m_local_so_sndbuf);
@@ -1984,7 +1968,6 @@ void spot_on_lite_daemon_child_client::stop_threads_and_timers(void)
   m_capabilities_timer.stop();
   m_expired_identities_future.cancel();
   m_expired_identities_timer.stop();
-  m_general_timer.stop();
   m_keep_alive_timer.stop();
   m_process_data_future.cancel();
 
