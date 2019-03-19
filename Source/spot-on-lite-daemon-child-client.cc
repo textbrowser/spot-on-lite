@@ -69,7 +69,7 @@ static int hash_algorithm_key_length(const QByteArray &algorithm)
     return 0;
 }
 
-static qint64 END_OF_MESSAGE_MARKER_WINDOW = 15000;
+static qint64 END_OF_MESSAGE_MARKER_WINDOW = 7500;
 
 spot_on_lite_daemon_child_client::spot_on_lite_daemon_child_client
 (const QByteArray &initial_data,
@@ -98,7 +98,7 @@ spot_on_lite_daemon_child_client::spot_on_lite_daemon_child_client
   m_client_role = socket_descriptor < 0;
   m_congestion_control_file_name = congestion_control_file_name;
   m_end_of_message_marker = end_of_message_marker;
-  m_general_timer.start(5000);
+  m_general_timer.start(1500);
   m_identity_lifetime = qBound(5, identities_lifetime, 600);
   m_local_content_elapsed_timer.invalidate();
   m_local_server_file_name = local_server_file_name;
@@ -1314,7 +1314,9 @@ void spot_on_lite_daemon_child_client::process_data(void)
       if(!m_local_content.isEmpty())
 	{
 	  emit read_signal();
-	  m_local_content_elapsed_timer.start();
+
+	  if(!m_local_content_elapsed_timer.isValid())
+	    m_local_content_elapsed_timer.start();
 	}
     }
 }
@@ -1387,7 +1389,8 @@ void spot_on_lite_daemon_child_client::process_remote_content(void)
     }
 
   if(!m_remote_content.isEmpty())
-    m_remote_content_elapsed_timer.start();
+    if(!m_remote_content_elapsed_timer.isValid())
+      m_remote_content_elapsed_timer.start();
 
   save_statistic
     ("m_remote_content", QString::number(m_remote_content.capacity()));
