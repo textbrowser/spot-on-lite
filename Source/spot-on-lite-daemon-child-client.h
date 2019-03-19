@@ -111,6 +111,7 @@ class spot_on_lite_daemon_child_client: public QObject
   QTimer m_attempt_remote_connection_timer;
   QTimer m_capabilities_timer;
   QTimer m_expired_identities_timer;
+  QTimer m_general_timer;
   QTimer m_keep_alive_timer;
   bool m_client_role;
   int m_identity_lifetime;
@@ -165,6 +166,7 @@ class spot_on_lite_daemon_child_client: public QObject
   void slot_broadcast_capabilities(void);
   void slot_connected(void);
   void slot_disconnected(void);
+  void slot_general_timer_timeout(void);
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 12, 0))
   void slot_handshake_timeout(void);
 #else

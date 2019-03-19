@@ -98,6 +98,7 @@ spot_on_lite_daemon_child_client::spot_on_lite_daemon_child_client
   m_client_role = socket_descriptor < 0;
   m_congestion_control_file_name = congestion_control_file_name;
   m_end_of_message_marker = end_of_message_marker;
+  m_general_timer.start(5000);
   m_identity_lifetime = qBound(5, identities_lifetime, 600);
   m_local_content_last_parsed = QDateTime::currentMSecsSinceEpoch();
   m_local_server_file_name = local_server_file_name;
@@ -185,6 +186,10 @@ spot_on_lite_daemon_child_client::spot_on_lite_daemon_child_client
 	  SIGNAL(timeout(void)),
 	  this,
 	  SLOT(slot_remove_expired_identities(void)));
+  connect(&m_general_timer,
+	  SIGNAL(timeout(void)),
+	  this,
+	  SLOT(slot_general_timer_timeout(void)));
   connect(&m_keep_alive_timer,
 	  SIGNAL(timeout(void)),
 	  this,
@@ -1228,13 +1233,6 @@ void spot_on_lite_daemon_child_client::process_data(void)
 	    m_local_content.remove(0, length);
 	    m_local_content.squeeze();
 	  }
-
-	if(QDateTime::currentMSecsSinceEpoch() - m_local_content_last_parsed >
-	   END_OF_MESSAGE_MARKER_WINDOW)
-	  {
-	    m_local_content.clear();
-	    m_local_content.squeeze();
-	  }
       }
 
     save_statistic
@@ -1385,13 +1383,6 @@ void spot_on_lite_daemon_child_client::process_remote_content(void)
 
       if(record_congestion(data))
 	m_local_socket->write(data);
-    }
-
-  if(QDateTime::currentMSecsSinceEpoch() - m_remote_content_last_parsed >
-     END_OF_MESSAGE_MARKER_WINDOW)
-    {
-      m_remote_content.clear();
-      m_remote_content.squeeze();
     }
 
   save_statistic
@@ -1799,6 +1790,27 @@ void spot_on_lite_daemon_child_client::slot_disconnected(void)
     }
 }
 
+void spot_on_lite_daemon_child_client::slot_general_timer_timeout(void)
+{
+  {
+    QWriteLocker lock(&m_local_content_mutex);
+
+    if(QDateTime::currentMSecsSinceEpoch() - m_local_content_last_parsed >
+       END_OF_MESSAGE_MARKER_WINDOW)
+      {
+	m_local_content.clear();
+	m_local_content.squeeze();
+      }
+  }
+
+  if(QDateTime::currentMSecsSinceEpoch() - m_remote_content_last_parsed >
+     END_OF_MESSAGE_MARKER_WINDOW)
+    {
+      m_remote_content.clear();
+      m_remote_content.squeeze();
+    }
+}
+
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 12, 0))
 void spot_on_lite_daemon_child_client::slot_handshake_timeout(void)
 {
@@ -1968,6 +1980,7 @@ void spot_on_lite_daemon_child_client::stop_threads_and_timers(void)
   m_capabilities_timer.stop();
   m_expired_identities_future.cancel();
   m_expired_identities_timer.stop();
+  m_general_timer.stop();
   m_keep_alive_timer.stop();
   m_process_data_future.cancel();
 
