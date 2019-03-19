@@ -1800,6 +1800,7 @@ void spot_on_lite_daemon_child_client::slot_general_timer_timeout(void)
       {
 	m_local_content.clear();
 	m_local_content.squeeze();
+	m_local_content_last_parsed = QDateTime::currentMSecsSinceEpoch();
       }
   }
 
@@ -1808,6 +1809,7 @@ void spot_on_lite_daemon_child_client::slot_general_timer_timeout(void)
     {
       m_remote_content.clear();
       m_remote_content.squeeze();
+      m_remote_content_last_parsed = QDateTime::currentMSecsSinceEpoch();
     }
 }
 
