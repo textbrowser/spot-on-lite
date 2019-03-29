@@ -1193,7 +1193,7 @@ void spot_on_lite_daemon_child_client::process_data(void)
 
   save_statistic("identities", QString::number(identities.size()));
 
-  QCache<int, QByteArray> cache;
+  QVector<QByteArray> vector;
   int index = 0;
 
   {
@@ -1207,51 +1207,37 @@ void spot_on_lite_daemon_child_client::process_data(void)
 	return;
       }
     else
-      {
-	int i = 0;
+      while((index = m_local_content.indexOf(m_end_of_message_marker)) >= 0)
+	{
+	  m_local_content_last_parsed = QDateTime::currentMSecsSinceEpoch();
 
-	cache.setMaxCost(m_maximum_accumulated_bytes);
+	  if(m_process_data_future.isCanceled())
+	    goto done_label;
 
-	while((index = m_local_content.indexOf(m_end_of_message_marker)) >= 0)
-	  {
-	    m_local_content_last_parsed = QDateTime::currentMSecsSinceEpoch();
+	  QByteArray bytes
+	    (m_local_content.mid(0, index + m_end_of_message_marker.length()));
 
-	    if(cache.maxCost() < cache.totalCost())
-	      break;
-	    else if(m_process_data_future.isCanceled())
-	      goto done_label;
-
-	    QByteArray *bytes = new QByteArray
-	      (m_local_content.
-	       mid(0, index + m_end_of_message_marker.length()));
-	    int length = bytes->length();
-
-	    cache.insert(i, bytes, bytes->length());
-	    i += 1;
-	    m_local_content.remove(0, length);
-	    m_local_content.squeeze();
-	  }
-      }
+	  vector.append(bytes);
+	  m_local_content.remove(0, bytes.length());
+	  m_local_content.squeeze();
+	}
 
     save_statistic
       ("m_local_content", QString::number(m_local_content.capacity()));
   }
 
-  if(cache.isEmpty() || m_process_data_future.isCanceled())
+  if(m_process_data_future.isCanceled() || vector.isEmpty())
     goto done_label;
 
-  save_statistic("cache total cost", QString::number(cache.totalCost()));
+  save_statistic("vector size", QString::number(vector.size()));
 
-  for(int i = 0; i < cache.size(); i++)
+  for(int i = 0; i < vector.size(); i++)
     {
-      QByteArray *bytes(cache.take(i));
+      QByteArray bytes(vector.at(i));
 
-      if(!bytes)
-	continue;
-
-      if((index = bytes->indexOf("content=")) >= 0)
+      if((index = bytes.indexOf("content=")) >= 0)
 	{
-	  QByteArray data(bytes->mid(8 + index).trimmed());
+	  QByteArray data(bytes.mid(8 + index).trimmed());
 	  QByteArray hash;
 
 	  if(data.contains("\n")) // Spot-On
@@ -1265,10 +1251,7 @@ void spot_on_lite_daemon_child_client::process_data(void)
 		  hash = QByteArray::fromBase64(list.at(2)); // Destination.
 		}
 	      else
-		{
-		  delete bytes;
-		  continue;
-		}
+		continue;
 	    }
 	  else
 	    {
@@ -1285,20 +1268,16 @@ void spot_on_lite_daemon_child_client::process_data(void)
 
 	      if(memcmp(hash, m_sha_512.sha_512_hmac(data, it.key())))
 		{
-		  emit write_signal(*bytes);
+		  emit write_signal(bytes);
 		  break;
 		}
 	    }
 	}
       else
-	emit write_signal(*bytes);
-
-      delete bytes;
+	emit write_signal(bytes);
     }
 
  done_label:
-
-  cache.clear();
 
   if(m_process_data_future.isCanceled())
     {
@@ -1860,7 +1839,11 @@ void spot_on_lite_daemon_child_client::slot_local_socket_connected(void)
   if(!m_local_socket)
     return;
 
-  m_local_content_last_parsed = QDateTime::currentMSecsSinceEpoch();
+  {
+    QWriteLocker lock(&m_local_content_mutex);
+
+    m_local_content_last_parsed = QDateTime::currentMSecsSinceEpoch();
+  }
 
   int sd = static_cast<int> (m_local_socket->socketDescriptor());
   socklen_t optlen = sizeof(m_local_so_sndbuf);
