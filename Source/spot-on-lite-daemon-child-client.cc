@@ -301,7 +301,7 @@ spot_on_lite_daemon_child_client::~spot_on_lite_daemon_child_client()
 }
 
 QHash<QByteArray, QString>spot_on_lite_daemon_child_client::
-  remote_identities(bool *ok)
+remote_identities(bool *ok)
 {
   if(ok)
     *ok = true;
@@ -1193,9 +1193,6 @@ void spot_on_lite_daemon_child_client::process_data(void)
 
   save_statistic("identities", QString::number(identities.size()));
 
-  QVector<QByteArray> vector;
-  int index = 0;
-
   {
     QWriteLocker lock(&m_local_content_mutex);
 
@@ -1206,21 +1203,28 @@ void spot_on_lite_daemon_child_client::process_data(void)
 	m_local_content_last_parsed = QDateTime::currentMSecsSinceEpoch();
 	return;
       }
-    else
-      while((index = m_local_content.indexOf(m_end_of_message_marker)) >= 0)
-	{
-	  m_local_content_last_parsed = QDateTime::currentMSecsSinceEpoch();
+  }
 
-	  if(m_process_data_future.isCanceled())
-	    goto done_label;
+  QVector<QByteArray> vector;
+  int index = 0;
 
-	  QByteArray bytes
-	    (m_local_content.mid(0, index + m_end_of_message_marker.length()));
+  {
+    QWriteLocker lock(&m_local_content_mutex);
 
-	  vector.append(bytes);
-	  m_local_content.remove(0, bytes.length());
-	  m_local_content.squeeze();
-	}
+    while((index = m_local_content.indexOf(m_end_of_message_marker)) >= 0)
+      {
+	m_local_content_last_parsed = QDateTime::currentMSecsSinceEpoch();
+
+	if(m_process_data_future.isCanceled())
+	  goto done_label;
+
+	QByteArray bytes
+	  (m_local_content.mid(0, index + m_end_of_message_marker.length()));
+
+	vector.append(bytes);
+	m_local_content.remove(0, bytes.length());
+	m_local_content.squeeze();
+      }
 
     save_statistic
       ("m_local_content", QString::number(m_local_content.capacity()));
