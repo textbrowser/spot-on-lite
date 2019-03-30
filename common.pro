@@ -1,10 +1,10 @@
 CONFIG += qt warn_on
 CONFIG -= app_bundle
-CXX = clang++-6.0
 LANGUAGE = C++
 QMAKE_CXXFLAGS_RELEASE -= -O2
 
 freebsd-* {
+QMAKE_CXX = clang++
 QMAKE_CXXFLAGS_RELEASE += -fPIE -fstack-protector-all -fwrapv \
                           -march=generic -O3 \
 			  -Wall -Wcast-align -Wcast-qual -Wextra \
@@ -40,7 +40,7 @@ QMAKE_CXXFLAGS_RELEASE += -fPIE -fstack-protector-all -fwrapv -pie -O3 \
                           -Wall -Wcast-qual -Wextra \
                           -Wno-unused-variable \
                           -Woverloaded-virtual -Wpointer-arith \
-                          -Wstack-protector -pedantic -std=c++11
+                          -Wstack-protector -pedantic
 } else:unix {
 QMAKE_CXXFLAGS_RELEASE += -fPIE -fwrapv -pie -O3 \
                           -Wall -Wcast-qual -Wextra \
