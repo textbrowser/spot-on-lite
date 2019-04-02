@@ -119,6 +119,7 @@ class spot_on_lite_daemon_child_client: public QObject
   int m_maximum_accumulated_bytes;
   int m_silence;
   int m_ssl_key_size;
+  qint64 m_pid;
   qint64 m_local_content_last_parsed;
   qint64 m_remote_content_last_parsed;
   quint16 m_peer_port;

@@ -112,6 +112,7 @@ spot_on_lite_daemon_child_client::spot_on_lite_daemon_child_client
   m_peer_address = QHostAddress(peer_address);
   m_peer_address.setScopeId(peer_scope_identity);
   m_peer_port = peer_port;
+  m_pid = QCoreApplication::applicationPid();
   m_protocol = protocol.toLower().trimmed();
   m_remote_content_last_parsed = QDateTime::currentMSecsSinceEpoch();
   m_remote_identities_file_name = remote_identities_file_name;
@@ -336,7 +337,7 @@ remote_identities(bool *ok)
 	query.prepare
 	  ("SELECT algorithm, identity FROM remote_identities "
 	   "WHERE pid = ? ORDER BY date_time_inserted DESC");
-	query.addBindValue(QCoreApplication::applicationPid());
+	query.addBindValue(m_pid);
 
 	if(query.exec())
 	  while(query.next())
@@ -1402,7 +1403,7 @@ void spot_on_lite_daemon_child_client::purge_remote_identities(void)
 	QSqlQuery query(db);
 
 	query.prepare("DELETE FROM remote_identities WHERE pid = ?");
-	query.addBindValue(QCoreApplication::applicationPid());
+	query.addBindValue(m_pid);
 	query.exec();
       }
 
@@ -1428,7 +1429,7 @@ void spot_on_lite_daemon_child_client::purge_statistics(void)
 	QSqlQuery query(db);
 
 	query.prepare("DELETE FROM statistics WHERE pid = ?");
-	query.addBindValue(QCoreApplication::applicationPid());
+	query.addBindValue(m_pid);
 	query.exec();
       }
 
@@ -1547,7 +1548,7 @@ void spot_on_lite_daemon_child_client::record_remote_identity
 	    query.addBindValue(algorithm);
 	    query.addBindValue(QDateTime::currentDateTime().toTime_t());
 	    query.addBindValue(identity.toBase64());
-	    query.addBindValue(QCoreApplication::applicationPid());
+	    query.addBindValue(m_pid);
 	    query.exec();
 	  }
 
@@ -1623,7 +1624,7 @@ void spot_on_lite_daemon_child_client::save_statistic
 		      "(key, pid, value) "
 		      "VALUES (?, ?, ?)");
 	query.addBindValue(key);
-	query.addBindValue(QCoreApplication::applicationPid());
+	query.addBindValue(m_pid);
 	query.addBindValue(value);
 	query.exec();
       }
