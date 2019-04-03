@@ -656,10 +656,10 @@ void spot_on_lite_daemon_child_client::create_statistics_database(void)
 	QSqlQuery query(db);
 
 	query.exec("CREATE TABLE IF NOT EXISTS statistics ("
-		   "key TEXT NOT NULL, "
 		   "pid BIGINT NOT NULL, "
+		   "statistic TEXT NOT NULL, "
 		   "value TEXT NOT NULL, "
-		   "PRIMARY KEY (key, pid))");
+		   "PRIMARY KEY (pid, statistic))");
       }
 
     db.close();
@@ -1621,10 +1621,10 @@ void spot_on_lite_daemon_child_client::save_statistic
 	query.exec("PRAGMA journal_mode = OFF");
 	query.exec("PRAGMA synchronous = OFF");
 	query.prepare("INSERT OR REPLACE INTO statistics "
-		      "(key, pid, value) "
+		      "(pid, statistic, value) "
 		      "VALUES (?, ?, ?)");
-	query.addBindValue(key);
 	query.addBindValue(m_pid);
+	query.addBindValue(key);
 	query.addBindValue(value);
 	query.exec();
       }
