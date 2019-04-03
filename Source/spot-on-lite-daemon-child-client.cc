@@ -659,7 +659,7 @@ void spot_on_lite_daemon_child_client::create_statistics_database(void)
 		   "key TEXT NOT NULL, "
 		   "pid BIGINT NOT NULL, "
 		   "value TEXT NOT NULL, "
-		   "PRIMARY KEY(key, pid))");
+		   "PRIMARY KEY (key, pid))");
       }
 
     db.close();
