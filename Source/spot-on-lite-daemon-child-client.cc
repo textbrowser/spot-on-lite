@@ -1226,12 +1226,11 @@ void spot_on_lite_daemon_child_client::process_data(void)
 
 	vector.append(bytes);
 	m_local_content.remove(0, bytes.length());
-	m_local_content.squeeze();
       }
 
     save_statistic
       ("m_local_content remaining",
-       QString::number(m_local_content.capacity()));
+       QString::number(m_local_content.length()));
   }
 
   if(m_process_data_future.isCanceled() || vector.isEmpty())
@@ -1332,7 +1331,7 @@ void spot_on_lite_daemon_child_client::process_read_data(const QByteArray &d)
 			    m_remote_content.length())));
   process_remote_content();
   save_statistic
-    ("m_remote_content", QString::number(m_remote_content.capacity()));
+    ("m_remote_content", QString::number(m_remote_content.length()));
 }
 
 void spot_on_lite_daemon_child_client::process_remote_content(void)
@@ -1350,7 +1349,6 @@ void spot_on_lite_daemon_child_client::process_remote_content(void)
     {
       data = m_remote_content.mid(0, index + m_end_of_message_marker.length());
       m_remote_content.remove(0, data.length());
-      m_remote_content.squeeze();
       m_remote_content_last_parsed = QDateTime::currentMSecsSinceEpoch();
 
       if(data.contains("type=0014&content="))
@@ -1367,7 +1365,7 @@ void spot_on_lite_daemon_child_client::process_remote_content(void)
 
   save_statistic
     ("m_remote_content remaining",
-     QString::number(m_remote_content.capacity()));
+     QString::number(m_remote_content.length()));
 }
 
 void spot_on_lite_daemon_child_client::purge_containers(void)
@@ -1890,7 +1888,7 @@ void spot_on_lite_daemon_child_client::slot_local_socket_ready_read(void)
 	    (data.mid(0, qAbs(m_maximum_accumulated_bytes -
 			      m_local_content.length())));
 	  save_statistic
-	    ("m_local_content", QString::number(m_local_content.capacity()));
+	    ("m_local_content", QString::number(m_local_content.length()));
 	}
     }
 
