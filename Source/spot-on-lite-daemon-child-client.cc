@@ -293,6 +293,8 @@ spot_on_lite_daemon_child_client::spot_on_lite_daemon_child_client
       m_peer_port = static_cast<quint16> (list.value(1).toInt());
       m_remote_socket->connectToHost(m_peer_address, m_peer_port);
     }
+
+  save_statistic("client?", QVariant(m_client_role).toString());
 }
 
 spot_on_lite_daemon_child_client::~spot_on_lite_daemon_child_client()
@@ -1228,7 +1230,8 @@ void spot_on_lite_daemon_child_client::process_data(void)
       }
 
     save_statistic
-      ("m_local_content", QString::number(m_local_content.capacity()));
+      ("m_local_content remaining",
+       QString::number(m_local_content.capacity()));
   }
 
   if(m_process_data_future.isCanceled() || vector.isEmpty())
@@ -1363,7 +1366,8 @@ void spot_on_lite_daemon_child_client::process_remote_content(void)
     }
 
   save_statistic
-    ("m_remote_content", QString::number(m_remote_content.capacity()));
+    ("m_remote_content remaining",
+     QString::number(m_remote_content.capacity()));
 }
 
 void spot_on_lite_daemon_child_client::purge_containers(void)
