@@ -69,6 +69,9 @@ static int hash_algorithm_key_length(const QByteArray &algorithm)
     return 0;
 }
 
+#ifdef __arm__
+static int ARM_MAXIMUM_REMOTE_IDENTITIES = 128;
+#endif
 static qint64 END_OF_MESSAGE_MARKER_WINDOW = 10000;
 
 spot_on_lite_daemon_child_client::spot_on_lite_daemon_child_client
@@ -1516,7 +1519,7 @@ void spot_on_lite_daemon_child_client::record_remote_identity
 
       if(!m_remote_identities.contains(identity))
 	{
-	  if(m_remote_identities.size() < 2048)
+	  if(ARM_MAXIMUM_REMOTE_IDENTITIES > m_remote_identities.size())
 	    m_remote_identities[identity] =
 	      QDateTime::currentDateTime().toTime_t();
 	}
