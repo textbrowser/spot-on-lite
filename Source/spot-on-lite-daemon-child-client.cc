@@ -1195,7 +1195,9 @@ void spot_on_lite_daemon_child_client::process_data(void)
     }
   while(!m_process_data_future.isCanceled());
 
+#ifndef __arm__
   save_statistic("identities", QString::number(identities.size()));
+#endif
 
   {
     QWriteLocker lock(&m_local_content_mutex);
@@ -1229,15 +1231,19 @@ void spot_on_lite_daemon_child_client::process_data(void)
 	m_local_content.remove(0, bytes.length());
       }
 
+#ifndef __arm__
     save_statistic
       ("m_local_content remaining",
        QString::number(m_local_content.length()));
+#endif
   }
 
   if(m_process_data_future.isCanceled() || vector.isEmpty())
     goto done_label;
 
+#ifndef __arm__
   save_statistic("vector size", QString::number(vector.size()));
+#endif
 
   for(int i = 0; i < vector.size(); i++)
     {
@@ -1330,8 +1336,10 @@ void spot_on_lite_daemon_child_client::process_read_data(const QByteArray &d)
     append(data.mid(0, qAbs(m_maximum_accumulated_bytes -
 			    m_remote_content.length())));
   process_remote_content();
+#ifndef __arm__
   save_statistic
     ("m_remote_content", QString::number(m_remote_content.length()));
+#endif
 }
 
 void spot_on_lite_daemon_child_client::process_remote_content(void)
@@ -1362,9 +1370,11 @@ void spot_on_lite_daemon_child_client::process_remote_content(void)
 	m_local_socket->write(data);
     }
 
+#ifndef __arm__
   save_statistic
     ("m_remote_content remaining",
      QString::number(m_remote_content.length()));
+#endif
 }
 
 void spot_on_lite_daemon_child_client::purge_containers(void)
@@ -1875,8 +1885,10 @@ void spot_on_lite_daemon_child_client::slot_local_socket_ready_read(void)
       m_local_content.append
 	(data.mid(0, qAbs(m_maximum_accumulated_bytes -
 			  m_local_content.length())));
+#ifndef __arm__
       save_statistic
 	("m_local_content", QString::number(m_local_content.length()));
+#endif
     }
 
   {
