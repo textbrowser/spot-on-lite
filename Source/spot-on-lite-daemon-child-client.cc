@@ -422,9 +422,9 @@ default_ssl_ciphers(void) const
     return list;
 
   QStringList protocols;
-  SSL *ssl = 0;
-  SSL_CTX *ctx = 0;
-  const char *next = 0;
+  SSL *ssl = nullptr;
+  SSL_CTX *ctx = nullptr;
+  const char *next = nullptr;
   int index = 0;
 
 #if OPENSSL_VERSION_NUMBER < 0x10100000L
@@ -445,7 +445,7 @@ default_ssl_ciphers(void) const
       QString protocol(protocols.takeFirst());
 
       index = 0;
-      next = 0;
+      next = nullptr;
 
 #if OPENSSL_VERSION_NUMBER >= 0x10100000L
       ctx = SSL_CTX_new(TLS_client_method());
@@ -561,8 +561,8 @@ default_ssl_ciphers(void) const
     done_label:
       SSL_CTX_free(ctx);
       SSL_free(ssl);
-      ctx = 0;
-      ssl = 0;
+      ctx = nullptr;
+      ssl = nullptr;
     }
 
   if(list.isEmpty())
@@ -716,16 +716,16 @@ void spot_on_lite_daemon_child_client::generate_certificate
  const long int days,
  QString &error)
 {
-  BIO *memory = 0;
+  BIO *memory = nullptr;
   BUF_MEM *bptr;
-  EVP_PKEY *pk = 0;
-  X509 *x509 = 0;
-  X509_NAME *name = 0;
-  X509_NAME *subject = 0;
-  X509_NAME_ENTRY *common_name_entry = 0;
-  char *buffer = 0;
+  EVP_PKEY *pk = nullptr;
+  X509 *x509 = nullptr;
+  X509_NAME *name = nullptr;
+  X509_NAME *subject = nullptr;
+  X509_NAME_ENTRY *common_name_entry = nullptr;
+  char *buffer = nullptr;
   int length = 0;
-  unsigned char *common_name = 0;
+  unsigned char *common_name = nullptr;
 
   if(!error.isEmpty())
     goto done_label;
@@ -764,13 +764,13 @@ void spot_on_lite_daemon_child_client::generate_certificate
       goto done_label;
     }
 
-  if(X509_gmtime_adj(X509_get_notBefore(x509), 0) == 0)
+  if(X509_gmtime_adj(X509_get_notBefore(x509), 0) == nullptr)
     {
       error = "X509_gmtime_adj() returned zero";
       goto done_label;
     }
 
-  if(X509_gmtime_adj(X509_get_notAfter(x509), days) == 0)
+  if(X509_gmtime_adj(X509_get_notAfter(x509), days) == nullptr)
     {
       error = "X509_gmtime_adj() returned zero";
       goto done_label;
@@ -778,7 +778,7 @@ void spot_on_lite_daemon_child_client::generate_certificate
 
   if(std::numeric_limits<int>::max() -
      m_remote_socket->localAddress().toString().toLatin1().length() < 1)
-    common_name = 0;
+    common_name = nullptr;
   else
     common_name = static_cast<unsigned char *>
       (calloc(static_cast<size_t> (m_remote_socket->localAddress().
@@ -796,7 +796,7 @@ void spot_on_lite_daemon_child_client::generate_certificate
 	 m_remote_socket->localAddress().toString().toLatin1().constData(),
 	 static_cast<size_t> (length));
   common_name_entry = X509_NAME_ENTRY_create_by_NID
-    (0,
+    (nullptr,
      NID_commonName, V_ASN1_PRINTABLESTRING,
      common_name, length);
 
@@ -826,7 +826,7 @@ void spot_on_lite_daemon_child_client::generate_certificate
       goto done_label;
     }
 
-  if((name = X509_get_subject_name(x509)) == 0)
+  if((name = X509_get_subject_name(x509)) == nullptr)
     {
       error = "X509_get_subject_name() returned zero";
       goto done_label;
@@ -904,17 +904,17 @@ void spot_on_lite_daemon_child_client::generate_certificate
 
 void spot_on_lite_daemon_child_client::generate_ssl_tls(void)
 {
-  BIGNUM *f4 = 0;
-  BIO *private_memory = 0;
-  BIO *public_memory = 0;
+  BIGNUM *f4 = nullptr;
+  BIO *private_memory = nullptr;
+  BIO *public_memory = nullptr;
   BUF_MEM *bptr;
   QByteArray certificate;
   QByteArray private_key;
   QByteArray public_key;
   QString error("");
-  RSA *rsa = 0;
-  char *private_buffer = 0;
-  char *public_buffer = 0;
+  RSA *rsa = nullptr;
+  char *private_buffer = nullptr;
+  char *public_buffer = nullptr;
   long int days = 5L * 24L * 60L * 60L * 365L; // Five years.
 
   if(m_ssl_key_size <= 0)
@@ -946,7 +946,7 @@ void spot_on_lite_daemon_child_client::generate_ssl_tls(void)
       goto done_label;
     }
 
-  if(RSA_generate_key_ex(rsa, m_ssl_key_size, f4, 0) == -1)
+  if(RSA_generate_key_ex(rsa, m_ssl_key_size, f4, nullptr) == -1)
     {
       error = "RSA_generate_key_ex() returned negative one";
       goto done_label;
@@ -964,7 +964,13 @@ void spot_on_lite_daemon_child_client::generate_ssl_tls(void)
       goto done_label;
     }
 
-  if(PEM_write_bio_RSAPrivateKey(private_memory, rsa, 0, 0, 0, 0, 0) == 0)
+  if(PEM_write_bio_RSAPrivateKey(private_memory,
+				 rsa,
+				 nullptr,
+				 nullptr,
+				 0,
+				 nullptr,
+				 nullptr) == 0)
     {
       error = "PEM_write_bio_RSAPrivateKey() returned zero";
       goto done_label;
@@ -1188,7 +1194,7 @@ void spot_on_lite_daemon_child_client::process_data(void)
 
 	  ts.tv_nsec = 250000000; // 250 Milliseconds
 	  ts.tv_sec = 0;
-	  nanosleep(&ts, 0);
+	  nanosleep(&ts, nullptr);
 	}
       else
 	break;

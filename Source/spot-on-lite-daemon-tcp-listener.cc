@@ -115,7 +115,7 @@ void spot_on_lite_daemon_tcp_listener::incomingConnection
 	  setsockopt(sd, SOL_SOCKET, SO_LINGER, &l, length);
 	}
 
-      const char *envp[] = {ld_library_path.data(), NULL};
+      const char *envp[] = {ld_library_path.data(), nullptr};
 
       if(execle(command.data(),
 		command.data(),

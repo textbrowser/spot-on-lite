@@ -59,7 +59,10 @@ QT += network sql
 TEMPLATE = app
 
 greaterThan(QT_MAJOR_VERSION, 4) {
+QMAKE_CXXFLAGS_RELEASE += -Wzero-as-null-pointer-constant
 QT += concurrent
+} else {
+DEFINES += nullptr=NULL
 }
 
 libshalisp.target = spot-on-lite-daemon-sha.a

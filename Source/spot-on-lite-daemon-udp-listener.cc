@@ -175,7 +175,8 @@ void spot_on_lite_daemon_udp_listener::slot_ready_read(void)
 	  QPointer<spot_on_lite_daemon_child_client> client
 	    (m_clients.value(QString::number(peer_port) +
 			     peer_address.scopeId() +
-			     peer_address.toString(), 0));
+			     peer_address.toString(),
+			     nullptr));
 
 	  if(client)
 	    client->data_received(data);

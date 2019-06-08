@@ -78,7 +78,7 @@ static int prepare_signal_handlers(void)
   sigemptyset(&act.sa_mask);
   act.sa_flags = 0;
 
-  if(sigaction(SIGHUP, &act, 0))
+  if(sigaction(SIGHUP, &act, nullptr))
     std::cerr << "sigaction() failure for SIGHUP. Ignoring." << std::endl;
 
   /*
@@ -90,7 +90,7 @@ static int prepare_signal_handlers(void)
   sigemptyset(&act.sa_mask);
   act.sa_flags = 0;
 
-  if(sigaction(SIGPIPE, &act, 0))
+  if(sigaction(SIGPIPE, &act, nullptr))
     std::cerr << "sigaction() failure for SIGPIPE. Ignoring." << std::endl;
 
   /*
@@ -102,7 +102,7 @@ static int prepare_signal_handlers(void)
   sigemptyset(&act.sa_mask);
   act.sa_flags = 0;
 
-  if(sigaction(SIGUSR2, &act, 0))
+  if(sigaction(SIGUSR2, &act, nullptr))
     std::cerr << "sigaction() failure for SIGUSR2. Ignoring." << std::endl;
 
   return 0;

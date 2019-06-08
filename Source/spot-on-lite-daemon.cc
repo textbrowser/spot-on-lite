@@ -101,7 +101,7 @@ spot_on_lite_daemon::spot_on_lite_daemon(void):QObject()
   m_local_so_sndbuf = 0;
   m_local_socket_server_directory_name = "/tmp";
   m_maximum_accumulated_bytes = 0;
-  m_signal_usr1_socket_notifier = 0;
+  m_signal_usr1_socket_notifier = nullptr;
 }
 
 spot_on_lite_daemon::~spot_on_lite_daemon()
@@ -259,7 +259,7 @@ void spot_on_lite_daemon::prepare_peers(void)
 
       if((pid = fork()) == 0)
 	{
-	  const char *envp[] = {ld_library_path.data(), NULL};
+	  const char *envp[] = {ld_library_path.data(), nullptr};
 
 	  if(execle(command.data(),
 		    command.data(),
@@ -977,14 +977,14 @@ void spot_on_lite_daemon::start(void)
       m_local_server->close();
       m_local_server->removeServer(m_local_server->fullServerName());
       m_local_server->deleteLater();
-      m_local_server = 0;
+      m_local_server = nullptr;
     }
 
   m_local_sockets.clear();
   m_peer_pids.clear();
   m_peer_process_timer.start(2500);
   m_peers_properties.clear();
-  process_configuration_file(0);
+  process_configuration_file(nullptr);
   prepare_listeners();
   prepare_local_socket_server();
 }
