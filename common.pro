@@ -41,7 +41,7 @@ QMAKE_CXXFLAGS_RELEASE += -fPIE -fstack-protector-all -fwrapv \
                           -Wall -Wcast-qual -Wextra \
                           -Wno-unused-variable \
                           -Woverloaded-virtual -Wpointer-arith \
-                          -Wstack-protector -std=c++11
+                          -Wstack-protector
 } else:unix {
 QMAKE_CXXFLAGS_RELEASE += -fPIE -fwrapv -pie -O3 \
                           -Wall -Wcast-qual -Wextra \
