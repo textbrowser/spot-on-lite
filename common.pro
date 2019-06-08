@@ -36,7 +36,8 @@ QMAKE_CXXFLAGS_RELEASE += -fPIE -fwrapv -pie -O3 \
                           -Wstack-protector -pedantic -std=c++11
 QMAKE_MOC = /usr/pkg/qt4/bin/moc
 } else:openbsd-* {
-QMAKE_CXXFLAGS_RELEASE += -fPIE -fstack-protector-all -fwrapv -pie -O3 \
+QMAKE_CXXFLAGS_RELEASE += -fPIE -fstack-protector-all -fwrapv \
+                          -mcpu=ultrasparc -mtune=ultrasparc -pie -O3 \
                           -Wall -Wcast-qual -Wextra \
                           -Wno-unused-variable \
                           -Woverloaded-virtual -Wpointer-arith \
