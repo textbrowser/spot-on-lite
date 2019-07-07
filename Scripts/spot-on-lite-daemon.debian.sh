@@ -16,7 +16,7 @@ case "$1" in
       su -c "cd /usr/local/spot-on-lite && exec ./Spot-On-Lite-Daemon --configuration-file /usr/local/spot-on-lite/spot-on-lite-daemon.conf" spot-on-lite-daemon
       ;;
   stop)
-      killall -u spot-on-lite-daemon Spot-On-Lite-Daemon
+      pkill -U spot-on-lite-daemon -f Spot-On-Lite-Daemon
       ;;
   *)
       echo "Usage: /etc/init.d/spot-on-lite-daemon.debian.sh {start|stop}"
