@@ -63,7 +63,7 @@ quint64 spot_on_lite_daemon_child_client::s_db_id = 0;
 
 static int hash_algorithm_key_length(const QByteArray &algorithm)
 {
-  if(algorithm == "sha-512")
+  if(algorithm.toLower().trimmed() == "sha-512")
     return 64;
   else
     return 0;
@@ -118,11 +118,12 @@ spot_on_lite_daemon_child_client::spot_on_lite_daemon_child_client
   m_peer_address.setScopeId(peer_scope_identity);
   m_peer_port = peer_port;
   m_pid = QCoreApplication::applicationPid();
-  m_protocol = protocol.toLower().trimmed();
+  m_protocol = protocol.toLower().trimmed() == "tcp" ?
+    QAbstractSocket::TcpSocket : QAbstractSocket::UdpSocket;
   m_remote_content_last_parsed = QDateTime::currentMSecsSinceEpoch();
   m_remote_identities_file_name = remote_identities_file_name;
 
-  if(m_protocol == "tcp")
+  if(m_protocol == QAbstractSocket::TcpSocket)
     m_remote_socket = new QSslSocket(this);
   else
     m_remote_socket = new QUdpSocket(this);
@@ -157,7 +158,7 @@ spot_on_lite_daemon_child_client::spot_on_lite_daemon_child_client
     {
       if(!m_remote_socket->
 	 setSocketDescriptor(socket_descriptor,
-			     m_protocol == "tcp" ?
+			     m_protocol == QAbstractSocket::TcpSocket ?
 			     QAbstractSocket::ConnectedState :
 			     QAbstractSocket::BoundState))
 	{
@@ -240,7 +241,7 @@ spot_on_lite_daemon_child_client::spot_on_lite_daemon_child_client
 #else
       OPENSSL_init_ssl(0, NULL);
 #endif
-      if(m_protocol == "tcp")
+      if(m_protocol == QAbstractSocket::TcpSocket)
 	connect(qobject_cast<QSslSocket *> (m_remote_socket),
 		SIGNAL(sslErrors(const QList<QSslError> &)),
 		this,
@@ -255,7 +256,7 @@ spot_on_lite_daemon_child_client::spot_on_lite_daemon_child_client
 	  m_peer_address = QHostAddress(list.value(0));
 	  m_peer_port = static_cast<quint16> (list.value(1).toInt());
 
-	  if(m_protocol == "tcp")
+	  if(m_protocol == QAbstractSocket::TcpSocket)
 	    qobject_cast<QSslSocket *> (m_remote_socket)->
 	      connectToHostEncrypted(m_peer_address.toString(), m_peer_port);
 	  else
@@ -284,7 +285,7 @@ spot_on_lite_daemon_child_client::spot_on_lite_daemon_child_client
 	  else
 	    prepare_ssl_tls_configuration(list);
 
-	  if(m_protocol == "tcp")
+	  if(m_protocol == QAbstractSocket::TcpSocket)
 	    qobject_cast<QSslSocket *> (m_remote_socket)->
 	      startServerEncryption();
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 12, 0))
@@ -694,7 +695,7 @@ void spot_on_lite_daemon_child_client::create_statistics_database(void)
 void spot_on_lite_daemon_child_client::data_received(const QByteArray &data)
 {
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 12, 0))
-  if(m_dtls && m_protocol == "udp")
+  if(m_dtls && m_protocol == QAbstractSocket::UdpSocket)
     {
       QUdpSocket *socket = qobject_cast<QUdpSocket *> (m_remote_socket);
 
@@ -1072,7 +1073,7 @@ void spot_on_lite_daemon_child_client::prepare_dtls(void)
   if(m_dtls)
     m_dtls->deleteLater();
 
-  if(m_protocol != "udp" || m_ssl_key_size == 0)
+  if(m_protocol != QAbstractSocket::UdpSocket || m_ssl_key_size == 0)
     return;
 
   if(m_client_role)
@@ -1136,7 +1137,7 @@ void spot_on_lite_daemon_child_client::prepare_ssl_tls_configuration
 	  set_ssl_ciphers
 	    (m_ssl_configuration.supportedCiphers(), m_ssl_configuration);
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 12, 0))
-	  if(m_protocol == "udp")
+	  if(m_protocol == QAbstractSocket::UdpSocket)
 	    {
 	      if(m_client_role)
 		{
@@ -1152,12 +1153,12 @@ void spot_on_lite_daemon_child_client::prepare_ssl_tls_configuration
 	    }
 #endif
 #else
-	  if(m_protocol == "tcp")
+	  if(m_protocol == QAbstractSocket::TcpSocket)
 	    set_ssl_ciphers
 	      (qobject_cast<QSslSocket *> (m_remote_socket)->supportedCiphers(),
 	       m_ssl_configuration);
 #endif
-	  if(m_protocol == "tcp")
+	  if(m_protocol == QAbstractSocket::TcpSocket)
 	    qobject_cast<QSslSocket *>
 	      (m_remote_socket)->setSslConfiguration(m_ssl_configuration);
 	}
@@ -1681,7 +1682,7 @@ void spot_on_lite_daemon_child_client::slot_attempt_remote_connection(void)
 
   if(!m_ssl_control_string.isEmpty() && m_ssl_key_size > 0)
     {
-      if(m_protocol == "tcp")
+      if(m_protocol == QAbstractSocket::TcpSocket)
 	qobject_cast<QSslSocket *> (m_remote_socket)->connectToHostEncrypted
 	  (m_peer_address.toString(), m_peer_port);
       else
@@ -1771,7 +1772,7 @@ void spot_on_lite_daemon_child_client::slot_disconnected(void)
       purge_statistics();
       stop_threads_and_timers();
 
-      if(m_protocol != "udp")
+      if(m_protocol != QAbstractSocket::UdpSocket)
 	QCoreApplication::exit(0);
       else
 	deleteLater();
@@ -1802,7 +1803,7 @@ void spot_on_lite_daemon_child_client::slot_general_timer_timeout(void)
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 12, 0))
 void spot_on_lite_daemon_child_client::slot_handshake_timeout(void)
 {
-  if(m_dtls && m_protocol == "udp")
+  if(m_dtls && m_protocol == QAbstractSocket::UdpSocket)
     m_dtls->handleTimeout(qobject_cast<QUdpSocket *> (m_remote_socket));
 }
 #else
@@ -1843,7 +1844,7 @@ void spot_on_lite_daemon_child_client::slot_keep_alive_timer_timeout(void)
       purge_statistics();
       stop_threads_and_timers();
 
-      if(m_protocol != "udp")
+      if(m_protocol != QAbstractSocket::UdpSocket)
 	QCoreApplication::exit(0);
       else
 	deleteLater();
@@ -1914,7 +1915,7 @@ void spot_on_lite_daemon_child_client::slot_ready_read(void)
   QByteArray data(m_remote_socket->readAll());
 
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 12, 0))
-  if(!data.isEmpty() && m_dtls && m_protocol == "udp")
+  if(!data.isEmpty() && m_dtls && m_protocol == QAbstractSocket::UdpSocket)
     {
       QUdpSocket *socket = qobject_cast<QUdpSocket *> (m_remote_socket);
 
@@ -1947,7 +1948,7 @@ slot_ssl_errors(const QList<QSslError> &errors)
 {
   Q_UNUSED(errors);
 
-  if(m_protocol == "tcp")
+  if(m_protocol == QAbstractSocket::TcpSocket)
     qobject_cast<QSslSocket *> (m_remote_socket)->ignoreSslErrors();
 }
 
@@ -1977,38 +1978,51 @@ void spot_on_lite_daemon_child_client::stop_threads_and_timers(void)
 
 void spot_on_lite_daemon_child_client::write(const QByteArray &data)
 {
-  if(m_protocol == "tcp")
+  switch(m_protocol)
     {
-      int i = 0;
-      static const int maximum_packet_size = 32768;
+    case QAbstractSocket::TcpSocket:
+      {
+	int i = 0;
+	static const int maximum_packet_size = 32768;
 
-      while(data.size() > i)
-	{
-	  m_remote_socket->write(data.mid(i, maximum_packet_size));
-	  i += maximum_packet_size;
-	}
-    }
-  else
-    {
-      int i = 0;
-      static const int maximum_datagram_size = 508;
+	while(data.size() > i)
+	  {
+	    m_remote_socket->write(data.mid(i, maximum_packet_size));
+	    i += maximum_packet_size;
+	  }
 
-      while(data.size() > i)
-	{
+	break;
+      }
+    case QAbstractSocket::UdpSocket:
+      {
+	int i = 0;
+	static const int maximum_datagram_size = 508;
+
+	while(data.size() > i)
+	  {
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 12, 0))
-	  if(m_dtls)
-	    m_dtls->writeDatagramEncrypted
-	      (qobject_cast<QUdpSocket *> (m_remote_socket),
-	       data.mid(i, maximum_datagram_size));
-	  else
+	    if(m_dtls)
+	      m_dtls->writeDatagramEncrypted
+		(qobject_cast<QUdpSocket *> (m_remote_socket),
+		 data.mid(i, maximum_datagram_size));
+	    else
 #endif
-	  if(m_client_role)
-	    m_remote_socket->write(data.mid(i, maximum_datagram_size));
-	  else
-	    qobject_cast<QUdpSocket *> (m_remote_socket)->writeDatagram
-	      (data.mid(i, maximum_datagram_size), m_peer_address, m_peer_port);
+	    if(m_client_role)
+	      m_remote_socket->write(data.mid(i, maximum_datagram_size));
+	    else
+	      qobject_cast<QUdpSocket *> (m_remote_socket)->writeDatagram
+		(data.mid(i, maximum_datagram_size),
+		 m_peer_address,
+		 m_peer_port);
 
-	  i += maximum_datagram_size;
-	}
+	    i += maximum_datagram_size;
+	  }
+
+	break;
+      }
+    default:
+      {
+	break;
+      }
     }
 }

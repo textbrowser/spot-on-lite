@@ -79,6 +79,7 @@ class spot_on_lite_daemon_child_client: public QObject
   void data_received(const QByteArray &data);
 
  private:
+  QAbstractSocket::SocketType m_protocol;
   QByteArray m_local_content;
   QByteArray m_remote_content;
   QFuture<void> m_expired_identities_future;
@@ -102,7 +103,6 @@ class spot_on_lite_daemon_child_client: public QObject
   QString m_end_of_message_marker;
   QString m_local_server_file_name;
   QString m_log_file_name;
-  QString m_protocol;
   QString m_remote_identities_file_name;
   QString m_server_identity;
   QString m_ssl_control_string;
