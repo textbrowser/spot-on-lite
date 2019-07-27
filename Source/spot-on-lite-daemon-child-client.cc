@@ -1790,6 +1790,11 @@ void spot_on_lite_daemon_child_client::slot_general_timer_timeout(void)
 	m_local_content.clear();
 	m_local_content_last_parsed = QDateTime::currentMSecsSinceEpoch();
       }
+
+#ifndef __arm__
+    save_statistic
+      ("m_local_content", QString::number(m_local_content.length()));
+#endif
   }
 
   if(QDateTime::currentMSecsSinceEpoch() - m_remote_content_last_parsed >
@@ -1798,6 +1803,11 @@ void spot_on_lite_daemon_child_client::slot_general_timer_timeout(void)
       m_remote_content.clear();
       m_remote_content_last_parsed = QDateTime::currentMSecsSinceEpoch();
     }
+
+#ifndef __arm__
+  save_statistic
+    ("m_remote_content", QString::number(m_remote_content.length()));
+#endif
 }
 
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 12, 0))
