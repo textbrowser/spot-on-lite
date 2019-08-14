@@ -585,7 +585,8 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
 	  }
 
 	for(int i = 0; i < list.size(); i++)
-	  list.replace(i, list.at(i).trimmed());
+	  if(i != 7) // EOM-Marker
+	    list.replace(i, list.at(i).trimmed());
 
 	QHostAddress hostAddress(list.at(0));
 	bool entry_ok = true;
