@@ -932,13 +932,15 @@ void spot_on_lite_daemon::slot_ready_read(void)
 
   QByteArray data(socket->readAll());
   QHashIterator<QLocalSocket *, char> it(m_local_sockets);
+  qint64 maximum = static_cast<qint64> (0.50 * m_maximum_accumulated_bytes);
 
   while(it.hasNext())
     {
       it.next();
 
       if(it.key() != socket)
-	it.key()->write(data);
+	if(it.key()->bytesToWrite() <= maximum)
+	  it.key()->write(data);
     }
 }
 

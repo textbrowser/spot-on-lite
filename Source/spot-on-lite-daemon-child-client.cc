@@ -107,7 +107,6 @@ spot_on_lite_daemon_child_client::spot_on_lite_daemon_child_client
   m_local_server_file_name = local_server_file_name;
   m_local_so_sndbuf = qBound(4096, local_so_sndbuf, 65536);
   m_local_socket = new QLocalSocket(this);
-  m_local_socket->setReadBufferSize(m_maximum_accumulated_bytes);
   m_log_file_name = log_file_name;
   m_maximum_accumulated_bytes = maximum_accumulated_bytes;
 
@@ -181,6 +180,7 @@ spot_on_lite_daemon_child_client::spot_on_lite_daemon_child_client
 
   m_expired_identities_timer.start(15000);
   m_keep_alive_timer.start(m_silence);
+  m_local_socket->setReadBufferSize(m_maximum_accumulated_bytes);
   connect(&m_attempt_local_connection_timer,
 	  SIGNAL(timeout(void)),
 	  this,
@@ -1925,28 +1925,31 @@ void spot_on_lite_daemon_child_client::slot_local_socket_ready_read(void)
 
 void spot_on_lite_daemon_child_client::slot_ready_read(void)
 {
-  QByteArray data(m_remote_socket->readAll());
+  while(m_remote_socket->bytesAvailable() > 0)
+    {
+      QByteArray data(m_remote_socket->readAll());
 
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 12, 0))
-  if(!data.isEmpty() && m_dtls && m_protocol == QAbstractSocket::UdpSocket)
-    {
-      QUdpSocket *socket = qobject_cast<QUdpSocket *> (m_remote_socket);
-
-      if(m_dtls->isConnectionEncrypted())
-	data = m_dtls->decryptDatagram(socket, data);
-      else
+      if(!data.isEmpty() && m_dtls && m_protocol == QAbstractSocket::UdpSocket)
 	{
-	  if(!m_dtls->doHandshake(socket, data))
-	    log(QString("spot_on_lite_daemon_child_client::"
-			"slot_ready_read(): doHandshake() failure (%1).").
-		arg(m_dtls->dtlsErrorString()));
+	  QUdpSocket *socket = qobject_cast<QUdpSocket *> (m_remote_socket);
 
-	  return;
+	  if(m_dtls->isConnectionEncrypted())
+	    data = m_dtls->decryptDatagram(socket, data);
+	  else
+	    {
+	      if(!m_dtls->doHandshake(socket, data))
+		log(QString("spot_on_lite_daemon_child_client::"
+			    "slot_ready_read(): doHandshake() failure (%1).").
+		    arg(m_dtls->dtlsErrorString()));
+
+	      continue;
+	    }
 	}
-    }
 #endif
 
-  process_read_data(data);
+      process_read_data(data);
+    }
 }
 
 void spot_on_lite_daemon_child_client::slot_remove_expired_identities(void)
