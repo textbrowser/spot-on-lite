@@ -1890,30 +1890,33 @@ void spot_on_lite_daemon_child_client::slot_local_socket_disconnected(void)
 
 void spot_on_lite_daemon_child_client::slot_local_socket_ready_read(void)
 {
-  QByteArray data(m_local_socket->readAll());
-
-  if(!data.isEmpty())
+  while(m_local_socket->bytesAvailable() > 0)
     {
-      QWriteLocker lock(&m_local_content_mutex);
+      QByteArray data(m_local_socket->readAll());
 
-      if(m_local_content.length() >= m_maximum_accumulated_bytes)
-	m_local_content.clear();
+      if(!data.isEmpty())
+	{
+	  QWriteLocker lock(&m_local_content_mutex);
 
-      m_local_content.append
-	(data.mid(0, qAbs(m_maximum_accumulated_bytes -
-			  m_local_content.length())));
+	  if(m_local_content.length() >= m_maximum_accumulated_bytes)
+	    m_local_content.clear();
+
+	  m_local_content.append
+	    (data.mid(0, qAbs(m_maximum_accumulated_bytes -
+			      m_local_content.length())));
 #ifndef __arm__
-      save_statistic
-	("m_local_content", QString::number(m_local_content.length()));
+	  save_statistic
+	    ("m_local_content", QString::number(m_local_content.length()));
 #endif
+	}
     }
 
-  {
-    QReadLocker lock(&m_local_content_mutex);
+  QReadLocker lock(&m_local_content_mutex);
 
-    if(m_local_content.isEmpty())
-      return;
-  }
+  if(m_local_content.isEmpty())
+    return;
+  else
+    lock.unlock();
 
   if(m_process_data_future.isFinished())
     m_process_data_future = QtConcurrent::run
