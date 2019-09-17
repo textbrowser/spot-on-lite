@@ -1329,7 +1329,13 @@ void spot_on_lite_daemon_child_client::process_read_data(const QByteArray &d)
       m_keep_alive_timer.start();
 
       if(record_congestion(data))
-	m_local_socket->write(data);
+	{
+	  int maximum = m_local_so_sndbuf -
+	    static_cast<int> (m_local_socket->bytesToWrite());
+
+	  if(maximum > 0)
+	    m_local_socket->write(data.mid(0, maximum));
+	}
 
       return;
     }
@@ -1374,7 +1380,13 @@ void spot_on_lite_daemon_child_client::process_remote_content(void)
 	}
 
       if(record_congestion(data))
-	m_local_socket->write(data);
+	{
+	  int maximum = m_local_so_sndbuf -
+	    static_cast<int> (m_local_socket->bytesToWrite());
+
+	  if(maximum > 0)
+	    m_local_socket->write(data);
+	}
     }
 
 #ifndef __arm__
@@ -2003,8 +2015,22 @@ void spot_on_lite_daemon_child_client::write(const QByteArray &data)
 
 	while(data.size() > i)
 	  {
-	    m_remote_socket->write(data.mid(i, maximum_packet_size));
-	    i += maximum_packet_size;
+	    int maximum = m_maximum_accumulated_bytes -
+	      static_cast<int> (m_remote_socket->bytesToWrite());
+
+	    if(maximum > 0)
+	      {
+		int rc = static_cast<int>
+		  (m_remote_socket->
+		   write(data.mid(i, qMin(maximum, maximum_packet_size))));
+
+		if(rc > 0)
+		  i += rc;
+		else
+		  break;
+	      }
+	    else
+	      break;
 	  }
 
 	break;
