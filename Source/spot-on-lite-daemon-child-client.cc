@@ -1385,7 +1385,7 @@ void spot_on_lite_daemon_child_client::process_remote_content(void)
 	    static_cast<int> (m_local_socket->bytesToWrite());
 
 	  if(maximum > 0)
-	    m_local_socket->write(data);
+	    m_local_socket->write(data.mid(0, maximum));
 	}
     }
 
