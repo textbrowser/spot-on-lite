@@ -439,7 +439,7 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
 	bool o = true;
 	int so_sndbuf = settings.value(key).toInt(&o);
 
-	if(so_sndbuf < 4096 || so_sndbuf > 65536 || !o)
+	if(so_sndbuf < 4096 || !o)
 	  {
 	    if(ok)
 	      *ok = false;
@@ -449,8 +449,8 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
 		      << "local_so_sndbuf value \""
 		      << settings.value(key).toString().toStdString()
 		      << "\" is invalid. "
-		      << "Expecting a value in the range [4096, 65536]. "
-		      << "Ignoring entry."
+		      << "Expecting a value that is greater than or "
+		      << "equal to 4096. Ignoring entry."
 		      << std::endl;
 	  }
 	else
@@ -627,7 +627,7 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
 
 	int backlog = list.at(2).toInt(&o);
 
-	if(backlog < 1 || backlog > std::numeric_limits<int>::max() || !o)
+	if(backlog < 1 || !o)
 	  {
 	    entry_ok = false;
 
@@ -705,7 +705,7 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
 
 	int so_sndbuf = list.at(8).toInt(&o);
 
-	if(!o || so_sndbuf < 4096 || so_sndbuf > 65536)
+	if(!o || so_sndbuf < 4096)
 	  {
 	    entry_ok = false;
 
@@ -717,8 +717,8 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
 		      << "listener/peer \""
 		      << key.toStdString()
 		      << "\" local so_sndbuf value is invalid. "
-		      << "Expecting a value "
-		      << "in the range [4096, 65536]. Ignoring entry."
+		      << "Expecting a value that is greater than or "
+		      << "equal to 4096. Ignoring entry."
 		      << std::endl;
 	  }
 

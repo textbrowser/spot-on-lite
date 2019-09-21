@@ -105,7 +105,7 @@ spot_on_lite_daemon_child_client::spot_on_lite_daemon_child_client
   m_identity_lifetime = qBound(5, identities_lifetime, 600);
   m_local_content_last_parsed = QDateTime::currentMSecsSinceEpoch();
   m_local_server_file_name = local_server_file_name;
-  m_local_so_sndbuf = qBound(4096, local_so_sndbuf, 65536);
+  m_local_so_sndbuf = qMax(4096, local_so_sndbuf);
   m_local_socket = new QLocalSocket(this);
   m_log_file_name = log_file_name;
   m_maximum_accumulated_bytes = maximum_accumulated_bytes;
