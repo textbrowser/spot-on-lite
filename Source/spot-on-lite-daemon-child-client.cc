@@ -2042,22 +2042,27 @@ void spot_on_lite_daemon_child_client::write(const QByteArray &data)
 
 	while(data.size() > i)
 	  {
+	    qint64 rc = 0;
+
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 12, 0))
 	    if(m_dtls)
-	      m_dtls->writeDatagramEncrypted
+	      rc = m_dtls->writeDatagramEncrypted
 		(qobject_cast<QUdpSocket *> (m_remote_socket),
 		 data.mid(i, maximum_datagram_size));
 	    else
 #endif
 	    if(m_client_role)
-	      m_remote_socket->write(data.mid(i, maximum_datagram_size));
+	      rc = m_remote_socket->write(data.mid(i, maximum_datagram_size));
 	    else
-	      qobject_cast<QUdpSocket *> (m_remote_socket)->writeDatagram
+	      rc = qobject_cast<QUdpSocket *> (m_remote_socket)->writeDatagram
 		(data.mid(i, maximum_datagram_size),
 		 m_peer_address,
 		 m_peer_port);
 
-	    i += maximum_datagram_size;
+	    if(rc > 0)
+	      i += static_cast<int> (rc);
+	    else
+	      break;
 	  }
 
 	break;
