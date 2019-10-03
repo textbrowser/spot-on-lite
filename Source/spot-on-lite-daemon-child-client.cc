@@ -2011,7 +2011,7 @@ void spot_on_lite_daemon_child_client::write(const QByteArray &data)
     case QAbstractSocket::TcpSocket:
       {
 	int i = 0;
-	static const int maximum_packet_size = 32768;
+	static const int maximum_packet_size = 4096;
 
 	while(data.size() > i)
 	  {
@@ -2025,7 +2025,10 @@ void spot_on_lite_daemon_child_client::write(const QByteArray &data)
 		   write(data.mid(i, qMin(maximum, maximum_packet_size))));
 
 		if(rc > 0)
-		  i += rc;
+		  {
+		    i += rc;
+		    m_remote_socket->flush();
+		  }
 		else
 		  break;
 	      }
