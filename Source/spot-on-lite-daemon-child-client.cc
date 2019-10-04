@@ -25,10 +25,14 @@
 ** SPOT-ON-LITE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#include <QtGlobal>
+
 extern "C"
 {
 #include <errno.h>
+#ifdef Q_OS_LINUX
 #include <linux/sockios.h>
+#endif
 #include <openssl/pem.h>
 #include <openssl/ssl.h>
 #include <openssl/x509v3.h>
@@ -636,10 +640,17 @@ int spot_on_lite_daemon_child_client::bytes_in_send_queue(void) const
 {
   int count = 0;
 
+#ifdef Q_OS_LINUX
   if(ioctl(static_cast<int> (m_remote_socket->socketDescriptor()),
 	   SIOCOUTQ,
 	   &count) == -1)
     count = 0;
+#else
+  if(ioctl(static_cast<int> (m_remote_socket->socketDescriptor()),
+	   FIONWRITE,
+	   &count) == -1)
+    count = 0;
+#endif
 
   return count;
 }
