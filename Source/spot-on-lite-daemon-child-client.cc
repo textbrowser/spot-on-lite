@@ -28,9 +28,11 @@
 extern "C"
 {
 #include <errno.h>
+#include <linux/sockios.h>
 #include <openssl/pem.h>
 #include <openssl/ssl.h>
 #include <openssl/x509v3.h>
+#include <sys/ioctl.h>
 #include <sys/socket.h>
 #include <time.h>
 #include <unistd.h>
@@ -628,6 +630,18 @@ bool spot_on_lite_daemon_child_client::record_congestion(const QByteArray &data)
 
   QSqlDatabase::removeDatabase(QString::number(db_connection_id));
   return added;
+}
+
+int spot_on_lite_daemon_child_client::bytes_in_send_queue(void) const
+{
+  int count = 0;
+
+  if(ioctl(static_cast<int> (m_remote_socket->socketDescriptor()),
+	   SIOCOUTQ,
+	   &count) == -1)
+    count = 0;
+
+  return count;
 }
 
 quint64 spot_on_lite_daemon_child_client::db_id(void)
@@ -2015,8 +2029,7 @@ void spot_on_lite_daemon_child_client::write(const QByteArray &data)
 
 	while(data.size() > i)
 	  {
-	    int maximum = m_maximum_accumulated_bytes -
-	      static_cast<int> (m_remote_socket->bytesToWrite());
+	    int maximum = m_maximum_accumulated_bytes - bytes_in_send_queue();
 
 	    if(maximum > 0)
 	      {

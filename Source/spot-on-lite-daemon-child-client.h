@@ -130,6 +130,7 @@ class spot_on_lite_daemon_child_client: public QObject
   QList<QByteArray> local_certificate_configuration(void);
   QList<QSslCipher> default_ssl_ciphers(void) const;
   bool record_congestion(const QByteArray &data);
+  int bytes_in_send_queue(void) const;
   quint64 db_id(void);
   void create_remote_identities_database(void);
   void create_statistics_database(void);
