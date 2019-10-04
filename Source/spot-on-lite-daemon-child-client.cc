@@ -645,6 +645,11 @@ int spot_on_lite_daemon_child_client::bytes_in_send_queue(void) const
 	   SIOCOUTQ,
 	   &count) == -1)
     count = 0;
+#elif defined(Q_OS_OPENBSD)
+  if(ioctl(static_cast<int> (m_remote_socket->socketDescriptor()),
+	   TIOCOUTQ,
+	   &count) == -1)
+    count = 0;
 #else
   if(ioctl(static_cast<int> (m_remote_socket->socketDescriptor()),
 	   FIONWRITE,
