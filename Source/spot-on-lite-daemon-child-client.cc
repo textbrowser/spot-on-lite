@@ -640,19 +640,28 @@ int spot_on_lite_daemon_child_client::bytes_in_send_queue(void) const
 {
   int count = 0;
 
-#ifdef Q_OS_LINUX
+#ifdef Q_OS_FREEBSD
+  if(ioctl(static_cast<int> (m_remote_socket->socketDescriptor()),
+	   FIONWRITE,
+	   &count) == -1)
+    count = 0;
+#elif defined(Q_OS_LINUX)
   if(ioctl(static_cast<int> (m_remote_socket->socketDescriptor()),
 	   SIOCOUTQ,
 	   &count) == -1)
     count = 0;
+#elif defined(Q_OS_MACOS)
+  socklen_t length = (socklen_t) sizeof(count);
+
+  if(getsockopt(static_cast<int> (m_remote_socket->socketDescriptor()),
+		SOL_SOCKET,
+		SO_NWRITE,
+		&count,
+		&length) == -1)
+    count = 0;
 #elif defined(Q_OS_OPENBSD)
   if(ioctl(static_cast<int> (m_remote_socket->socketDescriptor()),
 	   TIOCOUTQ,
-	   &count) == -1)
-    count = 0;
-#else
-  if(ioctl(static_cast<int> (m_remote_socket->socketDescriptor()),
-	   FIONWRITE,
 	   &count) == -1)
     count = 0;
 #endif
