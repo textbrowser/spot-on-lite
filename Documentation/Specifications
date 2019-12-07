@@ -5,6 +5,9 @@ General Requirements
 - Child processes should self-terminate after a configurable period of silence.
 - Child processes will be terminated upon the parent receiving
   the SIGUSR1 signal.
+- Congestion control entries are identified via SHA-1 (Qt 4.x),
+  SHA-384 (Qt 5.0.x), or SHA3-384 (Qt 5.1.x or newer).
+- DTLS is supported for Qt 5.12.x or newer.
 - Multiple instances of a daemon are allowed.
 - Optional SSL/TLS within child processes.
 - Terminating the daemon should terminate child processes.
