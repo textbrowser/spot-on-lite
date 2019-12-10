@@ -650,7 +650,7 @@ int spot_on_lite_daemon_child_client::bytes_in_send_queue(void) const
 	   SIOCOUTQ,
 	   &count) == -1)
     count = 0;
-#elif defined(Q_OS_MACOS)
+#elif defined(Q_OS_MAC)
   socklen_t length = (socklen_t) sizeof(count);
 
   if(getsockopt(static_cast<int> (m_remote_socket->socketDescriptor()),
