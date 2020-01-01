@@ -160,24 +160,23 @@ static int prepare_signal_handlers(void)
 
   list << SIGCHLD << SIGTERM << SIGUSR1 << SIGUSR2;
 
-  while(!list.isEmpty())
+  for(int i = 0; i < list.size(); i++)
     {
       struct sigaction act;
 
       memset(&act, 0, sizeof(struct sigaction));
+      act.sa_flags = 0;
       act.sa_handler = spot_on_lite_daemon::handler_signal;
       sigemptyset(&act.sa_mask);
-      act.sa_flags = 0;
 
-      if(sigaction(list.first(), &act, nullptr))
+      if(sigaction(list.at(i), &act, nullptr))
 	{
 	  std::cerr << "sigaction() failure for "
-		    << list.first()
-		    << ". Terminating." << std::endl;
+		    << list.at(i)
+		    << ". Terminating."
+		    << std::endl;
 	  return 1;
 	}
-
-      list.removeFirst();
     }
 
   return 0;
