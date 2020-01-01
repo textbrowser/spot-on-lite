@@ -930,7 +930,11 @@ void spot_on_lite_daemon::slot_ready_read(void)
   if(!socket)
     return;
 
-  QByteArray data(socket->readAll());
+  QByteArray data;
+
+  while(socket->bytesAvailable() > 0)
+    data.append(socket->readAll());
+
   QHashIterator<QLocalSocket *, char> it(m_local_sockets);
 
   while(it.hasNext())
