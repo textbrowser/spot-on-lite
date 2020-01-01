@@ -586,7 +586,7 @@ bool spot_on_lite_daemon_child_client::memcmp(const QByteArray &a,
   int rc = 0;
 
   for(int i = 0; i < length; i++)
-    rc |= a.mid(i, 1).at(0) ^ b.mid(i, 1).at(0);
+    rc |= (i < a.length() ? a.at(i) : 0) ^ (i < b.length() ? b.at(0) : 0);
 
   return rc == 0;
 }
