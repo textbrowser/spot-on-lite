@@ -955,7 +955,7 @@ void spot_on_lite_daemon_child_client::generate_ssl_tls(void)
   RSA *rsa = nullptr;
   char *private_buffer = nullptr;
   char *public_buffer = nullptr;
-  long int days = 5L * 24L * 60L * 60L * 365L; // Five years.
+  static long int days = 5L * 24L * 60L * 60L * 365L; // Five years.
 
   if(m_ssl_key_size <= 0)
     {

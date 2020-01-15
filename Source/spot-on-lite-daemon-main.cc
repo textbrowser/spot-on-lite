@@ -133,9 +133,9 @@ static int prepare_signal_handlers(void)
   */
 
   memset(&act, 0, sizeof(struct sigaction));
+  act.sa_flags = 0;
   act.sa_handler = SIG_IGN;
   sigemptyset(&act.sa_mask);
-  act.sa_flags = 0;
 
   if(sigaction(SIGHUP, &act, nullptr))
     std::cerr << "sigaction() failure for SIGHUP. Ignoring." << std::endl;
@@ -145,9 +145,9 @@ static int prepare_signal_handlers(void)
   */
 
   memset(&act, 0, sizeof(struct sigaction));
+  act.sa_flags = 0;
   act.sa_handler = SIG_IGN;
   sigemptyset(&act.sa_mask);
-  act.sa_flags = 0;
 
   if(sigaction(SIGPIPE, &act, nullptr))
     std::cerr << "sigaction() failure for SIGPIPE. Ignoring." << std::endl;
@@ -162,8 +162,6 @@ static int prepare_signal_handlers(void)
 
   for(int i = 0; i < list.size(); i++)
     {
-      struct sigaction act;
-
       memset(&act, 0, sizeof(struct sigaction));
       act.sa_flags = 0;
       act.sa_handler = spot_on_lite_daemon::handler_signal;
