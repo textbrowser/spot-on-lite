@@ -1293,7 +1293,7 @@ void spot_on_lite_daemon_child_client::process_data(void)
 
   for(int i = 0; i < vector.size(); i++)
     {
-      QByteArray bytes(vector.at(i));
+      const QByteArray &bytes(vector.at(i));
 
       if((index = bytes.indexOf("content=")) >= 0)
 	{
