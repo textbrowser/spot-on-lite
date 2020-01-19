@@ -1001,9 +1001,9 @@ void spot_on_lite_daemon::start(void)
 }
 
 void spot_on_lite_daemon::validate_configuration_file
-(const QString &configurationFileName, bool *ok)
+(const QString &configuration_file_name, bool *ok)
 {
-  m_configuration_file_name = configurationFileName;
+  m_configuration_file_name = configuration_file_name;
   m_listeners_properties.clear();
   m_peers_properties.clear();
   process_configuration_file(ok);
