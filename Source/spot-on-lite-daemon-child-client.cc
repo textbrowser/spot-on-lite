@@ -2049,8 +2049,8 @@ void spot_on_lite_daemon_child_client::write(const QByteArray &data)
     {
     case QAbstractSocket::TcpSocket:
       {
+	const int maximum_packet_size = 4096;
 	int i = 0;
-	static const int maximum_packet_size = 4096;
 
 	while(data.size() > i)
 	  {
@@ -2078,8 +2078,8 @@ void spot_on_lite_daemon_child_client::write(const QByteArray &data)
       }
     case QAbstractSocket::UdpSocket:
       {
+	const int maximum_datagram_size = 508;
 	int i = 0;
-	static const int maximum_datagram_size = 508;
 
 	while(data.size() > i)
 	  {
