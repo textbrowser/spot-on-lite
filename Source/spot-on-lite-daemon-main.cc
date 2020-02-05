@@ -49,7 +49,7 @@ extern "C"
 
 void spot_on_lite_daemon::handler_signal(int signal_number)
 {
-  waitpid(-1, NULL, WNOHANG);
+  waitpid(-1, nullptr, WNOHANG);
 
   char a = 1;
 

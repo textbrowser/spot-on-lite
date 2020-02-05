@@ -245,7 +245,7 @@ spot_on_lite_daemon_child_client::spot_on_lite_daemon_child_client
 #if OPENSSL_VERSION_NUMBER < 0x10100000L || defined(Q_OS_OPENBSD)
       SSL_library_init(); // Always returns 1.
 #else
-      OPENSSL_init_ssl(0, NULL);
+      OPENSSL_init_ssl(0, nullptr);
 #endif
       if(m_protocol == QAbstractSocket::TcpSocket)
 	connect(qobject_cast<QSslSocket *> (m_remote_socket),

@@ -383,12 +383,12 @@ QByteArray spot_on_lite_daemon_sha::sha_512_hmac(const QByteArray &data,
   QByteArray left(block_length, 0);
 
   for(int i = 0; i < block_length; i++)
-    left[i] = k.at(i) ^ opad.at(i);
+    left[i] = static_cast<char> (k.at(i) ^ opad.at(i));
 
   QByteArray right(block_length, 0);
 
   for(int i = 0; i < block_length; i++)
-    right[i] = k.at(i) ^ ipad.at(i);
+    right[i] = static_cast<char> (k.at(i) ^ ipad.at(i));
 
   return sha_512(left.append(sha_512(right.append(data))));
 }
