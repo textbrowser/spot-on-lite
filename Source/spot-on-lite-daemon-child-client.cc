@@ -75,7 +75,7 @@ static int hash_algorithm_key_length(const QByteArray &algorithm)
     return 0;
 }
 
-#ifdef __arm__
+#if defined(Q_PROCESSOR_ARM) || defined(__arm__)
 static int ARM_MAXIMUM_REMOTE_IDENTITIES = 128;
 #endif
 static qint64 END_OF_MESSAGE_MARKER_WINDOW = 10000;
@@ -339,7 +339,7 @@ remote_identities(bool *ok)
 
   QHash<QByteArray, QString> hash;
 
-#ifdef __arm__
+#if defined(Q_PROCESSOR_ARM) || defined(__arm__)
   QReadLocker lock(&m_remote_identities_mutex);
   QHashIterator<QByteArray, qint64> it(m_remote_identities);
 
@@ -1241,7 +1241,8 @@ void spot_on_lite_daemon_child_client::process_data(void)
     }
   while(!m_process_data_future.isCanceled());
 
-#ifndef __arm__
+#if defined(Q_PROCESSOR_ARM) || defined(__arm__)
+#else
   save_statistic("identities", QString::number(identities.size()));
 #endif
 
@@ -1277,7 +1278,8 @@ void spot_on_lite_daemon_child_client::process_data(void)
 	m_local_content.remove(0, bytes.length());
       }
 
-#ifndef __arm__
+#if defined(Q_PROCESSOR_ARM) || defined(__arm__)
+#else
     save_statistic
       ("m_local_content remaining",
        QString::number(m_local_content.length()));
@@ -1287,7 +1289,8 @@ void spot_on_lite_daemon_child_client::process_data(void)
   if(m_process_data_future.isCanceled() || vector.isEmpty())
     goto done_label;
 
-#ifndef __arm__
+#if defined(Q_PROCESSOR_ARM) || defined(__arm__)
+#else
   save_statistic("vector size", QString::number(vector.size()));
 #endif
 
@@ -1388,7 +1391,8 @@ void spot_on_lite_daemon_child_client::process_read_data(const QByteArray &d)
     append(data.mid(0, qAbs(m_maximum_accumulated_bytes -
 			    m_remote_content.length())));
   process_remote_content();
-#ifndef __arm__
+#if defined(Q_PROCESSOR_ARM) || defined(__arm__)
+#else
   save_statistic
     ("m_remote_content", QString::number(m_remote_content.length()));
 #endif
@@ -1428,7 +1432,8 @@ void spot_on_lite_daemon_child_client::process_remote_content(void)
 	}
     }
 
-#ifndef __arm__
+#if defined(Q_PROCESSOR_ARM) || defined(__arm__)
+#else
   save_statistic
     ("m_remote_content remaining",
      QString::number(m_remote_content.length()));
@@ -1451,7 +1456,7 @@ void spot_on_lite_daemon_child_client::purge_containers(void)
 
 void spot_on_lite_daemon_child_client::purge_remote_identities(void)
 {
-#ifdef __arm__
+#if defined(Q_PROCESSOR_ARM) || defined(__arm__)
   QWriteLocker lock(&m_remote_identities_mutex);
 
   m_remote_identities.clear();
@@ -1582,7 +1587,7 @@ void spot_on_lite_daemon_child_client::record_remote_identity
 
   if(hash_algorithm_key_length(algorithm) == identity.length())
     {
-#ifdef __arm__
+#if defined(Q_PROCESSOR_ARM) || defined(__arm__)
       QWriteLocker lock(&m_remote_identities_mutex);
 
       if(!m_remote_identities.contains(identity))
@@ -1628,7 +1633,7 @@ void spot_on_lite_daemon_child_client::record_remote_identity
 
 void spot_on_lite_daemon_child_client::remove_expired_identities(void)
 {
-#ifdef __arm__
+#if defined(Q_PROCESSOR_ARM) || defined(__arm__)
   QWriteLocker lock(&m_remote_identities_mutex);
   QMutableHashIterator<QByteArray, qint64> it(m_remote_identities);
 
@@ -1842,7 +1847,8 @@ void spot_on_lite_daemon_child_client::slot_general_timer_timeout(void)
 	m_local_content_last_parsed = QDateTime::currentMSecsSinceEpoch();
       }
 
-#ifndef __arm__
+#if defined(Q_PROCESSOR_ARM) || defined(__arm__)
+#else
     save_statistic
       ("m_local_content", QString::number(m_local_content.length()));
 #endif
@@ -1855,7 +1861,8 @@ void spot_on_lite_daemon_child_client::slot_general_timer_timeout(void)
       m_remote_content_last_parsed = QDateTime::currentMSecsSinceEpoch();
     }
 
-#ifndef __arm__
+#if defined(Q_PROCESSOR_ARM) || defined(__arm__)
+#else
   save_statistic
     ("m_remote_content", QString::number(m_remote_content.length()));
 #endif
@@ -1955,7 +1962,8 @@ void spot_on_lite_daemon_child_client::slot_local_socket_ready_read(void)
 	  m_local_content.append
 	    (data.mid(0, qAbs(m_maximum_accumulated_bytes -
 			      m_local_content.length())));
-#ifndef __arm__
+#if defined(Q_PROCESSOR_ARM) || defined(__arm__)
+#else
 	  save_statistic
 	    ("m_local_content", QString::number(m_local_content.length()));
 #endif

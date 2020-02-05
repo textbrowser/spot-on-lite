@@ -84,7 +84,7 @@ class spot_on_lite_daemon_child_client: public QObject
   QByteArray m_remote_content;
   QFuture<void> m_expired_identities_future;
   QFuture<void> m_process_data_future;
-#ifdef __arm__
+#if defined(Q_PROCESSOR_ARM) || defined(__arm__)
   QHash<QByteArray, qint64> m_remote_identities;
 #endif
   QHostAddress m_peer_address;
@@ -94,7 +94,7 @@ class spot_on_lite_daemon_child_client: public QObject
   QPointer<QDtls> m_dtls;
 #endif
   QReadWriteLock m_local_content_mutex;
-#ifdef __arm__
+#if defined(Q_PROCESSOR_ARM) || defined(__arm__)
   QReadWriteLock m_remote_identities_mutex;
 #endif
   QSslConfiguration m_ssl_configuration;
