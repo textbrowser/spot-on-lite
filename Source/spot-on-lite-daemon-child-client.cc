@@ -738,8 +738,19 @@ void spot_on_lite_daemon_child_client::data_received(const QByteArray &data)
     {
       QUdpSocket *socket = qobject_cast<QUdpSocket *> (m_remote_socket);
 
+      if(!socket)
+	{
+	  slot_disconnected();
+	  return;
+	}
+
       if(m_dtls->isConnectionEncrypted())
-	process_read_data(m_dtls->decryptDatagram(socket, data));
+	{
+	  process_read_data(m_dtls->decryptDatagram(socket, data));
+
+	  if(m_dtls->dtlsError() == QDtlsError::RemoteClosedConnectionError)
+	    slot_disconnected();
+	}
       else if(!m_dtls->doHandshake(socket, data))
 	log(QString("spot_on_lite_daemon_child_client::data_received(): "
 		    "doHandshake() failure (%1).").
@@ -1993,8 +2004,19 @@ void spot_on_lite_daemon_child_client::slot_ready_read(void)
 	{
 	  QUdpSocket *socket = qobject_cast<QUdpSocket *> (m_remote_socket);
 
+	  if(!socket)
+	    {
+	      slot_disconnected();
+	      return;
+	    }
+
 	  if(m_dtls->isConnectionEncrypted())
-	    data = m_dtls->decryptDatagram(socket, data);
+	    {
+	      data = m_dtls->decryptDatagram(socket, data);
+
+	      if(m_dtls->dtlsError() == QDtlsError::RemoteClosedConnectionError)
+		slot_disconnected();
+	    }
 	  else
 	    {
 	      if(!m_dtls->doHandshake(socket, data))
