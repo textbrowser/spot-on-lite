@@ -85,7 +85,7 @@ class spot_on_lite_daemon_child_client: public QObject
   QFuture<void> m_expired_identities_future;
   QFuture<void> m_process_data_future;
 #if defined(Q_PROCESSOR_ARM) || defined(__arm__)
-  QHash<QByteArray, qint64> m_remote_identities;
+  QHash<QByteArray, QDateTime> m_remote_identities;
 #endif
   QHostAddress m_peer_address;
   QPointer<QLocalSocket> m_local_socket;
@@ -114,7 +114,6 @@ class spot_on_lite_daemon_child_client: public QObject
   QTimer m_general_timer;
   QTimer m_keep_alive_timer;
   bool m_client_role;
-  int m_identity_lifetime;
   int m_local_so_sndbuf;
   int m_maximum_accumulated_bytes;
   int m_silence;
@@ -126,6 +125,7 @@ class spot_on_lite_daemon_child_client: public QObject
   spot_on_lite_daemon_sha m_sha_512;
   static QReadWriteLock s_db_id_mutex;
   static quint64 s_db_id;
+  unsigned int m_identity_lifetime;
   QHash<QByteArray, QString> remote_identities(bool *ok);
   QList<QByteArray> local_certificate_configuration(void);
   QList<QSslCipher> default_ssl_ciphers(void) const;

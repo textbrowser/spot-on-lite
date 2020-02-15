@@ -108,7 +108,8 @@ spot_on_lite_daemon_child_client::spot_on_lite_daemon_child_client
   m_congestion_control_file_name = congestion_control_file_name;
   m_end_of_message_marker = end_of_message_marker;
   m_general_timer.start(5000);
-  m_identity_lifetime = qBound(5, identities_lifetime, 600);
+  m_identity_lifetime = static_cast<unsigned int>
+    (qBound(5, identities_lifetime, 600));
   m_local_content_last_parsed = QDateTime::currentMSecsSinceEpoch();
   m_local_server_file_name = local_server_file_name;
   m_local_so_sndbuf = qMax(4096, local_so_sndbuf);
@@ -341,7 +342,7 @@ remote_identities(bool *ok)
 
 #if defined(Q_PROCESSOR_ARM) || defined(__arm__)
   QReadLocker lock(&m_remote_identities_mutex);
-  QHashIterator<QByteArray, qint64> it(m_remote_identities);
+  QHashIterator<QByteArray, QDateTime> it(m_remote_identities);
 
   while(it.hasNext())
     {
@@ -1604,11 +1605,10 @@ void spot_on_lite_daemon_child_client::record_remote_identity
       if(!m_remote_identities.contains(identity))
 	{
 	  if(ARM_MAXIMUM_REMOTE_IDENTITIES > m_remote_identities.size())
-	    m_remote_identities[identity] =
-	      QDateTime::currentDateTime().toTime_t();
+	    m_remote_identities[identity] = QDateTime::currentDateTime();
 	}
       else
-	m_remote_identities[identity] = QDateTime::currentDateTime().toTime_t();
+	m_remote_identities[identity] = QDateTime::currentDateTime();
 #else
       create_remote_identities_database();
 
@@ -1646,13 +1646,15 @@ void spot_on_lite_daemon_child_client::remove_expired_identities(void)
 {
 #if defined(Q_PROCESSOR_ARM) || defined(__arm__)
   QWriteLocker lock(&m_remote_identities_mutex);
-  QMutableHashIterator<QByteArray, qint64> it(m_remote_identities);
+  QMutableHashIterator<QByteArray, QDateTime> it(m_remote_identities);
 
   while(it.hasNext())
     {
+      unsigned int now = QDateTime::currentDateTime().toTime_t();
+
       it.next();
 
-      if(QDateTime::currentDateTime().toTime_t() - it.value() >
+      if(now > it.value().toTime_t() && now - it.value().toTime_t() >
 	 m_identity_lifetime)
 	it.remove();
     }
