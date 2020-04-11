@@ -144,6 +144,7 @@ static QByteArray s_sha_512_k[] =
    QByteArray::fromHex("597f299cfc657e2a"),
    QByteArray::fromHex("5fcb6fab3ad6faec"),
    QByteArray::fromHex("6c44198c4a475817")};
+static int s_block_length = 1024 / CHAR_BIT;
 
 spot_on_lite_daemon_sha::spot_on_lite_daemon_sha(void)
 {
@@ -369,24 +370,23 @@ QByteArray spot_on_lite_daemon_sha::sha_512_hmac(const QByteArray &data,
   */
 
   QByteArray k(key);
-  int block_length = 1024 / CHAR_BIT;
 
-  if(block_length < k.length())
+  if(s_block_length < k.length())
     k = sha_512(k);
 
-  if(block_length > k.length())
-    k.append(QByteArray(block_length - k.length(), 0));
+  if(s_block_length > k.length())
+    k.append(QByteArray(s_block_length - k.length(), 0));
 
-  QByteArray ipad(block_length, 0x36);
-  QByteArray left(block_length, 0);
-  QByteArray opad(block_length, 0x5c);
+  QByteArray ipad(s_block_length, 0x36);
+  QByteArray left(s_block_length, 0);
+  QByteArray opad(s_block_length, 0x5c);
 
-  for(int i = 0; i < block_length; i++)
+  for(int i = 0; i < s_block_length; i++)
     left[i] = static_cast<char> (k.at(i) ^ opad.at(i));
 
-  QByteArray right(block_length, 0);
+  QByteArray right(s_block_length, 0);
 
-  for(int i = 0; i < block_length; i++)
+  for(int i = 0; i < s_block_length; i++)
     right[i] = static_cast<char> (k.at(i) ^ ipad.at(i));
 
   return sha_512(left.append(sha_512(right.append(data))));
