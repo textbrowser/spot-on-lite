@@ -15,7 +15,9 @@ QMAKE_CXXFLAGS_RELEASE += -fPIE -fstack-protector-all -fwrapv \
 QMAKE_CXXFLAGS_RELEASE += -fPIE -fstack-protector-all -funroll-loops -fwrapv \
                           -mtune=native -pie -O3 \
                           -Wall -Wcast-qual -Wextra \
-                          -Wno-class-memaccess -Wno-unused-variable \
+                          -Wno-class-memaccess \
+                          -Wno-deprecated-copy \
+                          -Wno-unused-variable \
                           -Woverloaded-virtual -Wpointer-arith \
                           -Wstack-protector -pedantic -std=c++11
 } else:macx {
