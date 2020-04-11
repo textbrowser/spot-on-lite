@@ -179,7 +179,7 @@ void spot_on_lite_daemon_udp_listener::slot_ready_read(void)
 			     nullptr));
 
 	  if(client)
-	    client->data_received(data);
+	    client->data_received(data, peer_address, peer_port);
 	}
     }
 }

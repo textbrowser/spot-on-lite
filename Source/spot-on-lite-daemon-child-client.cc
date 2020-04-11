@@ -276,10 +276,22 @@ spot_on_lite_daemon_child_client::spot_on_lite_daemon_child_client
 	      if(m_dtls)
 		if(!m_dtls->
 		   doHandshake(qobject_cast<QUdpSocket *> (m_remote_socket)))
-		  log(QString("spot_on_lite_daemon_child_client::"
-			      "spot_on_lite_daemon_child_client(): "
-			      "doHandshake() failure (%1).").
-		      arg(m_dtls->dtlsErrorString()));
+		  {
+		    log(QString("spot_on_lite_daemon_child_client::"
+				"spot_on_lite_daemon_child_client(): "
+				"doHandshake() failure (%1).").
+			arg(m_dtls->dtlsErrorString()));
+
+		    if(!(m_dtls->dtlsError() == QDtlsError::NoError ||
+			 m_dtls->dtlsError() == QDtlsError::TlsNonFatalError))
+		      {
+			m_dtls->abortHandshake
+			  (qobject_cast<QUdpSocket *> (m_remote_socket));
+			QTimer::singleShot
+			  (2500, this, SLOT(slot_disconnected(void)));
+			return;
+		      }
+		  }
 #endif
 	    }
 	}
@@ -304,10 +316,22 @@ spot_on_lite_daemon_child_client::spot_on_lite_daemon_child_client
 		if(!m_dtls->
 		   doHandshake(qobject_cast<QUdpSocket *> (m_remote_socket),
 			       initial_data))
-		  log(QString("spot_on_lite_daemon_child_client::"
-			      "spot_on_lite_daemon_child_client: "
-			      "doHandshake() failure (%1).").
-		      arg(m_dtls->dtlsErrorString()));
+		  {
+		    log(QString("spot_on_lite_daemon_child_client::"
+				"spot_on_lite_daemon_child_client: "
+				"doHandshake() failure (%1).").
+			arg(m_dtls->dtlsErrorString()));
+
+		    if(!(m_dtls->dtlsError() == QDtlsError::NoError ||
+			 m_dtls->dtlsError() == QDtlsError::TlsNonFatalError))
+		      {
+			m_dtls->abortHandshake
+			  (qobject_cast<QUdpSocket *> (m_remote_socket));
+			QTimer::singleShot
+			  (2500, this, SLOT(slot_disconnected(void)));
+			return;
+		      }
+		  }
 	    }
 #else
 	  Q_UNUSED(initial_data);
@@ -732,7 +756,10 @@ void spot_on_lite_daemon_child_client::create_statistics_database(void)
   QSqlDatabase::removeDatabase(QString::number(db_connection_id));
 }
 
-void spot_on_lite_daemon_child_client::data_received(const QByteArray &data)
+void spot_on_lite_daemon_child_client::data_received
+(const QByteArray &data,
+ const QHostAddress &peer_address,
+ const quint16 peer_port)
 {
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 12, 0))
   if(m_dtls && m_protocol == QAbstractSocket::UdpSocket)
@@ -752,13 +779,48 @@ void spot_on_lite_daemon_child_client::data_received(const QByteArray &data)
 	  if(m_dtls->dtlsError() == QDtlsError::RemoteClosedConnectionError)
 	    slot_disconnected();
 	}
-      else if(!m_dtls->doHandshake(socket, data))
-	log(QString("spot_on_lite_daemon_child_client::data_received(): "
-		    "doHandshake() failure (%1).").
-	    arg(m_dtls->dtlsErrorString()));
+      else
+	{
+	  QPair<QHostAddress, quint64> pair(peer_address, peer_port);
+
+	  if(!m_verified_udp_clients.contains(pair))
+	    {
+	      if(m_dtls_client_verifier.
+		 verifyClient(socket, data, peer_address, peer_port))
+		m_verified_udp_clients[pair] = 0;
+	      else
+		{
+		  slot_disconnected();
+		  return;
+		}
+	      else
+		/*
+		** Not verified.
+		*/
+
+		return;
+	    }
+
+
+	  if(!m_dtls->doHandshake(socket, data))
+	    {
+	      log(QString("spot_on_lite_daemon_child_client::data_received(): "
+			  "doHandshake() failure (%1).").
+		  arg(m_dtls->dtlsErrorString()));
+
+	      if(!(m_dtls->dtlsError() == QDtlsError::NoError ||
+		   m_dtls->dtlsError() == QDtlsError::TlsNonFatalError))
+		{
+		  m_dtls->abortHandshake(socket);
+		  slot_disconnected();
+		}
+	    }
+	}
     }
 #else
   Q_UNUSED(data);
+  Q_UNUSED(peer_address);
+  Q_UNUSED(peer_port);
 #endif
 }
 
@@ -1767,10 +1829,20 @@ void spot_on_lite_daemon_child_client::slot_attempt_remote_connection(void)
 	  if(m_dtls)
 	    if(!m_dtls->
 	       doHandshake(qobject_cast<QUdpSocket *> (m_remote_socket)))
-	      log(QString("spot_on_lite_daemon_child_client::"
-			  "slot_attempt_remote_connection(): "
-			  "doHandshake() failure (%1).").
-		  arg(m_dtls->dtlsErrorString()));
+	      {
+		log(QString("spot_on_lite_daemon_child_client::"
+			    "slot_attempt_remote_connection(): "
+			    "doHandshake() failure (%1).").
+		    arg(m_dtls->dtlsErrorString()));
+
+		if(!(m_dtls->dtlsError() == QDtlsError::NoError ||
+		     m_dtls->dtlsError() == QDtlsError::TlsNonFatalError))
+		  {
+		    m_dtls->abortHandshake
+		      (qobject_cast<QUdpSocket *> (m_remote_socket));
+		    slot_disconnected();
+		  }
+	      }
 #endif
 	}
     }
@@ -2017,14 +2089,27 @@ void spot_on_lite_daemon_child_client::slot_ready_read(void)
 	      data = m_dtls->decryptDatagram(socket, data);
 
 	      if(m_dtls->dtlsError() == QDtlsError::RemoteClosedConnectionError)
-		slot_disconnected();
+		{
+		  slot_disconnected();
+		  return;
+		}
 	    }
 	  else
 	    {
 	      if(!m_dtls->doHandshake(socket, data))
-		log(QString("spot_on_lite_daemon_child_client::"
-			    "slot_ready_read(): doHandshake() failure (%1).").
-		    arg(m_dtls->dtlsErrorString()));
+		{
+		  log(QString("spot_on_lite_daemon_child_client::"
+			      "slot_ready_read(): doHandshake() failure (%1).").
+		      arg(m_dtls->dtlsErrorString()));
+
+		  if(!(m_dtls->dtlsError() == QDtlsError::NoError ||
+		       m_dtls->dtlsError() == QDtlsError::TlsNonFatalError))
+		    {
+		      m_dtls->abortHandshake(socket);
+		      slot_disconnected();
+		      return;
+		    }
+		}
 
 	      continue;
 	    }

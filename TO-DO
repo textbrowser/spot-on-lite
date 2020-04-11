@@ -2,6 +2,7 @@ Completed Items
 
 - Congestion control, per child process.
 - Cryptographic Discovery. Requires SHA-512.
+- DTLS cookies.
 - DTLS.
 - Disable Nagle's algorithm.
 - Disable socket linger. Optional.
@@ -23,6 +24,5 @@ Completed Items
 
 Remaining Items
 
-- DTLS cookies.
 - IPv6 scope identities?
 - Optionally share identities in client mode.

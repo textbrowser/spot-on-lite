@@ -36,6 +36,7 @@ extern "C"
 #include <QAbstractSocket>
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 12, 0))
 #include <QDtls>
+#include <QDtlsClientVerifier>
 #endif
 #include <QFuture>
 #include <QHostAddress>
@@ -76,16 +77,24 @@ class spot_on_lite_daemon_child_client: public QObject
      const quint16 peer_port);
   ~spot_on_lite_daemon_child_client();
   static bool memcmp(const QByteArray &a, const QByteArray &b);
-  void data_received(const QByteArray &data);
+  void data_received(const QByteArray &data,
+		     const QHostAddress &peer_address,
+		     const quint16 peer_port);
 
  private:
   QAbstractSocket::SocketType m_protocol;
   QByteArray m_local_content;
   QByteArray m_remote_content;
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 12, 0))
+  QDtlsClientVerifier m_dtls_client_verifier;
+#endif
   QFuture<void> m_expired_identities_future;
   QFuture<void> m_process_data_future;
 #if defined(Q_PROCESSOR_ARM) || defined(__arm__)
   QHash<QByteArray, QDateTime> m_remote_identities;
+#endif
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 12, 0))
+  QHash<QPair<QHostAddress, quint16>, char> m_verified_udp_clients;
 #endif
   QHostAddress m_peer_address;
   QPointer<QLocalSocket> m_local_socket;
