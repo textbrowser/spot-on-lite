@@ -1638,7 +1638,7 @@ void spot_on_lite_daemon_child_client::record_remote_identity
 {
   if(m_client_role)
     /*
-    ** Only server sockets should record identities.
+    ** Only server sockets will record identities.
     */
 
     return;
