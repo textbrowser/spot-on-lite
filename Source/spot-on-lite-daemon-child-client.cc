@@ -274,6 +274,10 @@ spot_on_lite_daemon_child_client::spot_on_lite_daemon_child_client
 	      prepare_dtls();
 
 	      if(m_dtls)
+		/*
+		** The client initiates DTLS.
+		*/
+
 		if(!m_dtls->
 		   doHandshake(qobject_cast<QUdpSocket *> (m_remote_socket)))
 		  {
@@ -313,6 +317,10 @@ spot_on_lite_daemon_child_client::spot_on_lite_daemon_child_client
 	      prepare_dtls();
 
 	      if(m_dtls)
+		/*
+		** The server's DTLS response.
+		*/
+
 		if(!m_dtls->
 		   doHandshake(qobject_cast<QUdpSocket *> (m_remote_socket),
 			       initial_data))
@@ -800,7 +808,6 @@ void spot_on_lite_daemon_child_client::data_received
 
 		return;
 	    }
-
 
 	  if(!m_dtls->doHandshake(socket, data))
 	    {
@@ -1827,6 +1834,10 @@ void spot_on_lite_daemon_child_client::slot_attempt_remote_connection(void)
 	  prepare_dtls();
 
 	  if(m_dtls)
+	    /*
+	    ** The client initiates DTLS.
+	    */
+
 	    if(!m_dtls->
 	       doHandshake(qobject_cast<QUdpSocket *> (m_remote_socket)))
 	      {
