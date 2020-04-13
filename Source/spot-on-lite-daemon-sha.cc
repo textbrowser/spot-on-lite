@@ -26,9 +26,14 @@
 */
 
 #include <QtCore>
+#include <QtGlobal>
 #include <QtEndian>
 
 #include "spot-on-lite-daemon-sha.h"
+
+#if QT_VERSION >= 0x050000
+#include <QCryptographicHash>
+#endif
 
 #ifdef SPOTON_LITE_DAEMON_CHILD_ECL_SUPPORTED
 #ifdef FALSE
@@ -157,10 +162,9 @@ spot_on_lite_daemon_sha::spot_on_lite_daemon_sha(void)
 
 QByteArray spot_on_lite_daemon_sha::sha_512(const QByteArray &data) const
 {
-  QByteArray hash;
-
 #ifdef SPOTON_LITE_DAEMON_CHILD_ECL_SUPPORTED
   QByteArray bytes(QString("(sha_512 '#%1(").arg(data.length()).toLatin1());
+  QByteArray hash;
 
   for(int i = 0; i < data.length(); i++)
     {
@@ -198,10 +202,15 @@ QByteArray spot_on_lite_daemon_sha::sha_512(const QByteArray &data) const
   ecl_release_current_thread();
   return hash;
 #else
+#if QT_VERSION >= 0x050000
+  return QCryptographicHash::hash(data, QCryptographicHash::Sha512);
+#endif
+
   /*
   ** Please read the NIST.FIPS.180-4.pdf publication.
   */
 
+  QByteArray hash;
   QByteArray number(8, 0);
   QVector<quint64> H(8);
   int N = qCeil(static_cast<double> (data.size() + 17) / 128.0);
@@ -357,8 +366,8 @@ QByteArray spot_on_lite_daemon_sha::sha_512(const QByteArray &data) const
   hash.append(h);
   qToBigEndian(H.at(7), reinterpret_cast<uchar *> (h.data()));
   hash.append(h);
-#endif
   return hash;
+#endif
 }
 
 QByteArray spot_on_lite_daemon_sha::sha_512_hmac(const QByteArray &data,

@@ -7,6 +7,11 @@ General Requirements
   the SIGUSR1 signal.
 - Congestion control entries are identified via SHA-1 (Qt 4.x),
   SHA-384 (Qt 5.0.x), or SHA3-384 (Qt 5.1.x or newer).
+- Cryptographic Discovery requires SHA-512. Two separate implementations
+  of SHA-512 are provided: one for Qt 4.x and another if
+  SPOTON_LITE_DAEMON_CHILD_ECL_SUPPORTED is enabled (/usr/bin/ecl exists).
+  For Qt 5.x, the SHA-512 implementation provided by Qt is applied unless
+  SPOTON_LITE_DAEMON_CHILD_ECL_SUPPORTED is enabled.
 - DTLS is supported for Qt 5.12.x or newer.
 - Multiple instances of a daemon are allowed.
 - Optional SSL/TLS within child processes.
