@@ -7,7 +7,6 @@ Completed Items
 - Disable Nagle's algorithm.
 - Disable socket linger. Optional.
 - Distribute capabilities.
-- Distribute identities.
 - Echo through child processes.
 - Limit number of processes via /etc/security/limits.conf.
 - Lisp version of the SHA-512 implementation. Optional.
@@ -24,5 +23,6 @@ Completed Items
 
 Remaining Items
 
+- Distribute CD identities.
 - IPv6 scope identities?
 - Optionally share identities in client mode.
