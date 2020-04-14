@@ -13,6 +13,10 @@ General Requirements
   For Qt 5.x, the SHA-512 implementation provided by Qt is applied unless
   SPOTON_LITE_DAEMON_CHILD_ECL_SUPPORTED is enabled.
 - DTLS is supported for Qt 5.12.x or newer.
+- Identity information is recorded in a local SQLite databse. Please enable
+  SPOTON_LITE_DAEMON_ENABLE_IDENTITIES_CONTAINER in common.pro
+  to utilize a Qt container instead. Please also set
+  SPOTON_LITE_DAEMON_IDENTITIES_CONTAINER_MAXIMUM_SIZE to specify a limit.
 - Multiple instances of a daemon are allowed.
 - Optional SSL/TLS within child processes.
 - Terminating the daemon should terminate child processes.

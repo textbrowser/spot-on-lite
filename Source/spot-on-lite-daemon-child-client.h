@@ -90,7 +90,7 @@ class spot_on_lite_daemon_child_client: public QObject
 #endif
   QFuture<void> m_expired_identities_future;
   QFuture<void> m_process_data_future;
-#if defined(Q_PROCESSOR_ARM) || defined(__arm__)
+#ifdef SPOTON_LITE_DAEMON_ENABLE_IDENTITIES_CONTAINER
   QHash<QByteArray, QDateTime> m_remote_identities;
 #endif
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 12, 0))
@@ -103,7 +103,7 @@ class spot_on_lite_daemon_child_client: public QObject
   QPointer<QDtls> m_dtls;
 #endif
   QReadWriteLock m_local_content_mutex;
-#if defined(Q_PROCESSOR_ARM) || defined(__arm__)
+#ifdef SPOTON_LITE_DAEMON_ENABLE_IDENTITIES_CONTAINER
   QReadWriteLock m_remote_identities_mutex;
 #endif
   QSslConfiguration m_ssl_configuration;

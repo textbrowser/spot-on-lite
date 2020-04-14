@@ -75,8 +75,11 @@ static int hash_algorithm_key_length(const QByteArray &algorithm)
     return 0;
 }
 
-#if defined(Q_PROCESSOR_ARM) || defined(__arm__)
-static int ARM_MAXIMUM_REMOTE_IDENTITIES = 128;
+#ifdef SPOTON_LITE_DAEMON_ENABLE_IDENTITIES_CONTAINER
+#if SPOTON_LITE_DAEMON_IDENTITIES_CONTAINER_MAXIMUM_SIZE > 0
+static int MAXIMUM_REMOTE_IDENTITIES =
+  SPOTON_LITE_DAEMON_IDENTITIES_CONTAINER_MAXIMUM_SIZE;
+#endif
 #endif
 static qint64 END_OF_MESSAGE_MARKER_WINDOW = 10000;
 
@@ -380,7 +383,7 @@ remote_identities(bool *ok)
 
   QHash<QByteArray, QString> hash;
 
-#if defined(Q_PROCESSOR_ARM) || defined(__arm__)
+#ifdef SPOTON_LITE_DAEMON_ENABLE_IDENTITIES_CONTAINER
   QReadLocker lock(&m_remote_identities_mutex);
   QHashIterator<QByteArray, QDateTime> it(m_remote_identities);
 
@@ -1549,7 +1552,7 @@ void spot_on_lite_daemon_child_client::purge_containers(void)
 
 void spot_on_lite_daemon_child_client::purge_remote_identities(void)
 {
-#if defined(Q_PROCESSOR_ARM) || defined(__arm__)
+#ifdef SPOTON_LITE_DAEMON_ENABLE_IDENTITIES_CONTAINER
   QWriteLocker lock(&m_remote_identities_mutex);
 
   m_remote_identities.clear();
@@ -1680,12 +1683,12 @@ void spot_on_lite_daemon_child_client::record_remote_identity
 
   if(hash_algorithm_key_length(algorithm) == identity.length())
     {
-#if defined(Q_PROCESSOR_ARM) || defined(__arm__)
+#ifdef SPOTON_LITE_DAEMON_ENABLE_IDENTITIES_CONTAINER
       QWriteLocker lock(&m_remote_identities_mutex);
 
       if(!m_remote_identities.contains(identity))
 	{
-	  if(ARM_MAXIMUM_REMOTE_IDENTITIES > m_remote_identities.size())
+	  if(MAXIMUM_REMOTE_IDENTITIES > m_remote_identities.size())
 	    m_remote_identities[identity] = QDateTime::currentDateTime();
 	}
       else
@@ -1725,7 +1728,7 @@ void spot_on_lite_daemon_child_client::record_remote_identity
 
 void spot_on_lite_daemon_child_client::remove_expired_identities(void)
 {
-#if defined(Q_PROCESSOR_ARM) || defined(__arm__)
+#ifdef SPOTON_LITE_DAEMON_ENABLE_IDENTITIES_CONTAINER
   QWriteLocker lock(&m_remote_identities_mutex);
   QMutableHashIterator<QByteArray, QDateTime> it(m_remote_identities);
 
