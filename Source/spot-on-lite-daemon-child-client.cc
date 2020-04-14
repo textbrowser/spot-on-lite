@@ -289,6 +289,10 @@ spot_on_lite_daemon_child_client::spot_on_lite_daemon_child_client
 		    if(!(m_dtls->dtlsError() == QDtlsError::NoError ||
 			 m_dtls->dtlsError() == QDtlsError::TlsNonFatalError))
 		      {
+			/*
+			** Fatal error!
+			*/
+
 			m_dtls->abortHandshake
 			  (qobject_cast<QUdpSocket *> (m_remote_socket));
 			QTimer::singleShot
@@ -333,6 +337,10 @@ spot_on_lite_daemon_child_client::spot_on_lite_daemon_child_client
 		    if(!(m_dtls->dtlsError() == QDtlsError::NoError ||
 			 m_dtls->dtlsError() == QDtlsError::TlsNonFatalError))
 		      {
+			/*
+			** Fatal error!
+			*/
+
 			m_dtls->abortHandshake
 			  (qobject_cast<QUdpSocket *> (m_remote_socket));
 			QTimer::singleShot
@@ -1412,6 +1420,10 @@ void spot_on_lite_daemon_child_client::process_data(void)
 
 	      if(memcmp(hash, m_sha_512.sha_512_hmac(data, it.key())))
 		{
+		  /*
+		  ** Found!
+		  */
+
 		  emit write_signal(bytes);
 		  break;
 		}
