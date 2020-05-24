@@ -55,10 +55,7 @@ extern "C"
 #include <QTimer>
 #include <QUdpSocket>
 #include <QUuid>
-#if QT_VERSION >= 0x050000
 #include <QtConcurrent>
-#endif
-#include <QtCore>
 
 #include <limits>
 
@@ -576,16 +573,6 @@ default_ssl_ciphers(void) const
 	{
 	  if((next = SSL_get_cipher_list(ssl, index)))
 	    {
-#if QT_VERSION < 0x050000
-	      QSslCipher cipher;
-
-	      if(protocol == "SslV3")
-		cipher = QSslCipher(next, QSsl::SslV3);
-	      else if(protocol == "TlsV1_0")
-		cipher = QSslCipher(next, QSsl::TlsV1);
-	      else
-		cipher = QSslCipher(next, QSsl::UnknownProtocol);
-#else
 	      QSslCipher cipher;
 
 	      if(protocol == "TlsV1_2")
@@ -596,7 +583,6 @@ default_ssl_ciphers(void) const
 		cipher = QSslCipher(next, QSsl::TlsV1_0);
 	      else
 		cipher = QSslCipher(next, QSsl::SslV3);
-#endif
 
 	      if(cipher.isNull())
 		cipher = QSslCipher(next, QSsl::UnknownProtocol);
@@ -663,12 +649,10 @@ bool spot_on_lite_daemon_child_client::record_congestion(const QByteArray &data)
 	query.addBindValue
 	  (QCryptographicHash::hash(data, QCryptographicHash::Sha3_384).
 	   toBase64());	
-#elif QT_VERSION >= 0x050000
-	query.addBindValue(QCryptographicHash::
-			   hash(data, QCryptographicHash::Sha384).toBase64());
 #else
-	query.addBindValue(QCryptographicHash::
-			   hash(data, QCryptographicHash::Sha1).toBase64());
+	query.addBindValue
+	  (QCryptographicHash::hash(data, QCryptographicHash::Sha384).
+	   toBase64());
 #endif
 	added = query.exec();
       }
@@ -1238,17 +1222,12 @@ void spot_on_lite_daemon_child_client::prepare_ssl_tls_configuration
 {
   m_ssl_configuration.setLocalCertificate(QSslCertificate(list.value(0)));
 
-#if QT_VERSION < 0x050000
-  if(m_ssl_configuration.localCertificate().isValid())
-#else
   if(!m_ssl_configuration.localCertificate().isNull())
-#endif
     {
       m_ssl_configuration.setPrivateKey(QSslKey(list.value(1), QSsl::Rsa));
 
       if(!m_ssl_configuration.privateKey().isNull())
 	{
-#if QT_VERSION >= 0x040800
 	  m_ssl_configuration.setSslOption
 	    (QSsl::SslOptionDisableCompression, true);
 	  m_ssl_configuration.setSslOption
@@ -1263,8 +1242,6 @@ void spot_on_lite_daemon_child_client::prepare_ssl_tls_configuration
 	  m_ssl_configuration.setSslOption
 	     (QSsl::SslOptionDisableSessionSharing, true);
 #endif
-#endif
-#if QT_VERSION >= 0x050000
 	  set_ssl_ciphers
 	    (m_ssl_configuration.supportedCiphers(), m_ssl_configuration);
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 12, 0))
@@ -1282,12 +1259,6 @@ void spot_on_lite_daemon_child_client::prepare_ssl_tls_configuration
 		  m_ssl_configuration.setProtocol(QSsl::DtlsV1_2OrLater);
 		}
 	    }
-#endif
-#else
-	  if(m_protocol == QAbstractSocket::TcpSocket)
-	    set_ssl_ciphers
-	      (qobject_cast<QSslSocket *> (m_remote_socket)->supportedCiphers(),
-	       m_ssl_configuration);
 #endif
 	  if(m_protocol == QAbstractSocket::TcpSocket)
 	    qobject_cast<QSslSocket *>

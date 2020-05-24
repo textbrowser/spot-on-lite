@@ -57,13 +57,8 @@ spot_on_lite_daemon_tcp_listener::
 {
 }
 
-#if QT_VERSION >= 0x050000
 void spot_on_lite_daemon_tcp_listener::incomingConnection
 (qintptr socket_descriptor)
-#else
-void spot_on_lite_daemon_tcp_listener::incomingConnection
-(int socket_descriptor)
-#endif
 {
   if(!m_parent)
     {

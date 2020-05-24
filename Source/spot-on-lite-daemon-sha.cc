@@ -25,15 +25,12 @@
 ** SPOT-ON-LITE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#include <QCryptographicHash>
 #include <QtCore>
 #include <QtGlobal>
 #include <QtEndian>
 
 #include "spot-on-lite-daemon-sha.h"
-
-#if QT_VERSION >= 0x050000
-#include <QCryptographicHash>
-#endif
 
 #ifdef SPOTON_LITE_DAEMON_CHILD_ECL_SUPPORTED
 #ifdef FALSE
@@ -202,9 +199,7 @@ QByteArray spot_on_lite_daemon_sha::sha_512(const QByteArray &data) const
   ecl_release_current_thread();
   return hash;
 #else
-#if QT_VERSION >= 0x050000
   return QCryptographicHash::hash(data, QCryptographicHash::Sha512);
-#endif
 
   /*
   ** Please read the NIST.FIPS.180-4.pdf publication.

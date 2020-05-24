@@ -48,10 +48,7 @@ extern "C"
 #include <QSqlDatabase>
 #include <QSqlQuery>
 #include <QStringList>
-#if QT_VERSION >= 0x050000
 #include <QtConcurrent>
-#endif
-#include <QtCore>
 #include <QtDebug>
 
 #include "spot-on-lite-daemon.h"

@@ -43,11 +43,7 @@ class spot_on_lite_daemon_tcp_listener: public QTcpServer
   ~spot_on_lite_daemon_tcp_listener();
 
  protected:
-#if QT_VERSION >= 0x050000
   void incomingConnection(qintptr socket_descriptor);
-#else
-  void incomingConnection(int socket_descriptor);
-#endif
 
  private:
   QString m_configuration;
@@ -58,15 +54,9 @@ class spot_on_lite_daemon_tcp_listener: public QTcpServer
   void slot_start_timeout(void);
 
  signals:
-#if QT_VERSION < 0x050000
-  void new_connection(const int socket_descriptor,
-		      const QHostAddress &address,
-		      const quint16 port);
-#else
   void new_connection(const qintptr socket_descriptor,
 		      const QHostAddress &address,
 		      const quint16 port);
-#endif
 };
 
 #endif
