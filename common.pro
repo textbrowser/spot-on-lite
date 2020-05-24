@@ -5,51 +5,103 @@ QMAKE_CXXFLAGS_RELEASE -= -O2
 
 freebsd-* {
 QMAKE_CXX = clang++
-QMAKE_CXXFLAGS_RELEASE += -fPIE -fstack-protector-all -fwrapv \
-                          -march=generic -O3 \
-			  -Wall -Wcast-align -Wcast-qual -Wextra \
-			  -Woverloaded-virtual -Wpointer-arith \
-                          -Wstack-protector -Wstrict-overflow=5 -pedantic \
-			  -std=c++11
+QMAKE_CXXFLAGS_RELEASE += -O3 \
+                          -Wall \
+                          -Wcast-align \
+                          -Wcast-qual \
+                          -Wextra \
+                          -Woverloaded-virtual \
+                          -Wpointer-arith \
+                          -Wstack-protector \
+                          -Wstrict-overflow=5 \
+                          -fPIE \
+                          -fstack-protector-all \
+                          -fwrapv \
+                          -march=generic \
+                          -pedantic \
+                          -std=c++11
 } else:linux-* {
-QMAKE_CXXFLAGS_RELEASE += -fPIE -fstack-protector-all -funroll-loops -fwrapv \
-                          -mtune=native -pie -O3 \
-                          -Wall -Wcast-qual -Wextra \
+QMAKE_CXXFLAGS_RELEASE += -O3 \
+                          -Wall \
+                          -Wcast-qual \
+                          -Wextra \
                           -Wno-class-memaccess \
                           -Wno-deprecated-copy \
                           -Wno-unused-variable \
-                          -Woverloaded-virtual -Wpointer-arith \
-                          -Wstack-protector -pedantic -std=c++11
+                          -Woverloaded-virtual \
+                          -Wpointer-arith \
+                          -Wstack-protector \
+                          -fPIE \
+                          -fstack-protector-all \
+                          -funroll-loops \
+                          -fwrapv \
+                          -mtune=native \
+                          -pedantic \
+                          -pie \
+                          -std=c++11
 } else:macx {
-QMAKE_CXXFLAGS_RELEASE += -fPIE -fstack-protector-all -fwrapv -O3 \
-                          -Wall -Wcast-align -Wcast-qual -Wextra \
+QMAKE_CXXFLAGS_RELEASE += -O3 \
+                          -Wall \
+                          -Wcast-align \
+                          -Wcast-qual \
+                          -Wextra \
                           -Wno-unused-variable \
-                          -Woverloaded-virtual -Wpointer-arith \
-                          -Wstack-protector -pedantic -std=c++11
+                          -Woverloaded-virtual \
+                          -Wpointer-arith \
+                          -Wstack-protector \
+                          -fPIE \
+                          -fstack-protector-all \
+                          -fwrapv \
+                          -pedantic \
+                          -std=c++11
 } else:netbsd-* {
 INCLUDEPATH += /usr/pkg/qt4/include/QtCore \
                /usr/pkg/qt4/include/QtNetwork \
                /usr/pkg/qt4/include/QtSql
 LIBS += -L/usr/pkg/qt4/lib
-QMAKE_CXXFLAGS_RELEASE += -fPIE -fwrapv -pie -O3 \
-                          -Wall -Wcast-qual -Wextra \
+QMAKE_CXXFLAGS_RELEASE += -O3 \
+                          -Wall \
+                          -Wcast-qual \
+                          -Wextra \
                           -Wno-unused-variable \
-                          -Woverloaded-virtual -Wpointer-arith \
-                          -Wstack-protector -pedantic -std=c++11
+                          -Woverloaded-virtual \
+                          -Wpointer-arith \
+                          -Wstack-protector \
+                          -fPIE \
+                          -fwrapv \
+                          -pedantic \
+                          -pie \
+                          -std=c++11
 QMAKE_MOC = /usr/pkg/qt4/bin/moc
 } else:openbsd-* {
-QMAKE_CXXFLAGS_RELEASE += -fPIE -fstack-protector-all -fwrapv \
-                          -mcpu=ultrasparc -mtune=ultrasparc -pie -O3 \
-                          -Wall -Wcast-qual -Wextra \
+QMAKE_CXXFLAGS_RELEASE += -O3 \
+                          -Wall \
+                          -Wcast-qual \
+                          -Wextra \
                           -Wno-unused-variable \
-                          -Woverloaded-virtual -Wpointer-arith \
-                          -Wstack-protector
+                          -Woverloaded-virtual \
+                          -Wpointer-arith \
+                          -Wstack-protector \
+                          -fPIE \
+                          -fstack-protector-all \
+                          -fwrapv \
+                          -mcpu=ultrasparc \
+                          -mtune=ultrasparc \
+                          -pie
 } else:unix {
-QMAKE_CXXFLAGS_RELEASE += -fPIE -fwrapv -pie -O3 \
-                          -Wall -Wcast-qual -Wextra \
+QMAKE_CXXFLAGS_RELEASE += -O3 \
+                          -Wall \
+                          -Wcast-qual \
+                          -Wextra \
                           -Wno-unused-variable \
-                          -Woverloaded-virtual -Wpointer-arith \
-                          -Wstack-protector -pedantic -std=c++11
+                          -Woverloaded-virtual \
+                          -Wpointer-arith \
+                          -Wstack-protector \
+                          -fPIE \
+                          -fwrapv \
+                          -pedantic \
+                          -pie \
+                          -std=c++11
 }
 
 unix {
