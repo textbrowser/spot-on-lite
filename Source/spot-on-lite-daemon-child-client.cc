@@ -648,7 +648,7 @@ bool spot_on_lite_daemon_child_client::record_congestion(const QByteArray &data)
 #if QT_VERSION >= 0x050100
 	query.addBindValue
 	  (QCryptographicHash::hash(data, QCryptographicHash::Sha3_384).
-	   toBase64());	
+	   toBase64());
 #else
 	query.addBindValue
 	  (QCryptographicHash::hash(data, QCryptographicHash::Sha384).
