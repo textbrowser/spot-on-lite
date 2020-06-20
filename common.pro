@@ -9,9 +9,12 @@ QMAKE_CXXFLAGS_RELEASE += -O3 \
                           -Wall \
                           -Wcast-align \
                           -Wcast-qual \
+                          -Wconversion \
+                          -Wdouble-promotion \
                           -Wextra \
                           -Woverloaded-virtual \
                           -Wpointer-arith \
+                          -Wsign-conversion \
                           -Wstack-protector \
                           -Wstrict-overflow=5 \
                           -fPIE \
@@ -24,6 +27,7 @@ QMAKE_CXXFLAGS_RELEASE += -O3 \
 QMAKE_CXXFLAGS_RELEASE += -O3 \
                           -Wall \
                           -Wcast-qual \
+                          -Wconversion \
                           -Wdouble-promotion \
                           -Wextra \
                           -Wno-class-memaccess \
@@ -31,6 +35,7 @@ QMAKE_CXXFLAGS_RELEASE += -O3 \
                           -Wno-unused-variable \
                           -Woverloaded-virtual \
                           -Wpointer-arith \
+                          -Wsign-conversion \
                           -Wstack-protector \
                           -fPIE \
                           -fstack-protector-all \
@@ -45,10 +50,13 @@ QMAKE_CXXFLAGS_RELEASE += -O3 \
                           -Wall \
                           -Wcast-align \
                           -Wcast-qual \
+                          -Wconversion \
+                          -Wdouble-promotion \
                           -Wextra \
                           -Wno-unused-variable \
                           -Woverloaded-virtual \
                           -Wpointer-arith \
+                          -Wsign-conversion \
                           -Wstack-protector \
                           -fPIE \
                           -fstack-protector-all \
@@ -63,10 +71,13 @@ LIBS += -L/usr/pkg/qt4/lib
 QMAKE_CXXFLAGS_RELEASE += -O3 \
                           -Wall \
                           -Wcast-qual \
+                          -Wconversion \
+                          -Wdouble-promotion \
                           -Wextra \
                           -Wno-unused-variable \
                           -Woverloaded-virtual \
                           -Wpointer-arith \
+                          -Wsign-conversion \
                           -Wstack-protector \
                           -fPIE \
                           -fwrapv \
@@ -78,25 +89,32 @@ QMAKE_MOC = /usr/pkg/qt4/bin/moc
 QMAKE_CXXFLAGS_RELEASE += -O3 \
                           -Wall \
                           -Wcast-qual \
+                          -Wconversion \
+                          -Wdouble-promotion \
                           -Wextra \
                           -Wno-unused-variable \
                           -Woverloaded-virtual \
                           -Wpointer-arith \
+                          -Wsign-conversion \
                           -Wstack-protector \
                           -fPIE \
                           -fstack-protector-all \
                           -fwrapv \
                           -mcpu=ultrasparc \
                           -mtune=ultrasparc \
+                          -pedantic \
                           -pie
 } else:unix {
 QMAKE_CXXFLAGS_RELEASE += -O3 \
                           -Wall \
                           -Wcast-qual \
+                          -Wconversion \
+                          -Wdouble-promotion \
                           -Wextra \
                           -Wno-unused-variable \
                           -Woverloaded-virtual \
                           -Wpointer-arith \
+                          -Wsign-conversion \
                           -Wstack-protector \
                           -fPIE \
                           -fwrapv \

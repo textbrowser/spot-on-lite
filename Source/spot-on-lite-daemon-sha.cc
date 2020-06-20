@@ -153,7 +153,7 @@ spot_on_lite_daemon_sha::spot_on_lite_daemon_sha(void)
   m_K.resize(80);
 
   for(size_t i = 0; i <= 79; i++)
-    m_K[i] = qFromBigEndian<quint64>
+    m_K[static_cast<int> (i)] = qFromBigEndian<quint64>
       (reinterpret_cast<const uchar *> (s_sha_512_k[i].constData()));
 }
 
