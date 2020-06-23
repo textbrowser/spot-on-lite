@@ -41,7 +41,6 @@ QMAKE_CXXFLAGS_RELEASE += -O3 \
                           -fstack-protector-all \
                           -funroll-loops \
                           -fwrapv \
-                          -mtune=native \
                           -pedantic \
                           -pie \
                           -std=c++11
