@@ -767,7 +767,7 @@ void spot_on_lite_daemon_child_client::data_received
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 12, 0))
   if(m_dtls && m_protocol == QAbstractSocket::UdpSocket)
     {
-      QUdpSocket *socket = qobject_cast<QUdpSocket *> (m_remote_socket);
+      auto *socket = qobject_cast<QUdpSocket *> (m_remote_socket);
 
       if(!socket)
 	{
@@ -2073,7 +2073,7 @@ void spot_on_lite_daemon_child_client::slot_ready_read(void)
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 12, 0))
       if(!data.isEmpty() && m_dtls && m_protocol == QAbstractSocket::UdpSocket)
 	{
-	  QUdpSocket *socket = qobject_cast<QUdpSocket *> (m_remote_socket);
+	  auto *socket = qobject_cast<QUdpSocket *> (m_remote_socket);
 
 	  if(!socket)
 	    {

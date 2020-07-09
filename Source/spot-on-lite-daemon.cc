@@ -870,7 +870,7 @@ void spot_on_lite_daemon::purge_congestion_control(void)
 
 void spot_on_lite_daemon::slot_local_socket_disconnected(void)
 {
-  QLocalSocket *socket = qobject_cast<QLocalSocket *> (sender());
+  auto *socket = qobject_cast<QLocalSocket *> (sender());
 
   if(!socket)
     return;
@@ -884,7 +884,7 @@ void spot_on_lite_daemon::slot_new_local_connection(void)
   if(!m_local_server)
     return;
 
-  QLocalSocket *socket = m_local_server->nextPendingConnection();
+  auto *socket = m_local_server->nextPendingConnection();
 
   if(!socket)
     return;
@@ -921,7 +921,7 @@ void spot_on_lite_daemon::slot_purge_congestion_control_timeout(void)
 
 void spot_on_lite_daemon::slot_ready_read(void)
 {
-  QLocalSocket *socket = qobject_cast<QLocalSocket *> (sender());
+  auto *socket = qobject_cast<QLocalSocket *> (sender());
 
   if(!socket)
     return;
