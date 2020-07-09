@@ -17,6 +17,7 @@ QMAKE_CXXFLAGS_RELEASE += -O3 \
                           -Wsign-conversion \
                           -Wstack-protector \
                           -Wstrict-overflow=5 \
+                          -Wzero-as-null-pointer-constant \
                           -fPIE \
                           -fstack-protector-all \
                           -fwrapv \
@@ -37,6 +38,7 @@ QMAKE_CXXFLAGS_RELEASE += -O3 \
                           -Wpointer-arith \
                           -Wsign-conversion \
                           -Wstack-protector \
+                          -Wzero-as-null-pointer-constant \
                           -fPIE \
                           -fstack-protector-all \
                           -funroll-loops \
@@ -57,6 +59,7 @@ QMAKE_CXXFLAGS_RELEASE += -O3 \
                           -Wpointer-arith \
                           -Wsign-conversion \
                           -Wstack-protector \
+                          -Wzero-as-null-pointer-constant \
                           -fPIE \
                           -fstack-protector-all \
                           -fwrapv \
@@ -78,6 +81,7 @@ QMAKE_CXXFLAGS_RELEASE += -O3 \
                           -Wpointer-arith \
                           -Wsign-conversion \
                           -Wstack-protector \
+                          -Wzero-as-null-pointer-constant \
                           -fPIE \
                           -fwrapv \
                           -pedantic \
@@ -96,6 +100,7 @@ QMAKE_CXXFLAGS_RELEASE += -O3 \
                           -Wpointer-arith \
                           -Wsign-conversion \
                           -Wstack-protector \
+                          -Wzero-as-null-pointer-constant \
                           -fPIE \
                           -fstack-protector-all \
                           -fwrapv \
@@ -115,6 +120,7 @@ QMAKE_CXXFLAGS_RELEASE += -O3 \
                           -Wpointer-arith \
                           -Wsign-conversion \
                           -Wstack-protector \
+                          -Wzero-as-null-pointer-constant \
                           -fPIE \
                           -fwrapv \
                           -pedantic \

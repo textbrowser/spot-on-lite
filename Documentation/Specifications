@@ -1,5 +1,6 @@
 General Requirements
 
+- C++2011.
 - Child processes should not create local files beyond SSL/TLS certificates
   and log files.
 - Child processes should self-terminate after a configurable period of silence.
