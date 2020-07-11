@@ -679,7 +679,7 @@ int spot_on_lite_daemon_child_client::bytes_in_send_queue(void) const
 	   &count) == -1)
     count = 0;
 #elif defined(Q_OS_MAC)
-  socklen_t length = (socklen_t) sizeof(count);
+  socklen_t length = static_cast<socklen_t> (sizeof(count));
 
   if(getsockopt(static_cast<int> (m_remote_socket->socketDescriptor()),
 		SOL_SOCKET,
@@ -1885,7 +1885,8 @@ void spot_on_lite_daemon_child_client::slot_connected(void)
   m_remote_socket->setSocketOption(QAbstractSocket::LowDelayOption, 1);
 
   int sd = static_cast<int> (m_remote_socket->socketDescriptor());
-  socklen_t optlen = sizeof(m_maximum_accumulated_bytes);
+  socklen_t optlen = static_cast<socklen_t>
+    (sizeof(m_maximum_accumulated_bytes));
 
   setsockopt(sd, SOL_SOCKET, SO_RCVBUF, &m_maximum_accumulated_bytes, optlen);
   setsockopt(sd, SOL_SOCKET, SO_SNDBUF, &m_maximum_accumulated_bytes, optlen);
@@ -2010,7 +2011,7 @@ void spot_on_lite_daemon_child_client::slot_local_socket_connected(void)
   }
 
   int sd = static_cast<int> (m_local_socket->socketDescriptor());
-  socklen_t optlen = sizeof(m_local_so_sndbuf);
+  socklen_t optlen = static_cast<socklen_t> (sizeof(m_local_so_sndbuf));
 
   setsockopt(sd, SOL_SOCKET, SO_RCVBUF, &m_local_so_sndbuf, optlen);
   setsockopt(sd, SOL_SOCKET, SO_SNDBUF, &m_local_so_sndbuf, optlen);

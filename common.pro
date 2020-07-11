@@ -12,6 +12,7 @@ QMAKE_CXXFLAGS_RELEASE += -O3 \
                           -Wconversion \
                           -Wdouble-promotion \
                           -Wextra \
+			  -Wformat=2 \
                           -Woverloaded-virtual \
                           -Wpointer-arith \
                           -Wsign-conversion \
@@ -31,6 +32,7 @@ QMAKE_CXXFLAGS_RELEASE += -O3 \
                           -Wconversion \
                           -Wdouble-promotion \
                           -Wextra \
+			  -Wformat=2 \
                           -Wno-class-memaccess \
                           -Wno-deprecated-copy \
                           -Wno-unused-variable \
@@ -54,6 +56,7 @@ QMAKE_CXXFLAGS_RELEASE += -O3 \
                           -Wconversion \
                           -Wdouble-promotion \
                           -Wextra \
+			  -Wformat=2 \
                           -Wno-unused-variable \
                           -Woverloaded-virtual \
                           -Wpointer-arith \
@@ -76,6 +79,7 @@ QMAKE_CXXFLAGS_RELEASE += -O3 \
                           -Wconversion \
                           -Wdouble-promotion \
                           -Wextra \
+			  -Wformat=2 \
                           -Wno-unused-variable \
                           -Woverloaded-virtual \
                           -Wpointer-arith \
@@ -95,6 +99,7 @@ QMAKE_CXXFLAGS_RELEASE += -O3 \
                           -Wconversion \
                           -Wdouble-promotion \
                           -Wextra \
+			  -Wformat=2 \
                           -Wno-unused-variable \
                           -Woverloaded-virtual \
                           -Wpointer-arith \
@@ -115,6 +120,7 @@ QMAKE_CXXFLAGS_RELEASE += -O3 \
                           -Wconversion \
                           -Wdouble-promotion \
                           -Wextra \
+			  -Wformat=2 \
                           -Wno-unused-variable \
                           -Woverloaded-virtual \
                           -Wpointer-arith \

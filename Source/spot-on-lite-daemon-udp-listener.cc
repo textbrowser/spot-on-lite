@@ -80,7 +80,7 @@ void spot_on_lite_daemon_udp_listener::new_connection
     (QString("%1:%2").arg(localAddress().toString()).arg(localPort()));
   QStringList list(m_configuration.split(",", QString::KeepEmptyParts));
   int maximum_accumulated_bytes = m_parent->maximum_accumulated_bytes();
-  socklen_t optlen = sizeof(maximum_accumulated_bytes);
+  socklen_t optlen = static_cast<socklen_t> (sizeof(maximum_accumulated_bytes));
 
   setsockopt(sd, SOL_SOCKET, SO_RCVBUF, &maximum_accumulated_bytes, optlen);
   setsockopt(sd, SOL_SOCKET, SO_SNDBUF, &maximum_accumulated_bytes, optlen);
@@ -127,7 +127,8 @@ void spot_on_lite_daemon_udp_listener::slot_general_timeout(void)
       int maximum_accumulated_bytes = m_parent ?
 	m_parent->maximum_accumulated_bytes() : 8388608;
       int sd = static_cast<int> (socketDescriptor());
-      socklen_t optlen = sizeof(maximum_accumulated_bytes);
+      socklen_t optlen = static_cast<socklen_t>
+	(sizeof(maximum_accumulated_bytes));
 
       setsockopt(sd, SOL_SOCKET, SO_RCVBUF, &maximum_accumulated_bytes, optlen);
       setsockopt(sd, SOL_SOCKET, SO_SNDBUF, &maximum_accumulated_bytes, optlen);
