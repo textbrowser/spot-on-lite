@@ -161,14 +161,6 @@ void spot_on_lite_daemon_tcp_listener::slot_start_timeout(void)
   if(isListening())
     return;
 
-  int maximum_accumulated_bytes = m_parent ?
-    m_parent->maximum_accumulated_bytes() : 8388608;
-  int sd = static_cast<int> (socketDescriptor());
-  socklen_t optlen = sizeof(maximum_accumulated_bytes);
-
-  setsockopt(sd, SOL_SOCKET, SO_RCVBUF, &maximum_accumulated_bytes, optlen);
-  setsockopt(sd, SOL_SOCKET, SO_SNDBUF, &maximum_accumulated_bytes, optlen);
-
   /*
   ** 0 - IP Address
   ** 1 - Port
@@ -178,5 +170,15 @@ void spot_on_lite_daemon_tcp_listener::slot_start_timeout(void)
   QStringList list(m_configuration.split(",", QString::KeepEmptyParts));
 
   if(listen(QHostAddress(list.value(0)), list.value(1).toUShort()))
-    setMaxPendingConnections(list.value(2).toInt());
+    {
+      int maximum_accumulated_bytes = m_parent ?
+	m_parent->maximum_accumulated_bytes() : 8388608;
+      int sd = static_cast<int> (socketDescriptor());
+      socklen_t optlen = static_cast<socklen_t>
+	(sizeof(maximum_accumulated_bytes));
+
+      setMaxPendingConnections(list.value(2).toInt());
+      setsockopt(sd, SOL_SOCKET, SO_RCVBUF, &maximum_accumulated_bytes, optlen);
+      setsockopt(sd, SOL_SOCKET, SO_SNDBUF, &maximum_accumulated_bytes, optlen);
+    }
 }
