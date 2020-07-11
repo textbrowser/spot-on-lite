@@ -55,12 +55,12 @@ extern "C"
 #include "spot-on-lite-daemon-tcp-listener.h"
 #include "spot-on-lite-daemon-udp-listener.h"
 
-int spot_on_lite_daemon::s_signal_usr1_fd[2];
+int spot_on_lite_daemon::s_signal_fd[2];
 
 spot_on_lite_daemon::spot_on_lite_daemon
 (const QString &configuration_file_name):QObject()
 {
-  if(::socketpair(AF_UNIX, SOCK_STREAM, 0, s_signal_usr1_fd))
+  if(::socketpair(AF_UNIX, SOCK_STREAM, 0, s_signal_fd))
     qFatal("spot_on_lite_daemon::spot_on_lite_daemon(): "
 	   "socketpair() failure. Exiting.");
 
@@ -70,8 +70,8 @@ spot_on_lite_daemon::spot_on_lite_daemon
   m_local_so_sndbuf = 32768; // 32 KiB
   m_local_socket_server_directory_name = "/tmp";
   m_maximum_accumulated_bytes = 8 * 1024 * 1024; // 8 MiB
-  m_signal_usr1_socket_notifier = new QSocketNotifier
-    (s_signal_usr1_fd[1], QSocketNotifier::Read, this);
+  m_signal_socket_notifier = new QSocketNotifier
+    (s_signal_fd[1], QSocketNotifier::Read, this);
   m_start_timer.start(5000);
   m_statistics_file_name = "/tmp/spot-on-lite-daemon-statistics.sqlite";
   connect(&m_congestion_control_timer,
@@ -86,10 +86,10 @@ spot_on_lite_daemon::spot_on_lite_daemon
 	  SIGNAL(timeout(void)),
 	  this,
 	  SLOT(slot_start_timeout(void)));
-  connect(m_signal_usr1_socket_notifier,
+  connect(m_signal_socket_notifier,
 	  SIGNAL(activated(int)),
 	  this,
-	  SLOT(slot_signal_usr1(void)));
+	  SLOT(slot_signal(void)));
 }
 
 spot_on_lite_daemon::spot_on_lite_daemon(void):QObject()
@@ -98,7 +98,7 @@ spot_on_lite_daemon::spot_on_lite_daemon(void):QObject()
   m_local_so_sndbuf = 0;
   m_local_socket_server_directory_name = "/tmp";
   m_maximum_accumulated_bytes = 0;
-  m_signal_usr1_socket_notifier = nullptr;
+  m_signal_socket_notifier = nullptr;
 }
 
 spot_on_lite_daemon::~spot_on_lite_daemon()
@@ -188,8 +188,17 @@ void spot_on_lite_daemon::prepare_listeners(void)
 
   for(int i = 0; i < m_listeners_properties.size(); i++)
     if(m_listeners_properties.at(i).contains("tcp"))
-      m_listeners << new spot_on_lite_daemon_tcp_listener
-	(m_listeners_properties.at(i), this);
+      {
+	spot_on_lite_daemon_tcp_listener *listener =
+	  new spot_on_lite_daemon_tcp_listener
+	  (m_listeners_properties.at(i), this);
+
+	connect(this,
+		SIGNAL(child_died(const pid_t)),
+		listener,
+		SLOT(slot_child_died(const pid_t)));
+	m_listeners << listener;
+      }
     else
       m_listeners << new spot_on_lite_daemon_udp_listener
 	(m_listeners_properties.at(i), this);
@@ -937,7 +946,9 @@ void spot_on_lite_daemon::slot_ready_read(void)
     {
       it.next();
 
-      if(it.key() && it.key() != socket)
+      if(it.key() &&
+	 it.key() != socket &&
+	 it.key()->state() == QLocalSocket::ConnectedState)
 	{
 	  int maximum = m_local_so_sndbuf -
 	    static_cast<int> (it.key()->bytesToWrite());
@@ -948,22 +959,42 @@ void spot_on_lite_daemon::slot_ready_read(void)
     }
 }
 
-void spot_on_lite_daemon::slot_signal_usr1(void)
+void spot_on_lite_daemon::slot_signal(void)
 {
-  if(!m_signal_usr1_socket_notifier)
+  if(!m_signal_socket_notifier)
     return;
 
-  m_signal_usr1_socket_notifier->setEnabled(false);
+  m_signal_socket_notifier->setEnabled(false);
 
-  char a = 0;
-  ssize_t rc = ::read(s_signal_usr1_fd[1], &a, sizeof(a));
+  char a[32];
 
-  Q_UNUSED(rc);
+  memset(a, 0, sizeof(a));
 
-  if(a == 1)
+  ssize_t rc = ::read(s_signal_fd[1], a, sizeof(a));
+
+  if(rc > 0)
     {
-      start();
-      m_signal_usr1_socket_notifier->setEnabled(true);
+      if(a[0] == 'c' || a[0] == 'u')
+	{
+	  if(a[0] == 'c')
+	    {
+	      QString string(a);
+
+	      string = string.mid(1);
+	      std::reverse(string.begin(), string.end());
+
+	      pid_t pid = static_cast<pid_t> (string.toLongLong());
+
+	      if(kill(pid, 0) == -1 && errno == ESRCH)
+		emit child_died(pid);
+	    }
+	  else
+	    start();
+
+	  m_signal_socket_notifier->setEnabled(true);
+	}
+      else
+	QCoreApplication::exit(0);
     }
   else
     QCoreApplication::exit(0);

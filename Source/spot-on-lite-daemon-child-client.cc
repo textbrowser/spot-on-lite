@@ -1437,7 +1437,8 @@ void spot_on_lite_daemon_child_client::process_read_data(const QByteArray &d)
     {
       m_keep_alive_timer.start();
 
-      if(record_congestion(data))
+      if(m_local_socket->state() == QLocalSocket::ConnectedState &&
+	 record_congestion(data))
 	{
 	  int maximum = m_local_so_sndbuf -
 	    static_cast<int> (m_local_socket->bytesToWrite());

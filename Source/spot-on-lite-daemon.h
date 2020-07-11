@@ -68,7 +68,7 @@ class spot_on_lite_daemon: public QObject
   QHash<int, pid_t> m_peer_pids;
   QList<QObject *> m_listeners;
   QPointer<QLocalServer> m_local_server;
-  QSocketNotifier *m_signal_usr1_socket_notifier;
+  QSocketNotifier *m_signal_socket_notifier;
   QString m_certificates_file_name;
   QString m_child_process_file_name;
   QString m_child_process_ld_library_path;
@@ -85,7 +85,7 @@ class spot_on_lite_daemon: public QObject
   QVector<QString> m_peers_properties;
   int m_local_so_sndbuf;
   int m_maximum_accumulated_bytes;
-  static int s_signal_usr1_fd[2];
+  static int s_signal_fd[2];
   void prepare_listeners(void);
   void prepare_local_socket_server(void);
   void prepare_peers(void);
@@ -98,8 +98,11 @@ class spot_on_lite_daemon: public QObject
   void slot_peer_process_timeout(void);
   void slot_purge_congestion_control_timeout(void);
   void slot_ready_read(void);
-  void slot_signal_usr1(void);
+  void slot_signal(void);
   void slot_start_timeout(void);
+
+ signals:
+  void child_died(const pid_t pid);
 };
 
 #endif

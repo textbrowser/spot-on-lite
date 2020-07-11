@@ -153,14 +153,19 @@ void spot_on_lite_daemon_tcp_listener::incomingConnection
       _exit(EXIT_SUCCESS);
     }
   else
-    ::close(sd);
+    {
+      ::close(sd);
+      m_child_pids[pid] = 0;
+    }
+}
+
+void spot_on_lite_daemon_tcp_listener::slot_child_died(const pid_t pid)
+{
+  m_child_pids.remove(pid);
 }
 
 void spot_on_lite_daemon_tcp_listener::slot_start_timeout(void)
-{
-  if(isListening())
-    return;
-
+{  
   /*
   ** 0 - IP Address
   ** 1 - Port
@@ -168,6 +173,16 @@ void spot_on_lite_daemon_tcp_listener::slot_start_timeout(void)
   */
 
   QStringList list(m_configuration.split(",", QString::KeepEmptyParts));
+  int maximum_clients = list.value(2).toInt();
+
+  if(m_child_pids.size() >= maximum_clients)
+    {
+      close();
+      return;
+    }
+
+  if(isListening())
+    return;
 
   if(listen(QHostAddress(list.value(0)), list.value(1).toUShort()))
     {
@@ -177,7 +192,7 @@ void spot_on_lite_daemon_tcp_listener::slot_start_timeout(void)
       socklen_t optlen = static_cast<socklen_t>
 	(sizeof(maximum_accumulated_bytes));
 
-      setMaxPendingConnections(list.value(2).toInt());
+      setMaxPendingConnections(maximum_clients);
       setsockopt(sd, SOL_SOCKET, SO_RCVBUF, &maximum_accumulated_bytes, optlen);
       setsockopt(sd, SOL_SOCKET, SO_SNDBUF, &maximum_accumulated_bytes, optlen);
     }

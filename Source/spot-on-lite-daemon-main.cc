@@ -49,25 +49,46 @@ extern "C"
 
 void spot_on_lite_daemon::handler_signal(int signal_number)
 {
-  waitpid(-1, nullptr, WNOHANG);
+  char a[32];
+  pid_t pid = waitpid(-1, nullptr, WNOHANG);
 
-  char a = 1;
+  for(size_t i = 0; i < sizeof(a); i++) // memset()
+    a[i] = 0;
+
+  if(pid > -1)
+    for(size_t i = 1; i < sizeof(a); i++)
+      {
+	a[i] = static_cast<char> (pid % 10 + 48);
+	pid /= 10;
+
+	if(pid == 0)
+	  break;
+      }
 
   switch(signal_number)
     {
     case SIGCHLD:
-      return;
+      {
+	a[0] = 'c';
+	break;
+      }
     case SIGUSR1:
-      break;
+      {
+	a[0] = 'u';
+	break;
+      }
     case SIGUSR2:
-      return;
+      {
+	return;
+      }
     default:
-      a = 0;
+      {
+	a[0] = 'z'; // Error.
+	break;
+      }
     }
 
-  ssize_t rc = ::write(s_signal_usr1_fd[0], &a, sizeof(a));
-
-  (void) rc;
+  (void) ::write(s_signal_fd[0], a, strlen(a));
 }
 
 static int make_daemon(void)
