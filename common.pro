@@ -20,6 +20,7 @@ QMAKE_CXXFLAGS_RELEASE += -O3 \
                           -Wsign-conversion \
                           -Wstack-protector \
                           -Wstrict-overflow=5 \
+                          -Wundef \
                           -Wzero-as-null-pointer-constant \
                           -fPIE \
                           -fstack-protector-all \
@@ -42,6 +43,7 @@ QMAKE_CXXFLAGS_RELEASE += -O3 \
                           -Wno-unused-variable \
                           -Woverloaded-virtual \
                           -Wpointer-arith \
+                          -Wundef \
                           -Wsign-conversion \
                           -Wstack-protector \
                           -Wzero-as-null-pointer-constant \
@@ -68,6 +70,7 @@ QMAKE_CXXFLAGS_RELEASE += -O3 \
                           -Wpointer-arith \
                           -Wsign-conversion \
                           -Wstack-protector \
+                          -Wundef \
                           -Wzero-as-null-pointer-constant \
                           -fPIE \
                           -fstack-protector-all \
@@ -93,6 +96,7 @@ QMAKE_CXXFLAGS_RELEASE += -O3 \
                           -Wpointer-arith \
                           -Wsign-conversion \
                           -Wstack-protector \
+                          -Wundef \
                           -Wzero-as-null-pointer-constant \
                           -fPIE \
                           -fwrapv \
@@ -115,6 +119,7 @@ QMAKE_CXXFLAGS_RELEASE += -O3 \
                           -Wpointer-arith \
                           -Wsign-conversion \
                           -Wstack-protector \
+                          -Wundef \
                           -Wzero-as-null-pointer-constant \
                           -fPIE \
                           -fstack-protector-all \
@@ -138,6 +143,7 @@ QMAKE_CXXFLAGS_RELEASE += -O3 \
                           -Wpointer-arith \
                           -Wsign-conversion \
                           -Wstack-protector \
+                          -Wundef \
                           -Wzero-as-null-pointer-constant \
                           -fPIE \
                           -fwrapv \
