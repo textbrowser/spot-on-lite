@@ -189,8 +189,7 @@ void spot_on_lite_daemon::prepare_listeners(void)
   for(int i = 0; i < m_listeners_properties.size(); i++)
     if(m_listeners_properties.at(i).contains("tcp"))
       {
-	spot_on_lite_daemon_tcp_listener *listener =
-	  new spot_on_lite_daemon_tcp_listener
+	auto *listener = new spot_on_lite_daemon_tcp_listener
 	  (m_listeners_properties.at(i), this);
 
 	connect(this,
