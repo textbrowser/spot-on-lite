@@ -88,7 +88,7 @@ void spot_on_lite_daemon::handler_signal(int signal_number)
       }
     }
 
-  (void) ::write(s_signal_fd[0], a, strlen(a));
+  Q_UNUSED(::write(s_signal_fd[0], a, strlen(a)));
 }
 
 static int make_daemon(void)
