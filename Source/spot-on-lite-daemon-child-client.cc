@@ -106,7 +106,7 @@ spot_on_lite_daemon_child_client::spot_on_lite_daemon_child_client
   m_certificates_file_name = certificates_file_name;
   m_client_role = socket_descriptor < 0;
   m_congestion_control_file_name = congestion_control_file_name;
-  m_end_of_message_marker = end_of_message_marker;
+  m_end_of_message_marker = end_of_message_marker.toLatin1();
   m_general_timer.start(5000);
   m_identity_lifetime = static_cast<unsigned int>
     (qBound(5, identities_lifetime, 600));
@@ -1695,6 +1695,7 @@ void spot_on_lite_daemon_child_client::record_remote_identity
 
       QSqlDatabase::removeDatabase(QString::number(db_connection_id));
 #endif
+      share_identity(data + m_end_of_message_marker);
     }
 }
 
@@ -1789,6 +1790,19 @@ set_ssl_ciphers(const QList<QSslCipher> &ciphers,
     configuration.setCiphers(ciphers);
   else
     configuration.setCiphers(preferred);
+}
+
+void spot_on_lite_daemon_child_client::share_identity
+(const QByteArray &data) const
+{
+  if(m_client_role)
+    /*
+    ** Only server sockets will record identities.
+    */
+
+    return;
+
+  m_local_socket->write(data);
 }
 
 void spot_on_lite_daemon_child_client::slot_attempt_local_connection(void)
