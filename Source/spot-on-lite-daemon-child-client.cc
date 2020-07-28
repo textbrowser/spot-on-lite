@@ -106,7 +106,7 @@ spot_on_lite_daemon_child_client::spot_on_lite_daemon_child_client
   m_certificates_file_name = certificates_file_name;
   m_client_role = socket_descriptor < 0;
   m_congestion_control_file_name = congestion_control_file_name;
-  m_end_of_message_marker = end_of_message_marker.toLatin1();
+  m_end_of_message_marker = end_of_message_marker.toUtf8();
   m_general_timer.start(5000);
   m_identity_lifetime = static_cast<unsigned int>
     (qBound(5, identities_lifetime, 600));
