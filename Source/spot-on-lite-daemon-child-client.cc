@@ -1792,10 +1792,9 @@ set_ssl_ciphers(const QList<QSslCipher> &ciphers,
     configuration.setCiphers(preferred);
 }
 
-void spot_on_lite_daemon_child_client::share_identity
-(const QByteArray &data) const
+void spot_on_lite_daemon_child_client::share_identity(const QByteArray &data)
 {
-  if(m_client_role)
+  if(m_client_role || !record_congestion(data))
     /*
     ** Only server sockets will record identities.
     */

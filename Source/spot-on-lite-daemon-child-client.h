@@ -168,7 +168,7 @@ class spot_on_lite_daemon_child_client: public QObject
   void save_statistic(const QString &key, const QString &value);
   void set_ssl_ciphers(const QList<QSslCipher> &ciphers,
 		       QSslConfiguration &configuration) const;
-  void share_identity(const QByteArray &data) const;
+  void share_identity(const QByteArray &data);
   void stop_threads_and_timers(void);
   void write(const QByteArray &data);
 

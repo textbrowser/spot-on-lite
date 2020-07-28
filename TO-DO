@@ -6,6 +6,8 @@ Completed Items
 - DTLS.
 - Disable Nagle's algorithm.
 - Disable socket linger. Optional.
+- Distribute CD identities. An identity is shared whenever a server
+  receives the identity.
 - Distribute capabilities.
 - Echo through child processes.
 - Limit number of processes via /etc/security/limits.conf.
@@ -24,7 +26,6 @@ Completed Items
 Remaining Items
 
 - Configuration panel.
-- Distribute CD identities.
 - Echo proxy.
 - IPv6 scope identities?
 - Optionally share CD identities in client mode.
