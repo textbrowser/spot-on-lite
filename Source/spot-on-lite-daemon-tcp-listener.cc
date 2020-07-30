@@ -73,7 +73,11 @@ void spot_on_lite_daemon_tcp_listener::incomingConnection
   if(sd == -1)
     return;
 
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 15, 0))
+  QStringList list(m_configuration.split(",", Qt::KeepEmptyParts));
+#else
   QStringList list(m_configuration.split(",", QString::KeepEmptyParts));
+#endif
   int listener_sd = static_cast<int> (socketDescriptor());
   int maximum_accumulated_bytes = m_parent->maximum_accumulated_bytes();
   int so_linger = list.value(6).toInt();
@@ -173,7 +177,11 @@ void spot_on_lite_daemon_tcp_listener::slot_start_timeout(void)
   ** 2 - Backlog
   */
 
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 15, 0))
+  QStringList list(m_configuration.split(",", Qt::KeepEmptyParts));
+#else
   QStringList list(m_configuration.split(",", QString::KeepEmptyParts));
+#endif
   int maximum_clients = list.value(2).toInt();
 
   if(m_child_pids.size() >= maximum_clients)

@@ -78,7 +78,11 @@ void spot_on_lite_daemon_udp_listener::new_connection
   QPointer<spot_on_lite_daemon_child_client> client;
   QString server_identity
     (QString("%1:%2").arg(localAddress().toString()).arg(localPort()));
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 15, 0))
+  QStringList list(m_configuration.split(",", Qt::KeepEmptyParts));
+#else
   QStringList list(m_configuration.split(",", QString::KeepEmptyParts));
+#endif
   int maximum_accumulated_bytes = m_parent->maximum_accumulated_bytes();
   socklen_t optlen = static_cast<socklen_t> (sizeof(maximum_accumulated_bytes));
 
@@ -139,7 +143,11 @@ void spot_on_lite_daemon_udp_listener::slot_general_timeout(void)
       ** 2 - Backlog
       */
 
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 15, 0))
+      QStringList list(m_configuration.split(",", Qt::KeepEmptyParts));
+#else
       QStringList list(m_configuration.split(",", QString::KeepEmptyParts));
+#endif
       QUdpSocket::BindMode flags = QUdpSocket::ReuseAddressHint |
 	QUdpSocket::ShareAddress;
 

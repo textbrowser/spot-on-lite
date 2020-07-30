@@ -246,8 +246,13 @@ void spot_on_lite_daemon::prepare_peers(void)
 	  continue;
 
       QString server_identity;
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 15, 0))
+      QStringList list
+	(m_peers_properties.at(i).split(",", Qt::KeepEmptyParts));
+#else
       QStringList list
 	(m_peers_properties.at(i).split(",", QString::KeepEmptyParts));
+#endif
       pid_t pid = 0;
       std::string command(m_child_process_file_name.toStdString());
 #ifdef Q_OS_MAC
@@ -554,8 +559,13 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
       }
     else if(key.startsWith("listener") || key.startsWith("peer"))
       {
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 15, 0))
+	QStringList list
+	  (settings.value(key).toString().split(",", Qt::KeepEmptyParts));
+#else
 	QStringList list
 	  (settings.value(key).toString().split(",", QString::KeepEmptyParts));
+#endif
 
 	/*
 	** 0  - IP Address
