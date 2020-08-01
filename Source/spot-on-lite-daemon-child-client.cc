@@ -137,9 +137,12 @@ spot_on_lite_daemon_child_client::spot_on_lite_daemon_child_client
   m_remote_socket->setReadBufferSize(m_maximum_accumulated_bytes);
   m_server_identity = server_identity;
   m_silence = 1000 * qBound(15, silence, 3600);
+  m_spot_on_lite = m_client_role;
   m_ssl_control_string = ssl_control_string.trimmed();
   m_ssl_key_size = ssl_key_size;
-  m_statistics_file_name = "/tmp/spot-on-lite-daemon-statistics.sqlite";
+  m_statistics_file_name = QDir::tempPath() +
+    QDir::separator() +
+    "spot-on-lite-daemon-statistics.sqlite";
 
   if(!(m_ssl_key_size == 2048 ||
        m_ssl_key_size == 3072 ||
@@ -1361,7 +1364,12 @@ void spot_on_lite_daemon_child_client::process_data(void)
     {
       const QByteArray &bytes(vector.at(i));
 
-      if((index = bytes.indexOf("content=")) >= 0)
+      if(bytes.contains("type=0095a&content="))
+	{
+	  if(m_spot_on_lite)
+	    emit write_signal(bytes);
+	}
+      else if((index = bytes.indexOf("content=")) >= 0)
 	{
 	  QByteArray data(bytes.mid(8 + index).trimmed());
 	  QByteArray hash;
@@ -1489,6 +1497,11 @@ void spot_on_lite_daemon_child_client::process_remote_content(void)
 	  record_remote_identity(data);
 	  continue;
 	}
+      else if(data.contains("type=0111&content="))
+	{
+	  m_spot_on_lite = true;
+	  continue;
+	}
 
       if(record_congestion(data))
 	{
@@ -1503,8 +1516,7 @@ void spot_on_lite_daemon_child_client::process_remote_content(void)
 #if defined(Q_PROCESSOR_ARM) || defined(__arm__)
 #else
   save_statistic
-    ("m_remote_content remaining",
-     QString::number(m_remote_content.length()));
+    ("m_remote_content remaining", QString::number(m_remote_content.length()));
 #endif
 }
 
@@ -1888,6 +1900,31 @@ void spot_on_lite_daemon_child_client::slot_broadcast_capabilities(void)
 			QString("type=0014&content=\r\n\r\n\r\n").length()));
   results.replace("%2", data.toBase64());
   write(results);
+
+  if(m_client_role)
+    {
+      /*
+      ** We are Spot-On-Lite!
+      */
+
+      QByteArray data;
+      QByteArray results;
+
+      data.append("Spot-On-Lite");
+      results.append("POST HTTP/1.1\r\n"
+		     "Content-Type: application/x-www-form-urlencoded\r\n"
+		     "Content-Length: %1\r\n"
+		     "\r\n"
+		     "type=0111&content=%2\r\n"
+		     "\r\n\r\n");
+      results.replace
+	("%1",
+	 QByteArray::
+	 number(data.length() +
+		QString("type=0111&content=\r\n\r\n\r\n").length()));
+      results.replace("%2", data);
+      write(results);
+    }
 }
 
 void spot_on_lite_daemon_child_client::slot_connected(void)

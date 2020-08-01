@@ -123,6 +123,7 @@ class spot_on_lite_daemon_child_client: public QObject
   QTimer m_general_timer;
   QTimer m_keep_alive_timer;
   bool m_client_role;
+  bool m_spot_on_lite;
   int m_local_so_sndbuf;
   int m_maximum_accumulated_bytes;
   int m_silence;
