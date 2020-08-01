@@ -90,7 +90,7 @@ class spot_on_lite_daemon_child_client: public QObject
   QDtlsClientVerifier m_dtls_client_verifier;
 #endif
   QFuture<void> m_expired_identities_future;
-  QFuture<void> m_process_data_future;
+  QFuture<void> m_process_local_content_future;
 #ifdef SPOTON_LITE_DAEMON_ENABLE_IDENTITIES_CONTAINER
   QHash<QByteArray, QDateTime> m_remote_identities;
 #endif
@@ -155,7 +155,7 @@ class spot_on_lite_daemon_child_client: public QObject
 #endif
   void prepare_local_socket(void);
   void prepare_ssl_tls_configuration(const QList<QByteArray> &list);
-  void process_data(void);
+  void process_local_content(void);
   void process_read_data(const QByteArray &data);
   void process_remote_content(void);
   void purge_containers(void);

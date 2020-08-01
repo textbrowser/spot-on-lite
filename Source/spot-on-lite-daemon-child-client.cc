@@ -1278,7 +1278,7 @@ void spot_on_lite_daemon_child_client::prepare_ssl_tls_configuration
     }
 }
 
-void spot_on_lite_daemon_child_client::process_data(void)
+void spot_on_lite_daemon_child_client::process_local_content(void)
 {
   {
     QReadLocker lock(&m_local_content_mutex);
@@ -1306,7 +1306,7 @@ void spot_on_lite_daemon_child_client::process_data(void)
       else
 	break;
     }
-  while(!m_process_data_future.isCanceled());
+  while(!m_process_local_content_future.isCanceled());
 
 #if defined(Q_PROCESSOR_ARM) || defined(__arm__)
 #else
@@ -1335,7 +1335,7 @@ void spot_on_lite_daemon_child_client::process_data(void)
       {
 	m_local_content_last_parsed = QDateTime::currentMSecsSinceEpoch();
 
-	if(m_process_data_future.isCanceled())
+	if(m_process_local_content_future.isCanceled())
 	  goto done_label;
 
 	QByteArray bytes
@@ -1353,7 +1353,7 @@ void spot_on_lite_daemon_child_client::process_data(void)
 #endif
   }
 
-  if(m_process_data_future.isCanceled() || vector.isEmpty())
+  if(m_process_local_content_future.isCanceled() || vector.isEmpty())
     goto done_label;
 
 #if defined(Q_PROCESSOR_ARM) || defined(__arm__)
@@ -1368,9 +1368,25 @@ void spot_on_lite_daemon_child_client::process_data(void)
       if(bytes.contains("type=0095a&content="))
 	{
 	  if(m_spot_on_lite)
+	    /*
+	    ** An identity was shared by some other local Spot-On-Lite
+	    ** process. If this process represents a Spot-On-Lite client,
+	    ** share the identity with it.
+	    */
+
 	    emit write_signal(bytes);
+
+	  continue;
 	}
-      else if((index = bytes.indexOf("content=")) >= 0)
+
+      if(identities.isEmpty())
+	/*
+	** Identities have not been recorded.
+	*/
+
+	continue;
+
+      if((index = bytes.indexOf("content=")) >= 0)
 	{
 	  QByteArray data(bytes.mid(8 + index).trimmed());
 	  QByteArray hash;
@@ -1397,7 +1413,7 @@ void spot_on_lite_daemon_child_client::process_data(void)
 
 	  QHashIterator<QByteArray, QString> it(identities);
 
-	  while(it.hasNext() && !m_process_data_future.isCanceled())
+	  while(it.hasNext() && !m_process_local_content_future.isCanceled())
 	    {
 	      it.next();
 
@@ -1418,7 +1434,7 @@ void spot_on_lite_daemon_child_client::process_data(void)
 
  done_label:
 
-  if(m_process_data_future.isCanceled())
+  if(m_process_local_content_future.isCanceled())
     {
       QWriteLocker lock(&m_local_content_mutex);
 
@@ -2102,9 +2118,9 @@ void spot_on_lite_daemon_child_client::slot_local_socket_ready_read(void)
   else
     lock.unlock();
 
-  if(m_process_data_future.isFinished())
-    m_process_data_future = QtConcurrent::run
-      (this, &spot_on_lite_daemon_child_client::process_data);
+  if(m_process_local_content_future.isFinished())
+    m_process_local_content_future = QtConcurrent::run
+      (this, &spot_on_lite_daemon_child_client::process_local_content);
 }
 
 void spot_on_lite_daemon_child_client::slot_ready_read(void)
@@ -2190,14 +2206,14 @@ void spot_on_lite_daemon_child_client::stop_threads_and_timers(void)
   m_expired_identities_timer.stop();
   m_general_timer.stop();
   m_keep_alive_timer.stop();
-  m_process_data_future.cancel();
+  m_process_local_content_future.cancel();
 
   /*
   ** Wait for threads to complete.
   */
 
   m_expired_identities_future.waitForFinished();
-  m_process_data_future.waitForFinished();
+  m_process_local_content_future.waitForFinished();
 }
 
 void spot_on_lite_daemon_child_client::write(const QByteArray &data)
