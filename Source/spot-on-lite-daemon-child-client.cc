@@ -1316,7 +1316,7 @@ void spot_on_lite_daemon_child_client::process_data(void)
   {
     QWriteLocker lock(&m_local_content_mutex);
 
-    if(identities.isEmpty() || m_end_of_message_marker.isEmpty())
+    if(m_end_of_message_marker.isEmpty())
       {
 	emit write_signal(m_local_content);
 	m_local_content.clear();
