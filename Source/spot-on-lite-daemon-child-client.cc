@@ -1368,7 +1368,7 @@ void spot_on_lite_daemon_child_client::process_data(void)
       if(bytes.contains("type=0095a&content="))
 	{
 	  if(m_spot_on_lite)
-	    emit write_signal(bytes);
+	    record_remote_identity(bytes);
 	}
       else if((index = bytes.indexOf("content=")) >= 0)
 	{
@@ -1637,13 +1637,6 @@ void spot_on_lite_daemon_child_client::record_certificate
 void spot_on_lite_daemon_child_client::record_remote_identity
 (const QByteArray &data)
 {
-  if(m_client_role)
-    /*
-    ** Only server sockets will record identities.
-    */
-
-    return;
-
   QByteArray algorithm;
   QByteArray identity;
   int index = data.indexOf("content=");
@@ -1810,7 +1803,7 @@ void spot_on_lite_daemon_child_client::share_identity(const QByteArray &data)
 {
   if(m_client_role || !record_congestion(data))
     /*
-    ** Only server sockets will record identities.
+    ** Only server sockets will share identities.
     */
 
     return;
