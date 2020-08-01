@@ -68,12 +68,14 @@ spot_on_lite_daemon::spot_on_lite_daemon
   m_congestion_control_lifetime = 90; // Seconds
   m_congestion_control_timer.start(15000); // 15 Seconds
   m_local_so_sndbuf = 32768; // 32 KiB
-  m_local_socket_server_directory_name = "/tmp";
+  m_local_socket_server_directory_name = QDir::tempPath();
   m_maximum_accumulated_bytes = 8 * 1024 * 1024; // 8 MiB
   m_signal_socket_notifier = new QSocketNotifier
     (s_signal_fd[1], QSocketNotifier::Read, this);
   m_start_timer.start(5000);
-  m_statistics_file_name = "/tmp/spot-on-lite-daemon-statistics.sqlite";
+  m_statistics_file_name = QDir::tempPath() +
+    QDir::separator() +
+    "spot-on-lite-daemon-statistics.sqlite";
   connect(&m_congestion_control_timer,
 	  SIGNAL(timeout(void)),
 	  this,
@@ -96,7 +98,7 @@ spot_on_lite_daemon::spot_on_lite_daemon(void):QObject()
 {
   m_congestion_control_lifetime = 90; // Seconds
   m_local_so_sndbuf = 0;
-  m_local_socket_server_directory_name = "/tmp";
+  m_local_socket_server_directory_name = QDir::tempPath();
   m_maximum_accumulated_bytes = 0;
   m_signal_socket_notifier = nullptr;
 }
