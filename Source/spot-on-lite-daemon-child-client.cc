@@ -367,6 +367,7 @@ spot_on_lite_daemon_child_client::spot_on_lite_daemon_child_client
     }
 
   save_statistic("client?", QVariant(m_client_role).toString());
+  save_statistic("spot-on-lite?", QVariant(m_spot_on_lite).toString());
 }
 
 spot_on_lite_daemon_child_client::~spot_on_lite_daemon_child_client()
@@ -1500,6 +1501,7 @@ void spot_on_lite_daemon_child_client::process_remote_content(void)
       else if(data.contains("type=0111&content="))
 	{
 	  m_spot_on_lite = true;
+	  save_statistic("spot-on-lite?", "true");
 	  continue;
 	}
 
