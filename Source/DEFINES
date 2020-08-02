@@ -1,0 +1,18 @@
+SPOTON_LITE_DAEMON_CHILD_ECL_SUPPORTED
+
+Automatically defined if the directory /usr/bin/ecl or if the
+directory /usr/local/bin/ecl exists. A Common LISP implementation of
+SHA-512 is included if one of the aforementioned directories exists.
+
+SPOTON_LITE_DAEMON_DISABLE_SOME_STATISTICS
+
+If defined, some statistics are not enabled. Enable this option on
+systems where storage performance is limited.
+
+SPOTON_LITE_DAEMON_ENABLE_IDENTITIES_CONTAINER
+
+If enabled, remote identities are recorded in memory-resident container.
+
+SPOTON_LITE_DAEMON_IDENTITIES_CONTAINER_MAXIMUM_SIZE
+
+Maximum size of memory-resident identities container.
