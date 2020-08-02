@@ -170,7 +170,7 @@ void spot_on_lite_daemon_tcp_listener::slot_child_died(const pid_t pid)
 }
 
 void spot_on_lite_daemon_tcp_listener::slot_start_timeout(void)
-{  
+{
   /*
   ** 0 - IP Address
   ** 1 - Port
