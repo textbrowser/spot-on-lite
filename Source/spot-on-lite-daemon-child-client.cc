@@ -532,7 +532,8 @@ default_ssl_ciphers(void) const
 	    {
 	      log
 		("spot_on_lite_daemon_child_client::"
-		 "default_ssl_ciphers(): SSL_CTX_new(TLSv1_method()) failure.");
+		 "default_ssl_ciphers(): SSL_CTX_new(TLSv1_method()) "
+		 "failure.");
 	      goto done_label;
 	    }
 	}
@@ -543,7 +544,8 @@ default_ssl_ciphers(void) const
 	    {
 	      log
 		("spot_on_lite_daemon_child_client::"
-		 "default_ssl_ciphers(): SSL_CTX_new(SSLv3_method()) failure.");
+		 "default_ssl_ciphers(): SSL_CTX_new(SSLv3_method()) "
+		 "failure.");
 	      goto done_label;
 	    }
 #endif
@@ -625,7 +627,8 @@ bool spot_on_lite_daemon_child_client::memcmp(const QByteArray &a,
   return rc == 0;
 }
 
-bool spot_on_lite_daemon_child_client::record_congestion(const QByteArray &data)
+bool spot_on_lite_daemon_child_client::record_congestion
+(const QByteArray &data)
 {
   bool added = false;
   quint64 db_connection_id = db_id();
@@ -795,7 +798,8 @@ void spot_on_lite_daemon_child_client::data_received
 	      if(m_dtls_client_verifier.
 		 verifyClient(socket, data, peer_address, peer_port))
 		m_verified_udp_clients[pair] = 0;
-	      else if(m_dtls_client_verifier.dtlsError() != QDtlsError::NoError)
+	      else if(m_dtls_client_verifier.dtlsError() !=
+		      QDtlsError::NoError)
 		{
 		  slot_disconnected();
 		  return;
@@ -1253,13 +1257,15 @@ void spot_on_lite_daemon_child_client::prepare_ssl_tls_configuration
 	    {
 	      if(m_client_role)
 		{
-		  m_ssl_configuration.setPeerVerifyMode(QSslSocket::VerifyNone);
+		  m_ssl_configuration.setPeerVerifyMode
+		    (QSslSocket::VerifyNone);
 		  m_ssl_configuration.setProtocol(QSsl::DtlsV1_2OrLater);
 		}
 	      else
 		{
 		  m_ssl_configuration.setDtlsCookieVerificationEnabled(false);
-		  m_ssl_configuration.setPeerVerifyMode(QSslSocket::VerifyNone);
+		  m_ssl_configuration.setPeerVerifyMode
+		    (QSslSocket::VerifyNone);
 		  m_ssl_configuration.setProtocol(QSsl::DtlsV1_2OrLater);
 		}
 	    }
@@ -2144,7 +2150,8 @@ void spot_on_lite_daemon_child_client::slot_ready_read(void)
 	    {
 	      data = m_dtls->decryptDatagram(socket, data);
 
-	      if(m_dtls->dtlsError() == QDtlsError::RemoteClosedConnectionError)
+	      if(m_dtls->dtlsError() ==
+		 QDtlsError::RemoteClosedConnectionError)
 		{
 		  slot_disconnected();
 		  return;
@@ -2154,9 +2161,10 @@ void spot_on_lite_daemon_child_client::slot_ready_read(void)
 	    {
 	      if(!m_dtls->doHandshake(socket, data))
 		{
-		  log(QString("spot_on_lite_daemon_child_client::"
-			      "slot_ready_read(): doHandshake() failure (%1).").
-		      arg(m_dtls->dtlsErrorString()));
+		  log
+		    (QString("spot_on_lite_daemon_child_client::"
+			     "slot_ready_read(): doHandshake() failure (%1).").
+		     arg(m_dtls->dtlsErrorString()));
 
 		  if(!(m_dtls->dtlsError() == QDtlsError::NoError ||
 		       m_dtls->dtlsError() == QDtlsError::TlsNonFatalError))
