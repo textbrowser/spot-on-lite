@@ -1314,7 +1314,7 @@ void spot_on_lite_daemon_child_client::process_local_content(void)
     }
   while(!m_process_local_content_future.isCanceled());
 
-#if defined(Q_PROCESSOR_ARM) || defined(__arm__)
+#ifdef SPOTON_LITE_DAEMON_DISABLE_SOME_STATISTICS
 #else
   save_statistic("identities", QString::number(identities.size()));
 #endif
@@ -1351,7 +1351,7 @@ void spot_on_lite_daemon_child_client::process_local_content(void)
 	m_local_content.remove(0, bytes.length());
       }
 
-#if defined(Q_PROCESSOR_ARM) || defined(__arm__)
+#ifdef SPOTON_LITE_DAEMON_DISABLE_SOME_STATISTICS
 #else
     save_statistic
       ("m_local_content remaining",
@@ -1362,7 +1362,7 @@ void spot_on_lite_daemon_child_client::process_local_content(void)
   if(m_process_local_content_future.isCanceled() || vector.isEmpty())
     goto done_label;
 
-#if defined(Q_PROCESSOR_ARM) || defined(__arm__)
+#ifdef SPOTON_LITE_DAEMON_DISABLE_SOME_STATISTICS
 #else
   save_statistic("vector size", QString::number(vector.size()));
 #endif
@@ -1488,7 +1488,7 @@ void spot_on_lite_daemon_child_client::process_read_data(const QByteArray &d)
     append(data.mid(0, qAbs(m_maximum_accumulated_bytes -
 			    m_remote_content.length())));
   process_remote_content();
-#if defined(Q_PROCESSOR_ARM) || defined(__arm__)
+#ifdef SPOTON_LITE_DAEMON_DISABLE_SOME_STATISTICS
 #else
   save_statistic
     ("m_remote_content", QString::number(m_remote_content.length()));
@@ -1542,7 +1542,7 @@ void spot_on_lite_daemon_child_client::process_remote_content(void)
 	}
     }
 
-#if defined(Q_PROCESSOR_ARM) || defined(__arm__)
+#ifdef SPOTON_LITE_DAEMON_DISABLE_SOME_STATISTICS
 #else
   save_statistic
     ("m_remote_content remaining", QString::number(m_remote_content.length()));
@@ -1999,7 +1999,7 @@ void spot_on_lite_daemon_child_client::slot_general_timer_timeout(void)
 	m_local_content_last_parsed = QDateTime::currentMSecsSinceEpoch();
       }
 
-#if defined(Q_PROCESSOR_ARM) || defined(__arm__)
+#ifdef SPOTON_LITE_DAEMON_DISABLE_SOME_STATISTICS
 #else
     save_statistic
       ("m_local_content", QString::number(m_local_content.length()));
@@ -2013,7 +2013,7 @@ void spot_on_lite_daemon_child_client::slot_general_timer_timeout(void)
       m_remote_content_last_parsed = QDateTime::currentMSecsSinceEpoch();
     }
 
-#if defined(Q_PROCESSOR_ARM) || defined(__arm__)
+#ifdef SPOTON_LITE_DAEMON_DISABLE_SOME_STATISTICS
 #else
   save_statistic
     ("m_remote_content", QString::number(m_remote_content.length()));
@@ -2114,7 +2114,7 @@ void spot_on_lite_daemon_child_client::slot_local_socket_ready_read(void)
 	  m_local_content.append
 	    (data.mid(0, qAbs(m_maximum_accumulated_bytes -
 			      m_local_content.length())));
-#if defined(Q_PROCESSOR_ARM) || defined(__arm__)
+#ifdef SPOTON_LITE_DAEMON_DISABLE_SOME_STATISTICS
 #else
 	  save_statistic
 	    ("m_local_content", QString::number(m_local_content.length()));
