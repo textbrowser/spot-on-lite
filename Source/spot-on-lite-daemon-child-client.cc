@@ -1386,11 +1386,14 @@ void spot_on_lite_daemon_child_client::process_local_content(void)
 	}
 
       if(identities.isEmpty())
-	/*
-	** Identities have not been recorded.
-	*/
+	{
+	  /*
+	  ** Identities have not been recorded.
+	  */
 
-	continue;
+	  emit write_signal(bytes);
+	  continue;
+	}
 
       if((index = bytes.indexOf("content=")) >= 0)
 	{
@@ -1462,7 +1465,7 @@ void spot_on_lite_daemon_child_client::process_read_data(const QByteArray &d)
   if(data.isEmpty())
     return;
 
-  if(m_end_of_message_marker.isEmpty())
+  if(m_client_role || m_end_of_message_marker.isEmpty())
     {
       m_keep_alive_timer.start();
 
@@ -1476,7 +1479,8 @@ void spot_on_lite_daemon_child_client::process_read_data(const QByteArray &d)
 	    m_local_socket->write(data.mid(0, maximum));
 	}
 
-      return;
+      if(m_end_of_message_marker.isEmpty())
+	return;
     }
 
   m_keep_alive_timer.start();
