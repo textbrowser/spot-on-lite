@@ -1461,10 +1461,8 @@ void spot_on_lite_daemon_child_client::process_read_data(const QByteArray &d)
 
   if(data.isEmpty())
     return;
-  else
-    data = data.mid(0, m_maximum_accumulated_bytes);
 
-  if(m_client_role || m_end_of_message_marker.isEmpty())
+  if(m_end_of_message_marker.isEmpty())
     {
       m_keep_alive_timer.start();
 
@@ -1499,8 +1497,7 @@ void spot_on_lite_daemon_child_client::process_read_data(const QByteArray &d)
 
 void spot_on_lite_daemon_child_client::process_remote_content(void)
 {
-  if(m_client_role ||
-     m_end_of_message_marker.isEmpty() ||
+  if(m_end_of_message_marker.isEmpty() ||
      m_local_socket->state() != QLocalSocket::ConnectedState)
     return;
 
@@ -1512,6 +1509,14 @@ void spot_on_lite_daemon_child_client::process_remote_content(void)
       data = m_remote_content.mid(0, index + m_end_of_message_marker.length());
       m_remote_content.remove(0, data.length());
       m_remote_content_last_parsed = QDateTime::currentMSecsSinceEpoch();
+
+      if(m_client_role)
+	{
+	  if(data.contains("type=0095a&content="))
+	    record_remote_identity(data);
+
+	  continue;
+	}
 
       if(data.contains("type=0014&content="))
 	continue;
