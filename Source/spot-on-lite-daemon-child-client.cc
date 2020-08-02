@@ -1461,6 +1461,10 @@ void spot_on_lite_daemon_child_client::process_local_content(void)
 
 void spot_on_lite_daemon_child_client::process_read_data(const QByteArray &d)
 {
+  /*
+  ** Process data received from the remote socket.
+  */
+
   QByteArray data(d);
 
   if(data.isEmpty())
