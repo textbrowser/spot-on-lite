@@ -1385,10 +1385,11 @@ void spot_on_lite_daemon_child_client::process_local_content(void)
 	  continue;
 	}
 
-      if(identities.isEmpty())
+      if(identities.isEmpty() || m_spot_on_lite)
 	{
 	  /*
-	  ** Identities have not been recorded.
+	  ** Identities have not been recorded or this is a Spot-On-Lite
+	  ** process.
 	  */
 
 	  emit write_signal(bytes);
