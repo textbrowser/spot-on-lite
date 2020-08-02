@@ -11,7 +11,7 @@ systems where storage performance is limited.
 
 SPOTON_LITE_DAEMON_ENABLE_IDENTITIES_CONTAINER
 
-If enabled, remote identities are recorded in memory-resident container.
+If enabled, remote identities are recorded in a memory-resident container.
 
 SPOTON_LITE_DAEMON_IDENTITIES_CONTAINER_MAXIMUM_SIZE
 
