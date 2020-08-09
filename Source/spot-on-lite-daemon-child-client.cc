@@ -1837,9 +1837,6 @@ set_ssl_ciphers(const QList<QSslCipher> &ciphers,
 
 void spot_on_lite_daemon_child_client::share_identity(const QByteArray &data)
 {
-  if(!record_congestion(data))
-    return;
-
   m_local_socket->write(data);
 }
 
