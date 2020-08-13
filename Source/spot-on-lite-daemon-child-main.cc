@@ -455,6 +455,7 @@ int main(int argc, char *argv[])
 	  spot_on_lite_daemon_child_client client
 	    (QByteArray(),
 	     certificates_file_name,
+	     configuration_file_name,
 	     congestion_control_file_name,
 	     end_of_message_marker,
 	     local_server_file_name,

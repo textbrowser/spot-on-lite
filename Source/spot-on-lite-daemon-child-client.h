@@ -58,6 +58,7 @@ class spot_on_lite_daemon_child_client: public QObject
   spot_on_lite_daemon_child_client
     (const QByteArray &initial_data,
      const QString &certificates_file_name,
+     const QString &configuration_file_name,
      const QString &congestion_control_file_name,
      const QString &end_of_message_marker,
      const QString &local_server_file_name,
@@ -109,6 +110,7 @@ class spot_on_lite_daemon_child_client: public QObject
 #endif
   QSslConfiguration m_ssl_configuration;
   QString m_certificates_file_name;
+  QString m_configuration_file_name;
   QString m_congestion_control_file_name;
   QString m_local_server_file_name;
   QString m_log_file_name;

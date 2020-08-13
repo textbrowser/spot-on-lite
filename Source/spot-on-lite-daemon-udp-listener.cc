@@ -91,6 +91,7 @@ void spot_on_lite_daemon_udp_listener::new_connection
   client = new spot_on_lite_daemon_child_client
     (data,
      m_parent->certificates_file_name(),
+     m_parent->configuration_file_name(),
      m_parent->congestion_control_file_name(),
      list.value(7),
      m_parent->local_server_file_name(),

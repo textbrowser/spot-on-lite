@@ -50,6 +50,7 @@ class spot_on_lite_daemon: public QObject
   QString certificates_file_name(void) const;
   QString child_process_file_name(void) const;
   QString child_process_ld_library_path(void) const;
+  QString configuration_file_name(void) const;
   QString congestion_control_file_name(void) const;
   QString local_server_file_name(void) const;
   QString log_file_name(void) const;

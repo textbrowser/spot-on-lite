@@ -83,6 +83,7 @@ static qint64 END_OF_MESSAGE_MARKER_WINDOW = 10000;
 spot_on_lite_daemon_child_client::spot_on_lite_daemon_child_client
 (const QByteArray &initial_data,
  const QString &certificates_file_name,
+ const QString &configuration_file_name,
  const QString &congestion_control_file_name,
  const QString &end_of_message_marker,
  const QString &local_server_file_name,
@@ -105,6 +106,7 @@ spot_on_lite_daemon_child_client::spot_on_lite_daemon_child_client
   m_attempt_remote_connection_timer.setInterval(2500);
   m_certificates_file_name = certificates_file_name;
   m_client_role = socket_descriptor < 0;
+  m_configuration_file_name = configuration_file_name;
   m_congestion_control_file_name = congestion_control_file_name;
   m_end_of_message_marker = end_of_message_marker.toUtf8();
   m_general_timer.start(5000);
