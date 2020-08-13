@@ -368,6 +368,7 @@ spot_on_lite_daemon_child_client::spot_on_lite_daemon_child_client
       m_remote_socket->connectToHost(m_peer_address, m_peer_port);
     }
 
+  process_configuration_file();
   save_statistic("client?", QVariant(m_client_role).toString());
   save_statistic("spot-on-lite?", QVariant(m_spot_on_lite).toString());
 }
@@ -1284,6 +1285,17 @@ void spot_on_lite_daemon_child_client::prepare_ssl_tls_configuration
 	log("spot_on_lite_daemon_child_client::"
 	    "prepare_ssl_tls_configuration(): empty private key.");
     }
+}
+
+void spot_on_lite_daemon_child_client::process_configuration_file(void)
+{
+  QSettings settings(m_configuration_file_name, QSettings::IniFormat);
+
+  foreach(const QString &key, settings.allKeys())
+    if(key == "type_capabilities" ||
+       key == "type_identity" ||
+       key == "type_spot_on_lite_client")
+      m_message_types[key] = settings.value(key).toString();
 }
 
 void spot_on_lite_daemon_child_client::process_local_content(void)

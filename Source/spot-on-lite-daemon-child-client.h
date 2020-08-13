@@ -158,6 +158,7 @@ class spot_on_lite_daemon_child_client: public QObject
 #endif
   void prepare_local_socket(void);
   void prepare_ssl_tls_configuration(const QList<QByteArray> &list);
+  void process_configuration_file(void);
   void process_local_content(void);
   void process_read_data(const QByteArray &data);
   void process_remote_content(void);
