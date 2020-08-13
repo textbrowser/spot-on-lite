@@ -120,6 +120,7 @@ int main(int argc, char *argv[])
 #endif
 
   QString certificates_file_name("");
+  QString configuration_file_name("");
   QString congestion_control_file_name("");
   QString end_of_message_marker("");
   QString local_server_file_name("");
@@ -151,6 +152,22 @@ int main(int argc, char *argv[])
 	    else
 	      {
 		std::cerr << "Invalid certificates-file usage. Exiting."
+			  << std::endl;
+		return EXIT_FAILURE;
+	      }
+	  }
+      }
+    else if(argv && argv[i] && strcmp(argv[i], "--configuration-file") == 0)
+      {
+	if(configuration_file_name.isEmpty())
+	  {
+	    i += 1;
+
+	    if(argc > i && argv[i])
+	      configuration_file_name = argv[i];
+	    else
+	      {
+		std::cerr << "Invalid configuration-file usage. Exiting."
 			  << std::endl;
 		return EXIT_FAILURE;
 	      }
