@@ -1295,7 +1295,7 @@ void spot_on_lite_daemon_child_client::process_configuration_file(void)
     if(key == "type_capabilities" ||
        key == "type_identity" ||
        key == "type_spot_on_lite_client")
-      m_message_types[key] = settings.value(key).toString();
+      m_message_types[key] = settings.value(key).toByteArray();
 }
 
 void spot_on_lite_daemon_child_client::process_local_content(void)
@@ -1346,6 +1346,7 @@ void spot_on_lite_daemon_child_client::process_local_content(void)
   }
 
   QVector<QByteArray> vector;
+  const QByteArray &type_identity(m_message_types.value("type_identity"));
   int index = 0;
 
   {
@@ -1385,7 +1386,7 @@ void spot_on_lite_daemon_child_client::process_local_content(void)
     {
       const QByteArray &bytes(vector.at(i));
 
-      if(bytes.contains("type=0095a&content="))
+      if(bytes.contains("type=" + type_identity + "&content="))
 	{
 	  if(m_spot_on_lite)
 	    /*
@@ -1525,6 +1526,11 @@ void spot_on_lite_daemon_child_client::process_remote_content(void)
     return;
 
   QByteArray data;
+  const QByteArray &type_capabilities
+    (m_message_types.value("type_capabilities"));
+  const QByteArray &type_identity(m_message_types.value("type_identity"));
+  const QByteArray &type_spot_on_lite_client
+    (m_message_types.value("type_spot_on_lite_client"));
   int index = 0;
 
   while((index = m_remote_content.indexOf(m_end_of_message_marker)) >= 0)
@@ -1535,20 +1541,20 @@ void spot_on_lite_daemon_child_client::process_remote_content(void)
 
       if(m_client_role)
 	{
-	  if(data.contains("type=0095a&content="))
+	  if(data.contains("type=" + type_identity + "&content="))
 	    record_remote_identity(data);
 
 	  continue;
 	}
 
-      if(data.contains("type=0014&content="))
+      if(data.contains("type=" + type_capabilities + "&content="))
 	continue;
-      else if(data.contains("type=0095a&content="))
+      else if(data.contains("type=" + type_identity + "&content="))
 	{
 	  record_remote_identity(data);
 	  continue;
 	}
-      else if(data.contains("type=0111&content="))
+      else if(data.contains("type=" + type_spot_on_lite_client + "&content="))
 	{
 	  m_spot_on_lite = true;
 	  save_statistic("spot-on-lite?", "true");
@@ -1919,6 +1925,7 @@ void spot_on_lite_daemon_child_client::slot_broadcast_capabilities(void)
 
   QByteArray data;
   QByteArray results;
+  const QString &type_capabilities(m_message_types.value("type_capabilities"));
   const QUuid &uuid(QUuid::createUuid());
 
   data.append(uuid.toString());
@@ -1930,12 +1937,14 @@ void spot_on_lite_daemon_child_client::slot_broadcast_capabilities(void)
 		 "Content-Type: application/x-www-form-urlencoded\r\n"
 		 "Content-Length: %1\r\n"
 		 "\r\n"
-		 "type=0014&content=%2\r\n"
+		 "type=" + type_capabilities + "&content=%2\r\n"
 		 "\r\n\r\n");
   results.replace
     ("%1",
      QByteArray::number(data.toBase64().length() +
-			QString("type=0014&content=\r\n\r\n\r\n").length()));
+			QString("type=" +
+				type_capabilities +
+				"&content=\r\n\r\n\r\n").length()));
   results.replace("%2", data.toBase64());
   write(results);
 
@@ -1947,19 +1956,23 @@ void spot_on_lite_daemon_child_client::slot_broadcast_capabilities(void)
 
       QByteArray data;
       QByteArray results;
+      const QByteArray &type_spot_on_lite_client
+	(m_message_types.value("type_spot_on_lite_client"));
 
       data.append("Spot-On-Lite");
       results.append("POST HTTP/1.1\r\n"
 		     "Content-Type: application/x-www-form-urlencoded\r\n"
 		     "Content-Length: %1\r\n"
 		     "\r\n"
-		     "type=0111&content=%2\r\n"
+		     "type=" + type_spot_on_lite_client + "&content=%2\r\n"
 		     "\r\n\r\n");
       results.replace
 	("%1",
 	 QByteArray::
 	 number(data.length() +
-		QString("type=0111&content=\r\n\r\n\r\n").length()));
+		QString("type=" +
+			type_spot_on_lite_client +
+			"&content=\r\n\r\n\r\n").length()));
       results.replace("%2", data);
       write(results);
     }
