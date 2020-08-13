@@ -98,6 +98,7 @@ class spot_on_lite_daemon_child_client: public QObject
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 12, 0))
   QHash<QPair<QHostAddress, quint16>, char> m_verified_udp_clients;
 #endif
+  QHash<QString, QString> m_message_types;
   QHostAddress m_peer_address;
   QPointer<QLocalSocket> m_local_socket;
   QPointer<QAbstractSocket> m_remote_socket;
