@@ -86,6 +86,8 @@ void spot_on_lite_daemon_tcp_listener::incomingConnection
     (m_parent->certificates_file_name().toStdString());
   std::string command
     (m_parent->child_process_file_name().toStdString());
+  std::string configuration_file_name
+    (m_parent->configuration_file_name().toStdString());
   std::string congestion_control_file_name
     (m_parent->congestion_control_file_name().toStdString());
   std::string ld_library_path
@@ -121,6 +123,8 @@ void spot_on_lite_daemon_tcp_listener::incomingConnection
 		command.data(),
 		"--certificates-file",
 		certificates_file_name.data(),
+		"--configuration-file",
+		configuration_file_name.data(),
 		"--congestion-control-file",
 		congestion_control_file_name.data(),
 		"--end-of-message-marker",
