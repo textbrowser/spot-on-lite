@@ -1295,7 +1295,10 @@ void spot_on_lite_daemon_child_client::process_configuration_file(void)
     if(key == "type_capabilities" ||
        key == "type_identity" ||
        key == "type_spot_on_lite_client")
-      m_message_types[key] = settings.value(key).toByteArray();
+      {
+	m_message_types[key] = settings.value(key).toByteArray();
+	save_statistic(key, settings.value(key).toString());
+      }
 }
 
 void spot_on_lite_daemon_child_client::process_local_content(void)
@@ -1369,8 +1372,7 @@ void spot_on_lite_daemon_child_client::process_local_content(void)
 #ifdef SPOTON_LITE_DAEMON_DISABLE_SOME_STATISTICS
 #else
     save_statistic
-      ("m_local_content remaining",
-       QString::number(m_local_content.length()));
+      ("m_local_content remaining", QString::number(m_local_content.length()));
 #endif
   }
 
