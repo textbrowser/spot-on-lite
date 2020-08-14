@@ -283,7 +283,7 @@ void spot_on_lite_daemon::prepare_peers(void)
 		    "--certificates-file",
 		    m_certificates_file_name.toStdString().data(),
 		    "--configuration-file",
-		    m_congestion_control_file_name.toStdString().data(),
+		    m_configuration_file_name.toStdString().data(),
 		    "--congestion-control-file",
 		    m_congestion_control_file_name.toStdString().data(),
 		    "--end-of-message-marker",
