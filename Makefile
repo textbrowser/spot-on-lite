@@ -5,7 +5,7 @@ ifeq ($(UNAME), FreeBSD)
 else ifeq ($(UNAME), NetBSD)
 	QMAKE=/usr/pkg/qt4/bin/qmake -spec netbsd-g++
 else ifeq ($(UNAME), OpenBSD)
-	QMAKE=qmake4
+	QMAKE=qmake-qt5
 else
 	QMAKE=qmake
 endif

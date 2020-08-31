@@ -108,26 +108,21 @@ QMAKE_MOC = /usr/pkg/qt4/bin/moc
 QMAKE_CXXFLAGS_RELEASE += -O3 \
                           -Wall \
                           -Wcast-qual \
-                          -Wconversion \
-                          -Wdouble-promotion \
                           -Wextra \
-                          -Wformat-overflow=2 \
-                          -Wformat-truncation=2 \
 			  -Wformat=2 \
                           -Wno-unused-variable \
                           -Woverloaded-virtual \
                           -Wpointer-arith \
-                          -Wsign-conversion \
                           -Wstack-protector \
                           -Wundef \
-                          -Wzero-as-null-pointer-constant \
                           -fPIE \
                           -fstack-protector-all \
                           -fwrapv \
                           -mcpu=ultrasparc \
                           -mtune=ultrasparc \
                           -pedantic \
-                          -pie
+                          -pie \
+                          -std=c++11
 } else:unix {
 QMAKE_CXXFLAGS_RELEASE += -O3 \
                           -Wall \
@@ -162,7 +157,10 @@ QT += network sql
 TEMPLATE = app
 
 greaterThan(QT_MAJOR_VERSION, 4) {
+openbsd-* {
+} else {
 QMAKE_CXXFLAGS_RELEASE += -Wzero-as-null-pointer-constant
+}
 QT += concurrent
 } else {
 DEFINES += nullptr=NULL
