@@ -29,6 +29,7 @@ QMAKE_CXXFLAGS_RELEASE += -O3 \
                           -pedantic \
                           -std=c++11
 } else:linux-* {
+DEFINES += SPOTON_LITE_DAEMON_DTLS_SUPPORTED
 QMAKE_CXXFLAGS_RELEASE += -O3 \
                           -Wall \
                           -Wcast-qual \

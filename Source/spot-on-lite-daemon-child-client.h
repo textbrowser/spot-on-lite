@@ -34,9 +34,11 @@ extern "C"
 }
 
 #include <QAbstractSocket>
+#ifdef SPOTON_LITE_DAEMON_DTLS_SUPPORTED
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 12, 0))
 #include <QDtls>
 #include <QDtlsClientVerifier>
+#endif
 #endif
 #include <QFuture>
 #include <QHostAddress>
@@ -87,8 +89,10 @@ class spot_on_lite_daemon_child_client: public QObject
   QByteArray m_end_of_message_marker;
   QByteArray m_local_content;
   QByteArray m_remote_content;
+#ifdef SPOTON_LITE_DAEMON_DTLS_SUPPORTED
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 12, 0))
   QDtlsClientVerifier m_dtls_client_verifier;
+#endif
 #endif
   QFuture<void> m_expired_identities_future;
   QFuture<void> m_process_local_content_future;
@@ -102,8 +106,10 @@ class spot_on_lite_daemon_child_client: public QObject
   QHostAddress m_peer_address;
   QPointer<QLocalSocket> m_local_socket;
   QPointer<QAbstractSocket> m_remote_socket;
+#ifdef SPOTON_LITE_DAEMON_DTLS_SUPPORTED
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 12, 0))
   QPointer<QDtls> m_dtls;
+#endif
 #endif
   QReadWriteLock m_local_content_mutex;
 #ifdef SPOTON_LITE_DAEMON_ENABLE_IDENTITIES_CONTAINER
@@ -153,8 +159,10 @@ class spot_on_lite_daemon_child_client: public QObject
 			    QString &error);
   void generate_ssl_tls(void);
   void log(const QString &error) const;
+#ifdef SPOTON_LITE_DAEMON_DTLS_SUPPORTED
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 12, 0))
   void prepare_dtls(void);
+#endif
 #endif
   void prepare_local_socket(void);
   void prepare_ssl_tls_configuration(const QList<QByteArray> &list);

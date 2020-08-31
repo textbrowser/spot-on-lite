@@ -275,6 +275,7 @@ spot_on_lite_daemon_child_client::spot_on_lite_daemon_child_client
 	    {
 	      m_remote_socket->connectToHost(m_peer_address, m_peer_port);
 	      m_remote_socket->waitForConnected(10000);
+#ifdef SPOTON_LITE_DAEMON_DTLS_SUPPORTED
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 12, 0))
 	      prepare_dtls();
 
@@ -306,6 +307,7 @@ spot_on_lite_daemon_child_client::spot_on_lite_daemon_child_client
 		      }
 		  }
 #endif
+#endif
 	    }
 	}
       else
@@ -320,6 +322,7 @@ spot_on_lite_daemon_child_client::spot_on_lite_daemon_child_client
 	  if(m_protocol == QAbstractSocket::TcpSocket)
 	    qobject_cast<QSslSocket *> (m_remote_socket)->
 	      startServerEncryption();
+#ifdef SPOTON_LITE_DAEMON_DTLS_SUPPORTED
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 12, 0))
 	  else
 	    {
@@ -354,6 +357,9 @@ spot_on_lite_daemon_child_client::spot_on_lite_daemon_child_client
 		      }
 		  }
 	    }
+#else
+	  Q_UNUSED(initial_data);
+#endif
 #else
 	  Q_UNUSED(initial_data);
 #endif
@@ -774,6 +780,7 @@ void spot_on_lite_daemon_child_client::data_received
  const QHostAddress &peer_address,
  const quint16 peer_port)
 {
+#ifdef SPOTON_LITE_DAEMON_DTLS_SUPPORTED
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 12, 0))
   if(m_dtls && m_protocol == QAbstractSocket::UdpSocket)
     {
@@ -830,6 +837,11 @@ void spot_on_lite_daemon_child_client::data_received
 	    }
 	}
     }
+#else
+  Q_UNUSED(data);
+  Q_UNUSED(peer_address);
+  Q_UNUSED(peer_port);
+#endif
 #else
   Q_UNUSED(data);
   Q_UNUSED(peer_address);
@@ -1193,6 +1205,7 @@ void spot_on_lite_daemon_child_client::log(const QString &error) const
     }
 }
 
+#ifdef SPOTON_LITE_DAEMON_DTLS_SUPPORTED
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 12, 0))
 void spot_on_lite_daemon_child_client::prepare_dtls(void)
 {
@@ -1214,6 +1227,7 @@ void spot_on_lite_daemon_child_client::prepare_dtls(void)
   m_dtls->setDtlsConfiguration(m_ssl_configuration);
   m_dtls->setPeer(m_peer_address, m_peer_port);
 }
+#endif
 #endif
 
 void spot_on_lite_daemon_child_client::prepare_local_socket(void)
@@ -1255,6 +1269,7 @@ void spot_on_lite_daemon_child_client::prepare_ssl_tls_configuration
 #endif
 	  set_ssl_ciphers
 	    (m_ssl_configuration.supportedCiphers(), m_ssl_configuration);
+#ifdef SPOTON_LITE_DAEMON_DTLS_SUPPORTED
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 12, 0))
 	  if(m_protocol == QAbstractSocket::UdpSocket)
 	    {
@@ -1272,6 +1287,7 @@ void spot_on_lite_daemon_child_client::prepare_ssl_tls_configuration
 		  m_ssl_configuration.setProtocol(QSsl::DtlsV1_2OrLater);
 		}
 	    }
+#endif
 #endif
 	  if(m_protocol == QAbstractSocket::TcpSocket)
 	    qobject_cast<QSslSocket *>
@@ -1888,6 +1904,7 @@ void spot_on_lite_daemon_child_client::slot_attempt_remote_connection(void)
 	  if(!m_remote_socket->waitForConnected(10000))
 	    return;
 
+#ifdef SPOTON_LITE_DAEMON_DTLS_SUPPORTED
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 12, 0))
 	  prepare_dtls();
 
@@ -1912,6 +1929,7 @@ void spot_on_lite_daemon_child_client::slot_attempt_remote_connection(void)
 		    slot_disconnected();
 		  }
 	      }
+#endif
 #endif
 	}
     }
@@ -2058,8 +2076,10 @@ void spot_on_lite_daemon_child_client::slot_general_timer_timeout(void)
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 12, 0))
 void spot_on_lite_daemon_child_client::slot_handshake_timeout(void)
 {
+#ifdef SPOTON_LITE_DAEMON_DTLS_SUPPORTED
   if(m_dtls && m_protocol == QAbstractSocket::UdpSocket)
     m_dtls->handleTimeout(qobject_cast<QUdpSocket *> (m_remote_socket));
+#endif
 }
 #else
 void spot_on_lite_daemon_child_client::slot_handshake_timeout(void)
@@ -2175,6 +2195,7 @@ void spot_on_lite_daemon_child_client::slot_ready_read(void)
     {
       QByteArray data(m_remote_socket->readAll());
 
+#ifdef SPOTON_LITE_DAEMON_DTLS_SUPPORTED
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 12, 0))
       if(!data.isEmpty() && m_dtls && m_protocol == QAbstractSocket::UdpSocket)
 	{
@@ -2218,6 +2239,7 @@ void spot_on_lite_daemon_child_client::slot_ready_read(void)
 	      continue;
 	    }
 	}
+#endif
 #endif
 
       process_read_data(data);
@@ -2306,12 +2328,14 @@ void spot_on_lite_daemon_child_client::write(const QByteArray &data)
 	  {
 	    qint64 rc = 0;
 
+#ifdef SPOTON_LITE_DAEMON_DTLS_SUPPORTED
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 12, 0))
 	    if(m_dtls)
 	      rc = m_dtls->writeDatagramEncrypted
 		(qobject_cast<QUdpSocket *> (m_remote_socket),
 		 data.mid(i, maximum_datagram_size));
 	    else
+#endif
 #endif
 	    if(m_client_role)
 	      rc = m_remote_socket->write(data.mid(i, maximum_datagram_size));
