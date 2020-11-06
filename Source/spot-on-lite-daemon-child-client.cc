@@ -95,7 +95,7 @@ spot_on_lite_daemon_child_client::spot_on_lite_daemon_child_client
  const QString &server_identity,
  const QString &ssl_control_string,
  const int identities_lifetime,
- const int local_so_sndbuf,
+ const int local_so_rcvbuf_so_sndbuf,
  const int maximum_accumulated_bytes,
  const int silence,
  const int socket_descriptor,
@@ -114,7 +114,7 @@ spot_on_lite_daemon_child_client::spot_on_lite_daemon_child_client
     (qBound(5, identities_lifetime, 600));
   m_local_content_last_parsed = QDateTime::currentMSecsSinceEpoch();
   m_local_server_file_name = local_server_file_name;
-  m_local_so_sndbuf = qMax(4096, local_so_sndbuf);
+  m_local_so_rcvbuf_so_sndbuf = qMax(4096, local_so_rcvbuf_so_sndbuf);
   m_local_socket = new QLocalSocket(this);
   m_log_file_name = log_file_name;
   m_maximum_accumulated_bytes = maximum_accumulated_bytes;
@@ -1510,7 +1510,7 @@ void spot_on_lite_daemon_child_client::process_read_data(const QByteArray &d)
       if(m_local_socket->state() == QLocalSocket::ConnectedState &&
 	 record_congestion(data))
 	{
-	  int maximum = m_local_so_sndbuf -
+	  int maximum = m_local_so_rcvbuf_so_sndbuf -
 	    static_cast<int> (m_local_socket->bytesToWrite());
 
 	  if(maximum > 0)
@@ -1581,7 +1581,7 @@ void spot_on_lite_daemon_child_client::process_remote_content(void)
 
       if(record_congestion(data))
 	{
-	  int maximum = m_local_so_sndbuf -
+	  int maximum = m_local_so_rcvbuf_so_sndbuf -
 	    static_cast<int> (m_local_socket->bytesToWrite());
 
 	  if(maximum > 0)
@@ -2135,10 +2135,11 @@ void spot_on_lite_daemon_child_client::slot_local_socket_connected(void)
   }
 
   int sd = static_cast<int> (m_local_socket->socketDescriptor());
-  socklen_t optlen = static_cast<socklen_t> (sizeof(m_local_so_sndbuf));
+  socklen_t optlen = static_cast<socklen_t>
+    (sizeof(m_local_so_rcvbuf_so_sndbuf));
 
-  setsockopt(sd, SOL_SOCKET, SO_RCVBUF, &m_local_so_sndbuf, optlen);
-  setsockopt(sd, SOL_SOCKET, SO_SNDBUF, &m_local_so_sndbuf, optlen);
+  setsockopt(sd, SOL_SOCKET, SO_RCVBUF, &m_local_so_rcvbuf_so_sndbuf, optlen);
+  setsockopt(sd, SOL_SOCKET, SO_SNDBUF, &m_local_so_rcvbuf_so_sndbuf, optlen);
 
   /*
   ** We may have remote content.

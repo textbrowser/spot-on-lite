@@ -132,7 +132,7 @@ int main(int argc, char *argv[])
   QString server_identity("");
   QString ssl_control_string("");
   int identities_lifetime = -1;
-  int local_so_sndbuf = -1;
+  int local_so_rcvbuf_so_sndbuf = -1;
   int maximum_accumulated_bytes = -1;
   int rc = EXIT_SUCCESS;
   int sd = -1;
@@ -241,17 +241,18 @@ int main(int argc, char *argv[])
 	  }
       }
     else if(argv && argv[i] &&
-	    strcmp(argv[i], "--local-so-sndbuf") == 0)
+	    strcmp(argv[i], "--local-so-rcvbuf-so-sndbuf") == 0)
       {
-	if(local_so_sndbuf == -1)
+	if(local_so_rcvbuf_so_sndbuf == -1)
 	  {
 	    i += 1;
 
 	    if(argc > i && argv[i])
-	      local_so_sndbuf = std::atoi(argv[i]);
+	      local_so_rcvbuf_so_sndbuf = std::atoi(argv[i]);
 	    else
 	      {
-		std::cerr << "Invalid local-so-sndbuf usage. Exiting."
+		std::cerr << "Invalid local-so-rcvbuf-so-sndbuf usage. "
+			  << "Exiting."
 			  << std::endl;
 		return EXIT_FAILURE;
 	      }
@@ -467,7 +468,7 @@ int main(int argc, char *argv[])
 	     server_identity,
 	     ssl_control_string,
 	     identities_lifetime,
-	     local_so_sndbuf,
+	     local_so_rcvbuf_so_sndbuf,
 	     maximum_accumulated_bytes,
 	     silence,
 	     sd,

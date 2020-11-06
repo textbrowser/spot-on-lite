@@ -67,7 +67,7 @@ spot_on_lite_daemon::spot_on_lite_daemon
   m_configuration_file_name = configuration_file_name;
   m_congestion_control_lifetime = 90; // Seconds
   m_congestion_control_timer.start(15000); // 15 Seconds
-  m_local_so_sndbuf = 32768; // 32 KiB
+  m_local_so_rcvbuf_so_sndbuf = 32768; // 32 KiB
   m_local_socket_server_directory_name = QDir::tempPath();
   m_maximum_accumulated_bytes = 8 * 1024 * 1024; // 8 MiB
   m_signal_socket_notifier = new QSocketNotifier
@@ -97,7 +97,7 @@ spot_on_lite_daemon::spot_on_lite_daemon
 spot_on_lite_daemon::spot_on_lite_daemon(void):QObject()
 {
   m_congestion_control_lifetime = 90; // Seconds
-  m_local_so_sndbuf = 0;
+  m_local_so_rcvbuf_so_sndbuf = 0;
   m_local_socket_server_directory_name = QDir::tempPath();
   m_maximum_accumulated_bytes = 0;
   m_signal_socket_notifier = nullptr;
@@ -292,7 +292,7 @@ void spot_on_lite_daemon::prepare_peers(void)
 		    list.value(9).toStdString().data(),
 		    "--local-server-file",
 		    local_server_file_name().toStdString().data(),
-		    "--local-so-sndbuf",
+		    "--local-so-rcvbuf-so-sndbuf",
 		    list.value(8).toStdString().data(),
 		    "--log-file",
 		    m_log_file_name.toStdString().data(),
@@ -453,19 +453,19 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
 	  m_congestion_control_lifetime.fetchAndStoreAcquire
 	    (congestion_control_lifetime);
       }
-    else if(key == "local_so_sndbuf")
+    else if(key == "local_so_rcvbuf_so_sndbuf")
       {
 	bool o = true;
-	int so_sndbuf = settings.value(key).toInt(&o);
+	int so_rcvbuf_so_sndbuf = settings.value(key).toInt(&o);
 
-	if(so_sndbuf < 4096 || !o)
+	if(so_rcvbuf_so_sndbuf < 4096 || !o)
 	  {
 	    if(ok)
 	      *ok = false;
 
 	    std::cerr << "spot_on_lite_daemon::"
 		      << "process_configuration_file(): The "
-		      << "local_so_sndbuf value \""
+		      << "local_so_rcvbuf_so_sndbuf value \""
 		      << settings.value(key).toString().toStdString()
 		      << "\" is invalid. "
 		      << "Expecting a value that is greater than or "
@@ -473,7 +473,7 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
 		      << std::endl;
 	  }
 	else
-	  m_local_so_sndbuf = so_sndbuf;
+	  m_local_so_rcvbuf_so_sndbuf = so_rcvbuf_so_sndbuf;
       }
     else if(key == "local_socket_server_directory")
       {
@@ -585,7 +585,7 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
 	** 5  - Silence Timeout (Seconds)
 	** 6  - SO Linger (Seconds)
 	** 7  - End-of-Message-Marker
-	** 8  - Local SO_SNDBUF
+	** 8  - Local SO_RCVBUF / SO_SNDBUF
 	** 9  - Identities Lifetime (Seconds)
 	** 10 - Protocol
 	*/
@@ -726,9 +726,9 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
 		      << std::endl;
 	  }
 
-	int so_sndbuf = list.at(8).toInt(&o);
+	int so_rcvbuf_so_sndbuf = list.at(8).toInt(&o);
 
-	if(!o || so_sndbuf < 4096)
+	if(!o || so_rcvbuf_so_sndbuf < 4096)
 	  {
 	    entry_ok = false;
 
@@ -739,7 +739,7 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
 		      << "process_configuration_file(): The "
 		      << "listener/peer \""
 		      << key.toStdString()
-		      << "\" local so_sndbuf value is invalid. "
+		      << "\" local so_rcv_so_sndbuf value is invalid. "
 		      << "Expecting a value that is greater than or "
 		      << "equal to 4096. Ignoring entry."
 		      << std::endl;
@@ -919,10 +919,13 @@ void spot_on_lite_daemon::slot_new_local_connection(void)
     socket->setReadBufferSize(m_maximum_accumulated_bytes);
 
   int sockfd = static_cast<int> (socket->socketDescriptor());
-  socklen_t optlen = static_cast<socklen_t> (sizeof(m_local_so_sndbuf));
+  socklen_t optlen = static_cast<socklen_t>
+    (sizeof(m_local_so_rcvbuf_so_sndbuf));
 
-  setsockopt(sockfd, SOL_SOCKET, SO_RCVBUF, &m_local_so_sndbuf, optlen);
-  setsockopt(sockfd, SOL_SOCKET, SO_SNDBUF, &m_local_so_sndbuf, optlen);
+  setsockopt
+    (sockfd, SOL_SOCKET, SO_RCVBUF, &m_local_so_rcvbuf_so_sndbuf, optlen);
+  setsockopt
+    (sockfd, SOL_SOCKET, SO_SNDBUF, &m_local_so_rcvbuf_so_sndbuf, optlen);
   m_local_sockets[socket] = 0;
   connect(socket,
 	  SIGNAL(disconnected(void)),
@@ -968,7 +971,7 @@ void spot_on_lite_daemon::slot_ready_read(void)
 	 it.key() != socket &&
 	 it.key()->state() == QLocalSocket::ConnectedState)
 	{
-	  int maximum = m_local_so_sndbuf -
+	  int maximum = m_local_so_rcvbuf_so_sndbuf -
 	    static_cast<int> (it.key()->bytesToWrite());
 
 	  if(maximum > 0)

@@ -133,7 +133,7 @@ void spot_on_lite_daemon_tcp_listener::incomingConnection
 		list.value(9).toStdString().data(),
 		"--local-server-file",
 		local_server_file_name.data(),
-		"--local-so-sndbuf",
+		"--local-so-rcvbuf-so-sndbuf",
 		list.value(8).toStdString().data(),
 		"--log-file",
 		log_file_name.data(),
