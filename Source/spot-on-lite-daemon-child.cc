@@ -59,10 +59,10 @@ extern "C"
 
 #include <limits>
 
-#include "spot-on-lite-daemon-child-client.h"
+#include "spot-on-lite-daemon-child.h"
 
-QReadWriteLock spot_on_lite_daemon_child_client::s_db_id_mutex;
-quint64 spot_on_lite_daemon_child_client::s_db_id = 0;
+QReadWriteLock spot_on_lite_daemon_child::s_db_id_mutex;
+quint64 spot_on_lite_daemon_child::s_db_id = 0;
 
 static int hash_algorithm_key_length(const QByteArray &algorithm)
 {
@@ -80,7 +80,7 @@ static int MAXIMUM_REMOTE_IDENTITIES =
 #endif
 static qint64 END_OF_MESSAGE_MARKER_WINDOW = 10000;
 
-spot_on_lite_daemon_child_client::spot_on_lite_daemon_child_client
+spot_on_lite_daemon_child::spot_on_lite_daemon_child
 (const QByteArray &initial_data,
  const QString &certificates_file_name,
  const QString &configuration_file_name,
@@ -178,8 +178,8 @@ spot_on_lite_daemon_child_client::spot_on_lite_daemon_child_client
 	  */
 
 	  ::close(socket_descriptor);
-	  log("spot_on_lite_daemon_child_client::"
-	      "spot_on_lite_daemon_child_client(): "
+	  log("spot_on_lite_daemon_child::"
+	      "spot_on_lite_daemon_child(): "
 	      "invalid socket descriptor.");
 	  QTimer::singleShot(2500, this, SLOT(slot_disconnected(void)));
 	  return;
@@ -287,8 +287,8 @@ spot_on_lite_daemon_child_client::spot_on_lite_daemon_child_client
 		if(!m_dtls->
 		   doHandshake(qobject_cast<QUdpSocket *> (m_remote_socket)))
 		  {
-		    log(QString("spot_on_lite_daemon_child_client::"
-				"spot_on_lite_daemon_child_client(): "
+		    log(QString("spot_on_lite_daemon_child::"
+				"spot_on_lite_daemon_child(): "
 				"doHandshake() failure (%1).").
 			arg(m_dtls->dtlsErrorString()));
 
@@ -337,8 +337,8 @@ spot_on_lite_daemon_child_client::spot_on_lite_daemon_child_client
 		   doHandshake(qobject_cast<QUdpSocket *> (m_remote_socket),
 			       initial_data))
 		  {
-		    log(QString("spot_on_lite_daemon_child_client::"
-				"spot_on_lite_daemon_child_client: "
+		    log(QString("spot_on_lite_daemon_child::"
+				"spot_on_lite_daemon_child: "
 				"doHandshake() failure (%1).").
 			arg(m_dtls->dtlsErrorString()));
 
@@ -379,13 +379,13 @@ spot_on_lite_daemon_child_client::spot_on_lite_daemon_child_client
   save_statistic("spot-on-lite?", QVariant(m_spot_on_lite).toString());
 }
 
-spot_on_lite_daemon_child_client::~spot_on_lite_daemon_child_client()
+spot_on_lite_daemon_child::~spot_on_lite_daemon_child()
 {
   purge_statistics();
   stop_threads_and_timers();
 }
 
-QHash<QByteArray, QString>spot_on_lite_daemon_child_client::
+QHash<QByteArray, QString>spot_on_lite_daemon_child::
 remote_identities(bool *ok)
 {
   if(ok)
@@ -441,7 +441,7 @@ remote_identities(bool *ok)
   return hash;
 }
 
-QList<QByteArray> spot_on_lite_daemon_child_client::
+QList<QByteArray> spot_on_lite_daemon_child::
 local_certificate_configuration(void)
 {
   QList<QByteArray> list;
@@ -474,7 +474,7 @@ local_certificate_configuration(void)
   return list;
 }
 
-QList<QSslCipher> spot_on_lite_daemon_child_client::
+QList<QSslCipher> spot_on_lite_daemon_child::
 default_ssl_ciphers(void) const
 {
   QList<QSslCipher> list;
@@ -517,7 +517,7 @@ default_ssl_ciphers(void) const
 #ifdef TLS1_2_VERSION
 	  if(!(ctx = SSL_CTX_new(TLSv1_2_client_method())))
 	    {
-	      log("spot_on_lite_daemon_child_client::"
+	      log("spot_on_lite_daemon_child::"
 		  "default_ssl_ciphers(): "
 		  "SSL_CTX_new(TLSv1_2_client_method()) failure.");
 	      goto done_label;
@@ -529,7 +529,7 @@ default_ssl_ciphers(void) const
 #ifdef TLS1_1_VERSION
 	  if(!(ctx = SSL_CTX_new(TLSv1_1_method())))
 	    {
-	      log("spot_on_lite_daemon_child_client::"
+	      log("spot_on_lite_daemon_child::"
 		  "default_ssl_ciphers(): SSL_CTX_new(TLSv1_1_method()) "
 		  "failure.");
 	      goto done_label;
@@ -541,7 +541,7 @@ default_ssl_ciphers(void) const
 	  if(!(ctx = SSL_CTX_new(TLSv1_method())))
 	    {
 	      log
-		("spot_on_lite_daemon_child_client::"
+		("spot_on_lite_daemon_child::"
 		 "default_ssl_ciphers(): SSL_CTX_new(TLSv1_method()) "
 		 "failure.");
 	      goto done_label;
@@ -553,7 +553,7 @@ default_ssl_ciphers(void) const
 	  if(!(ctx = SSL_CTX_new(SSLv3_method())))
 	    {
 	      log
-		("spot_on_lite_daemon_child_client::"
+		("spot_on_lite_daemon_child::"
 		 "default_ssl_ciphers(): SSL_CTX_new(SSLv3_method()) "
 		 "failure.");
 	      goto done_label;
@@ -564,7 +564,7 @@ default_ssl_ciphers(void) const
 
       if(!ctx)
 	{
-	  log("spot_on_lite_daemon_child_client::"
+	  log("spot_on_lite_daemon_child::"
 	      "default_ssl_ciphers(): ctx is zero!");
 	  continue;
 	}
@@ -573,14 +573,14 @@ default_ssl_ciphers(void) const
 				 m_ssl_control_string.toLatin1().
 				 constData()) == 0)
 	{
-	  log("spot_on_lite_daemon_child_client::"
+	  log("spot_on_lite_daemon_child::"
 	      "default_ssl_ciphers(): SSL_CTX_set_cipher_list() failure.");
 	  goto done_label;
 	}
 
       if(!(ssl = SSL_new(ctx)))
 	{
-	  log("spot_on_lite_daemon_child_client::"
+	  log("spot_on_lite_daemon_child::"
 	      "default_ssl_ciphers(): SSL_new() failure.");
 	  goto done_label;
 	}
@@ -624,14 +624,14 @@ default_ssl_ciphers(void) const
     }
 
   if(list.isEmpty())
-    log("spot_on_lite_daemon_child_client::default_ssl_ciphers(): "
+    log("spot_on_lite_daemon_child::default_ssl_ciphers(): "
 	"empty cipher list.");
 
   return list;
 }
 
-bool spot_on_lite_daemon_child_client::memcmp(const QByteArray &a,
-					      const QByteArray &b)
+bool spot_on_lite_daemon_child::memcmp(const QByteArray &a,
+				       const QByteArray &b)
 {
   int length = qMax(a.length(), b.length());
   int rc = 0;
@@ -642,7 +642,7 @@ bool spot_on_lite_daemon_child_client::memcmp(const QByteArray &a,
   return rc == 0;
 }
 
-bool spot_on_lite_daemon_child_client::record_congestion
+bool spot_on_lite_daemon_child::record_congestion
 (const QByteArray &data)
 {
   bool added = false;
@@ -686,7 +686,7 @@ bool spot_on_lite_daemon_child_client::record_congestion
   return added;
 }
 
-int spot_on_lite_daemon_child_client::bytes_in_send_queue(void) const
+int spot_on_lite_daemon_child::bytes_in_send_queue(void) const
 {
   int count = 0;
 
@@ -719,7 +719,7 @@ int spot_on_lite_daemon_child_client::bytes_in_send_queue(void) const
   return count;
 }
 
-quint64 spot_on_lite_daemon_child_client::db_id(void)
+quint64 spot_on_lite_daemon_child::db_id(void)
 {
   QWriteLocker lock(&s_db_id_mutex);
 
@@ -727,7 +727,7 @@ quint64 spot_on_lite_daemon_child_client::db_id(void)
   return s_db_id;
 }
 
-void spot_on_lite_daemon_child_client::create_remote_identities_database(void)
+void spot_on_lite_daemon_child::create_remote_identities_database(void)
 {
   quint64 db_connection_id = db_id();
 
@@ -754,7 +754,7 @@ void spot_on_lite_daemon_child_client::create_remote_identities_database(void)
   QSqlDatabase::removeDatabase(QString::number(db_connection_id));
 }
 
-void spot_on_lite_daemon_child_client::create_statistics_database(void)
+void spot_on_lite_daemon_child::create_statistics_database(void)
 {
   quint64 db_connection_id = db_id();
 
@@ -781,7 +781,7 @@ void spot_on_lite_daemon_child_client::create_statistics_database(void)
   QSqlDatabase::removeDatabase(QString::number(db_connection_id));
 }
 
-void spot_on_lite_daemon_child_client::data_received
+void spot_on_lite_daemon_child::data_received
 (const QByteArray &data,
  const QHostAddress &peer_address,
  const quint16 peer_port)
@@ -830,7 +830,7 @@ void spot_on_lite_daemon_child_client::data_received
 
 	  if(!m_dtls->doHandshake(socket, data))
 	    {
-	      log(QString("spot_on_lite_daemon_child_client::data_received(): "
+	      log(QString("spot_on_lite_daemon_child::data_received(): "
 			  "doHandshake() failure (%1).").
 		  arg(m_dtls->dtlsErrorString()));
 
@@ -855,7 +855,7 @@ void spot_on_lite_daemon_child_client::data_received
 #endif
 }
 
-void spot_on_lite_daemon_child_client::generate_certificate
+void spot_on_lite_daemon_child::generate_certificate
 (RSA *rsa,
  QByteArray &certificate,
  const long int days,
@@ -1043,7 +1043,7 @@ void spot_on_lite_daemon_child_client::generate_certificate
   free(common_name);
 }
 
-void spot_on_lite_daemon_child_client::generate_ssl_tls(void)
+void spot_on_lite_daemon_child::generate_ssl_tls(void)
 {
   BIGNUM *f4 = nullptr;
   BIO *private_memory = nullptr;
@@ -1160,7 +1160,7 @@ void spot_on_lite_daemon_child_client::generate_ssl_tls(void)
       memzero(certificate);
       memzero(private_key);
       memzero(public_key);
-      log(QString("spot_on_lite_daemon_child_client::"
+      log(QString("spot_on_lite_daemon_child::"
 		  "generate_ssl_tls(): error (%1) occurred.").arg(error));
     }
   else
@@ -1178,7 +1178,7 @@ void spot_on_lite_daemon_child_client::generate_ssl_tls(void)
   free(public_buffer);
 }
 
-void spot_on_lite_daemon_child_client::log(const QString &error) const
+void spot_on_lite_daemon_child::log(const QString &error) const
 {
   QString e(error.trimmed());
 
@@ -1201,7 +1201,7 @@ void spot_on_lite_daemon_child_client::log(const QString &error) const
     }
 }
 
-void spot_on_lite_daemon_child_client::memzero(QByteArray &bytes)
+void spot_on_lite_daemon_child::memzero(QByteArray &bytes)
 {
   memset(bytes.data(), 0, static_cast<size_t> (bytes.length()));
   bytes.clear();
@@ -1209,7 +1209,7 @@ void spot_on_lite_daemon_child_client::memzero(QByteArray &bytes)
 
 #ifdef SPOTON_LITE_DAEMON_DTLS_SUPPORTED
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 12, 0))
-void spot_on_lite_daemon_child_client::prepare_dtls(void)
+void spot_on_lite_daemon_child::prepare_dtls(void)
 {
   if(m_dtls)
     m_dtls->deleteLater();
@@ -1232,7 +1232,7 @@ void spot_on_lite_daemon_child_client::prepare_dtls(void)
 #endif
 #endif
 
-void spot_on_lite_daemon_child_client::prepare_local_socket(void)
+void spot_on_lite_daemon_child::prepare_local_socket(void)
 {
   {
     QWriteLocker lock(&m_local_content_mutex);
@@ -1244,7 +1244,7 @@ void spot_on_lite_daemon_child_client::prepare_local_socket(void)
   m_local_socket->connectToServer(m_local_server_file_name);
 }
 
-void spot_on_lite_daemon_child_client::prepare_ssl_tls_configuration
+void spot_on_lite_daemon_child::prepare_ssl_tls_configuration
 (const QList<QByteArray> &list)
 {
   m_ssl_configuration.setLocalCertificate(QSslCertificate(list.value(0)));
@@ -1300,12 +1300,12 @@ void spot_on_lite_daemon_child_client::prepare_ssl_tls_configuration
 	** Error!
 	*/
 
-	log("spot_on_lite_daemon_child_client::"
+	log("spot_on_lite_daemon_child::"
 	    "prepare_ssl_tls_configuration(): empty private key.");
     }
 }
 
-void spot_on_lite_daemon_child_client::process_configuration_file(void)
+void spot_on_lite_daemon_child::process_configuration_file(void)
 {
   QSettings settings(m_configuration_file_name, QSettings::IniFormat);
 
@@ -1319,7 +1319,7 @@ void spot_on_lite_daemon_child_client::process_configuration_file(void)
       }
 }
 
-void spot_on_lite_daemon_child_client::process_local_content(void)
+void spot_on_lite_daemon_child::process_local_content(void)
 {
   {
     QReadLocker lock(&m_local_content_mutex);
@@ -1494,7 +1494,7 @@ void spot_on_lite_daemon_child_client::process_local_content(void)
     }
 }
 
-void spot_on_lite_daemon_child_client::process_read_data(const QByteArray &d)
+void spot_on_lite_daemon_child::process_read_data(const QByteArray &d)
 {
   /*
   ** Process data received from the remote socket.
@@ -1539,7 +1539,7 @@ void spot_on_lite_daemon_child_client::process_read_data(const QByteArray &d)
 #endif
 }
 
-void spot_on_lite_daemon_child_client::process_remote_content(void)
+void spot_on_lite_daemon_child::process_remote_content(void)
 {
   if(m_end_of_message_marker.isEmpty() ||
      m_local_socket->state() != QLocalSocket::ConnectedState)
@@ -1598,7 +1598,7 @@ void spot_on_lite_daemon_child_client::process_remote_content(void)
 #endif
 }
 
-void spot_on_lite_daemon_child_client::purge_containers(void)
+void spot_on_lite_daemon_child::purge_containers(void)
 {
   {
     QWriteLocker lock(&m_local_content_mutex);
@@ -1612,7 +1612,7 @@ void spot_on_lite_daemon_child_client::purge_containers(void)
   purge_remote_identities();
 }
 
-void spot_on_lite_daemon_child_client::purge_remote_identities(void)
+void spot_on_lite_daemon_child::purge_remote_identities(void)
 {
 #ifdef SPOTON_LITE_DAEMON_ENABLE_IDENTITIES_CONTAINER
   QWriteLocker lock(&m_remote_identities_mutex);
@@ -1643,7 +1643,7 @@ void spot_on_lite_daemon_child_client::purge_remote_identities(void)
 #endif
 }
 
-void spot_on_lite_daemon_child_client::purge_statistics(void)
+void spot_on_lite_daemon_child::purge_statistics(void)
 {
   quint64 db_connection_id = db_id();
 
@@ -1668,7 +1668,7 @@ void spot_on_lite_daemon_child_client::purge_statistics(void)
   QSqlDatabase::removeDatabase(QString::number(db_connection_id));
 }
 
-void spot_on_lite_daemon_child_client::record_certificate
+void spot_on_lite_daemon_child::record_certificate
 (const QByteArray &certificate,
  const QByteArray &private_key,
  const QByteArray &public_key)
@@ -1710,7 +1710,7 @@ void spot_on_lite_daemon_child_client::record_certificate
   QSqlDatabase::removeDatabase(QString::number(db_connection_id));
 }
 
-void spot_on_lite_daemon_child_client::record_remote_identity
+void spot_on_lite_daemon_child::record_remote_identity
 (const QByteArray &data)
 {
   QByteArray algorithm;
@@ -1782,7 +1782,7 @@ void spot_on_lite_daemon_child_client::record_remote_identity
     }
 }
 
-void spot_on_lite_daemon_child_client::remove_expired_identities(void)
+void spot_on_lite_daemon_child::remove_expired_identities(void)
 {
 #ifdef SPOTON_LITE_DAEMON_ENABLE_IDENTITIES_CONTAINER
   QWriteLocker lock(&m_remote_identities_mutex);
@@ -1825,7 +1825,7 @@ void spot_on_lite_daemon_child_client::remove_expired_identities(void)
 #endif
 }
 
-void spot_on_lite_daemon_child_client::save_statistic
+void spot_on_lite_daemon_child::save_statistic
 (const QString &key, const QString &value)
 {
   create_statistics_database();
@@ -1859,7 +1859,7 @@ void spot_on_lite_daemon_child_client::save_statistic
   QSqlDatabase::removeDatabase(QString::number(db_connection_id));
 }
 
-void spot_on_lite_daemon_child_client::
+void spot_on_lite_daemon_child::
 set_ssl_ciphers(const QList<QSslCipher> &ciphers,
 		QSslConfiguration &configuration) const
 {
@@ -1875,17 +1875,17 @@ set_ssl_ciphers(const QList<QSslCipher> &ciphers,
     configuration.setCiphers(preferred);
 }
 
-void spot_on_lite_daemon_child_client::share_identity(const QByteArray &data)
+void spot_on_lite_daemon_child::share_identity(const QByteArray &data)
 {
   m_local_socket->write(data);
 }
 
-void spot_on_lite_daemon_child_client::slot_attempt_local_connection(void)
+void spot_on_lite_daemon_child::slot_attempt_local_connection(void)
 {
   prepare_local_socket();
 }
 
-void spot_on_lite_daemon_child_client::slot_attempt_remote_connection(void)
+void spot_on_lite_daemon_child::slot_attempt_remote_connection(void)
 {
   /*
   ** Attempt a client connection.
@@ -1918,7 +1918,7 @@ void spot_on_lite_daemon_child_client::slot_attempt_remote_connection(void)
 	    if(!m_dtls->
 	       doHandshake(qobject_cast<QUdpSocket *> (m_remote_socket)))
 	      {
-		log(QString("spot_on_lite_daemon_child_client::"
+		log(QString("spot_on_lite_daemon_child::"
 			    "slot_attempt_remote_connection(): "
 			    "doHandshake() failure (%1).").
 		    arg(m_dtls->dtlsErrorString()));
@@ -1939,7 +1939,7 @@ void spot_on_lite_daemon_child_client::slot_attempt_remote_connection(void)
     m_remote_socket->connectToHost(m_peer_address, m_peer_port);
 }
 
-void spot_on_lite_daemon_child_client::slot_broadcast_capabilities(void)
+void spot_on_lite_daemon_child::slot_broadcast_capabilities(void)
 {
   /*
   ** Capabilities
@@ -2000,7 +2000,7 @@ void spot_on_lite_daemon_child_client::slot_broadcast_capabilities(void)
     }
 }
 
-void spot_on_lite_daemon_child_client::slot_connected(void)
+void spot_on_lite_daemon_child::slot_connected(void)
 {
   m_attempt_local_connection_timer.start();
   m_attempt_remote_connection_timer.stop();
@@ -2016,7 +2016,7 @@ void spot_on_lite_daemon_child_client::slot_connected(void)
   setsockopt(sd, SOL_SOCKET, SO_SNDBUF, &m_maximum_accumulated_bytes, optlen);
 }
 
-void spot_on_lite_daemon_child_client::slot_disconnected(void)
+void spot_on_lite_daemon_child::slot_disconnected(void)
 {
   if(m_client_role)
     {
@@ -2042,7 +2042,7 @@ void spot_on_lite_daemon_child_client::slot_disconnected(void)
     }
 }
 
-void spot_on_lite_daemon_child_client::slot_general_timer_timeout(void)
+void spot_on_lite_daemon_child::slot_general_timer_timeout(void)
 {
   {
     QWriteLocker lock(&m_local_content_mutex);
@@ -2076,7 +2076,7 @@ void spot_on_lite_daemon_child_client::slot_general_timer_timeout(void)
 }
 
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 12, 0))
-void spot_on_lite_daemon_child_client::slot_handshake_timeout(void)
+void spot_on_lite_daemon_child::slot_handshake_timeout(void)
 {
 #ifdef SPOTON_LITE_DAEMON_DTLS_SUPPORTED
   if(m_dtls && m_protocol == QAbstractSocket::UdpSocket)
@@ -2084,21 +2084,21 @@ void spot_on_lite_daemon_child_client::slot_handshake_timeout(void)
 #endif
 }
 #else
-void spot_on_lite_daemon_child_client::slot_handshake_timeout(void)
+void spot_on_lite_daemon_child::slot_handshake_timeout(void)
 {
 }
 #endif
 
-void spot_on_lite_daemon_child_client::slot_keep_alive_timer_timeout(void)
+void spot_on_lite_daemon_child::slot_keep_alive_timer_timeout(void)
 {
   if(m_remote_socket->peerAddress().isNull())
-    log(QString("spot_on_lite_daemon_child_client::"
+    log(QString("spot_on_lite_daemon_child::"
 		"slot_keep_alive_timer_timeout(): peer %1:%2 "
 		"aborting!").
 	arg(m_peer_address.toString()).
 	arg(m_peer_port));
   else
-    log(QString("spot_on_lite_daemon_child_client::"
+    log(QString("spot_on_lite_daemon_child::"
 		"slot_keep_alive_timer_timeout(): peer %1:%2 "
 		"aborting!").
 	arg(m_remote_socket->peerAddress().toString()).
@@ -2128,7 +2128,7 @@ void spot_on_lite_daemon_child_client::slot_keep_alive_timer_timeout(void)
     }
 }
 
-void spot_on_lite_daemon_child_client::slot_local_socket_connected(void)
+void spot_on_lite_daemon_child::slot_local_socket_connected(void)
 {
   {
     QWriteLocker lock(&m_local_content_mutex);
@@ -2150,13 +2150,13 @@ void spot_on_lite_daemon_child_client::slot_local_socket_connected(void)
   process_remote_content();
 }
 
-void spot_on_lite_daemon_child_client::slot_local_socket_disconnected(void)
+void spot_on_lite_daemon_child::slot_local_socket_disconnected(void)
 {
   if(!m_attempt_local_connection_timer.isActive())
     m_attempt_local_connection_timer.start();
 }
 
-void spot_on_lite_daemon_child_client::slot_local_socket_ready_read(void)
+void spot_on_lite_daemon_child::slot_local_socket_ready_read(void)
 {
   while(m_local_socket->bytesAvailable() > 0)
     {
@@ -2189,10 +2189,10 @@ void spot_on_lite_daemon_child_client::slot_local_socket_ready_read(void)
 
   if(m_process_local_content_future.isFinished())
     m_process_local_content_future = QtConcurrent::run
-      (this, &spot_on_lite_daemon_child_client::process_local_content);
+      (this, &spot_on_lite_daemon_child::process_local_content);
 }
 
-void spot_on_lite_daemon_child_client::slot_ready_read(void)
+void spot_on_lite_daemon_child::slot_ready_read(void)
 {
   while(m_remote_socket->bytesAvailable() > 0)
     {
@@ -2226,7 +2226,7 @@ void spot_on_lite_daemon_child_client::slot_ready_read(void)
 	      if(!m_dtls->doHandshake(socket, data))
 		{
 		  log
-		    (QString("spot_on_lite_daemon_child_client::"
+		    (QString("spot_on_lite_daemon_child::"
 			     "slot_ready_read(): doHandshake() failure (%1).").
 		     arg(m_dtls->dtlsErrorString()));
 
@@ -2249,14 +2249,14 @@ void spot_on_lite_daemon_child_client::slot_ready_read(void)
     }
 }
 
-void spot_on_lite_daemon_child_client::slot_remove_expired_identities(void)
+void spot_on_lite_daemon_child::slot_remove_expired_identities(void)
 {
   if(m_expired_identities_future.isFinished())
     m_expired_identities_future = QtConcurrent::run
-      (this, &spot_on_lite_daemon_child_client::remove_expired_identities);
+      (this, &spot_on_lite_daemon_child::remove_expired_identities);
 }
 
-void spot_on_lite_daemon_child_client::
+void spot_on_lite_daemon_child::
 slot_ssl_errors(const QList<QSslError> &errors)
 {
   Q_UNUSED(errors);
@@ -2265,12 +2265,12 @@ slot_ssl_errors(const QList<QSslError> &errors)
     qobject_cast<QSslSocket *> (m_remote_socket)->ignoreSslErrors();
 }
 
-void spot_on_lite_daemon_child_client::slot_write_data(const QByteArray &data)
+void spot_on_lite_daemon_child::slot_write_data(const QByteArray &data)
 {
   write(data);
 }
 
-void spot_on_lite_daemon_child_client::stop_threads_and_timers(void)
+void spot_on_lite_daemon_child::stop_threads_and_timers(void)
 {
   m_attempt_local_connection_timer.stop();
   m_attempt_remote_connection_timer.stop();
@@ -2289,7 +2289,7 @@ void spot_on_lite_daemon_child_client::stop_threads_and_timers(void)
   m_process_local_content_future.waitForFinished();
 }
 
-void spot_on_lite_daemon_child_client::write(const QByteArray &data)
+void spot_on_lite_daemon_child::write(const QByteArray &data)
 {
   switch(m_protocol)
     {

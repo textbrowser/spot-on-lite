@@ -34,7 +34,7 @@ extern "C"
 #include <QStringList>
 
 #include "spot-on-lite-daemon.h"
-#include "spot-on-lite-daemon-child-client.h"
+#include "spot-on-lite-daemon-child.h"
 #include "spot-on-lite-daemon-udp-listener.h"
 
 spot_on_lite_daemon_udp_listener::spot_on_lite_daemon_udp_listener
@@ -75,7 +75,7 @@ void spot_on_lite_daemon_udp_listener::new_connection
   if(sd == -1)
     return;
 
-  QPointer<spot_on_lite_daemon_child_client> client;
+  QPointer<spot_on_lite_daemon_child> client;
   QString server_identity
     (QString("%1:%2").arg(localAddress().toString()).arg(localPort()));
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 15, 0))
@@ -88,7 +88,7 @@ void spot_on_lite_daemon_udp_listener::new_connection
 
   setsockopt(sd, SOL_SOCKET, SO_RCVBUF, &maximum_accumulated_bytes, optlen);
   setsockopt(sd, SOL_SOCKET, SO_SNDBUF, &maximum_accumulated_bytes, optlen);
-  client = new spot_on_lite_daemon_child_client
+  client = new spot_on_lite_daemon_child
     (data,
      m_parent->certificates_file_name(),
      m_parent->configuration_file_name(),
@@ -117,7 +117,7 @@ void spot_on_lite_daemon_udp_listener::new_connection
 void spot_on_lite_daemon_udp_listener::slot_general_timeout(void)
 {
   QMutableHashIterator
-    <QString, QPointer<spot_on_lite_daemon_child_client> > it(m_clients);
+    <QString, QPointer<spot_on_lite_daemon_child> > it(m_clients);
 
   while(it.hasNext())
     {
@@ -182,7 +182,7 @@ void spot_on_lite_daemon_udp_listener::slot_ready_read(void)
 	new_connection(data, peer_address, peer_port);
       else
 	{
-	  QPointer<spot_on_lite_daemon_child_client> client
+	  QPointer<spot_on_lite_daemon_child> client
 	    (m_clients.value(QString::number(peer_port) +
 			     peer_address.scopeId() +
 			     peer_address.toString(),

@@ -33,7 +33,7 @@
 #include <QUdpSocket>
 
 class spot_on_lite_daemon;
-class spot_on_lite_daemon_child_client;
+class spot_on_lite_daemon_child;
 
 class spot_on_lite_daemon_udp_listener: public QUdpSocket
 {
@@ -45,7 +45,7 @@ class spot_on_lite_daemon_udp_listener: public QUdpSocket
   ~spot_on_lite_daemon_udp_listener();
 
  private:
-  QHash<QString, QPointer<spot_on_lite_daemon_child_client> > m_clients;
+  QHash<QString, QPointer<spot_on_lite_daemon_child> > m_clients;
   QString m_configuration;
   QTimer m_general_timer;
   int m_max_pending_connections;

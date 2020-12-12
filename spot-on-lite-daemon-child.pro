@@ -1,8 +1,8 @@
 include (common.pro)
 
-HEADERS = Source/spot-on-lite-daemon-child-client.h
+HEADERS = Source/spot-on-lite-daemon-child.h
 RESOURCES =
-SOURCES = Source/spot-on-lite-daemon-child-client.cc \
+SOURCES = Source/spot-on-lite-daemon-child.cc \
           Source/spot-on-lite-daemon-child-main.cc \
           Source/spot-on-lite-daemon-sha.cc
 

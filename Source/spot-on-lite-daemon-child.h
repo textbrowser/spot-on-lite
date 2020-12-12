@@ -25,8 +25,8 @@
 ** SPOT-ON-LITE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef _spot_on_lite_daemon_child_client_h_
-#define _spot_on_lite_daemon_child_client_h_
+#ifndef _spot_on_lite_daemon_child_h_
+#define _spot_on_lite_daemon_child_h_
 
 extern "C"
 {
@@ -52,12 +52,12 @@ extern "C"
 
 class QLocalSocket;
 
-class spot_on_lite_daemon_child_client: public QObject
+class spot_on_lite_daemon_child: public QObject
 {
   Q_OBJECT
 
  public:
-  spot_on_lite_daemon_child_client
+  spot_on_lite_daemon_child
     (const QByteArray &initial_data,
      const QString &certificates_file_name,
      const QString &configuration_file_name,
@@ -78,7 +78,7 @@ class spot_on_lite_daemon_child_client: public QObject
      const int socket_descriptor,
      const int ssl_key_size,
      const quint16 peer_port);
-  ~spot_on_lite_daemon_child_client();
+  ~spot_on_lite_daemon_child();
   static bool memcmp(const QByteArray &a, const QByteArray &b);
   void data_received(const QByteArray &data,
 		     const QHostAddress &peer_address,
