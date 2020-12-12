@@ -1030,11 +1030,7 @@ void spot_on_lite_daemon_child_client::generate_certificate
   BIO_free(memory);
 
   if(!error.isEmpty())
-    {
-      certificate.replace
-	(0, certificate.length(), QByteArray(certificate.length(), 0));
-      certificate.clear();
-    }
+    memzero(certificate);
 
   if(rsa)
     RSA_up_ref(rsa); // Reference counter.
@@ -1161,15 +1157,9 @@ void spot_on_lite_daemon_child_client::generate_ssl_tls(void)
 
   if(!error.isEmpty())
     {
-      certificate.replace
-	(0, certificate.length(), QByteArray(certificate.length(), 0));
-      certificate.clear();
-      private_key.replace
-	(0, private_key.length(), QByteArray(private_key.length(), 0));
-      private_key.clear();
-      public_key.replace
-	(0, public_key.length(), QByteArray(public_key.length(), 0));
-      public_key.clear();
+      memzero(certificate);
+      memzero(private_key);
+      memzero(public_key);
       log(QString("spot_on_lite_daemon_child_client::"
 		  "generate_ssl_tls(): error (%1) occurred.").arg(error));
     }
@@ -1209,6 +1199,12 @@ void spot_on_lite_daemon_child_client::log(const QString &error) const
       file.write("\n");
       file.close();
     }
+}
+
+void spot_on_lite_daemon_child_client::memzero(QByteArray &bytes)
+{
+  memset(bytes.data(), 0, static_cast<size_t> (bytes.length()));
+  bytes.clear();
 }
 
 #ifdef SPOTON_LITE_DAEMON_DTLS_SUPPORTED

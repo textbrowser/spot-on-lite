@@ -159,6 +159,7 @@ class spot_on_lite_daemon_child_client: public QObject
 			    QString &error);
   void generate_ssl_tls(void);
   void log(const QString &error) const;
+  void memzero(QByteArray &bytes);
 #ifdef SPOTON_LITE_DAEMON_DTLS_SUPPORTED
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 12, 0))
   void prepare_dtls(void);
