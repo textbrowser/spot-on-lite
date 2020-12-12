@@ -496,7 +496,8 @@ default_ssl_ciphers(void) const
   if(!m_ssl_control_string.toLower().contains("!sslv3"))
     protocols << "SslV3";
 #else
-  protocols << "TlsV1_2"
+  protocols << "TlsV1_3"
+	    << "TlsV1_2"
 	    << "TlsV1_1"
 	    << "TlsV1_0";
 #endif
@@ -590,6 +591,11 @@ default_ssl_ciphers(void) const
 	    {
 	      QSslCipher cipher;
 
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 12, 0))
+	      if(protocol == "TlsV1_3")
+		cipher = QSslCipher(next, QSsl::TlsV1_3OrLater);
+	      else
+#endif
 	      if(protocol == "TlsV1_2")
 		cipher = QSslCipher(next, QSsl::TlsV1_2);
 	      else if(protocol == "TlsV1_1")
