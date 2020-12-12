@@ -27,5 +27,6 @@ Remaining Items
 
 - Configuration panel.
 - Echo proxy.
+- Future-proof (replace SHA-512, etc.).
 - IPv6 scope identities?
 - Optionally share CD identities in client mode.

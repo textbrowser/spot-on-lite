@@ -989,7 +989,7 @@ void spot_on_lite_daemon_child::generate_certificate
       goto done_label;
     }
 
-  if(X509_sign(x509, pk, EVP_sha512()) == 0)
+  if(X509_sign(x509, pk, EVP_sha3_512()) == 0)
     {
       error = "X509_sign() returned zero";
       goto done_label;
