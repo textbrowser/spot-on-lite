@@ -592,7 +592,12 @@ QList<QSslCipher> spot_on_lite_daemon_child::default_ssl_ciphers(void) const
 
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 12, 0))
 	      if(protocol == "TlsV1_3")
-		cipher = QSslCipher(next, QSsl::TlsV1_3OrLater);
+		{
+		  cipher = QSslCipher(next, QSsl::TlsV1_3OrLater);
+
+		  if(cipher.isNull())
+		    cipher = QSslCipher(next, QSsl::TlsV1_3);
+		}
 	      else
 #endif
 	      if(protocol == "TlsV1_2")
