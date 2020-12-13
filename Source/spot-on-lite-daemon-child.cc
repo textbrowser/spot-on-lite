@@ -474,8 +474,7 @@ local_certificate_configuration(void)
   return list;
 }
 
-QList<QSslCipher> spot_on_lite_daemon_child::
-default_ssl_ciphers(void) const
+QList<QSslCipher> spot_on_lite_daemon_child::default_ssl_ciphers(void) const
 {
   QList<QSslCipher> list;
 
@@ -1033,7 +1032,7 @@ void spot_on_lite_daemon_child::generate_certificate
     memzero(certificate);
 
   if(rsa)
-    RSA_up_ref(rsa); // Reference counter.
+    RSA_up_ref(rsa); // Reference counter. Please also see EVP_PKEY_free().
 
   EVP_PKEY_free(pk);
   X509_NAME_ENTRY_free(common_name_entry);
