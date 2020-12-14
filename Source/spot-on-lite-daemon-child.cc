@@ -64,9 +64,11 @@ extern "C"
 QReadWriteLock spot_on_lite_daemon_child::s_db_id_mutex;
 quint64 spot_on_lite_daemon_child::s_db_id = 0;
 
-static int hash_algorithm_key_length(const QByteArray &algorithm)
+static int hash_algorithm_key_length(const QByteArray &a)
 {
-  if(algorithm.toLower().trimmed() == "sha-512")
+  QByteArray algorithm(a.toLower().trimmed());
+
+  if(a == "sha-512" || a == "sha3-512")
     return 64;
   else
     return 0;
@@ -78,6 +80,7 @@ static int MAXIMUM_REMOTE_IDENTITIES =
   SPOTON_LITE_DAEMON_IDENTITIES_CONTAINER_MAXIMUM_SIZE;
 #endif
 #endif
+static long int FIVE_YEARS = 5L * 24L * 60L * 60L * 365L; // Five years.
 static qint64 END_OF_MESSAGE_MARKER_WINDOW = 10000;
 
 spot_on_lite_daemon_child::spot_on_lite_daemon_child
@@ -148,7 +151,8 @@ spot_on_lite_daemon_child::spot_on_lite_daemon_child
 
   if(!(m_ssl_key_size == 2048 ||
        m_ssl_key_size == 3072 ||
-       m_ssl_key_size == 4096))
+       m_ssl_key_size == 4096 ||
+       m_ssl_key_size == 7680))
     {
       m_ssl_control_string.clear();
       m_ssl_key_size = 0;
@@ -1060,7 +1064,7 @@ void spot_on_lite_daemon_child::generate_ssl_tls(void)
   RSA *rsa = nullptr;
   char *private_buffer = nullptr;
   char *public_buffer = nullptr;
-  long int days = 5L * 24L * 60L * 60L * 365L; // Five years.
+  long int days = FIVE_YEARS;
 
   if(m_ssl_key_size <= 0)
     {
