@@ -319,7 +319,7 @@ void spot_on_lite_daemon::prepare_peers(void)
 
 	  _exit(EXIT_SUCCESS);
 	}
-      else
+      else if(pid > 0)
 	m_peer_pids[i] = pid;
     }
 }

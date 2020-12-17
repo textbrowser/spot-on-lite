@@ -48,11 +48,13 @@ class spot_on_lite_daemon_tcp_listener: public QTcpServer
  private:
   QHash<pid_t, char> m_child_pids;
   QString m_configuration;
+  QTimer m_purge_timer;
   QTimer m_start_timer;
   spot_on_lite_daemon *m_parent;
 
  private slots:
   void slot_child_died(const pid_t pid);
+  void slot_purge_timeout(void);
   void slot_start_timeout(void);
 
  signals:

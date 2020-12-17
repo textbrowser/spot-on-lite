@@ -28,6 +28,7 @@
 extern "C"
 {
 #include <sys/socket.h>
+#include <sys/wait.h>
 #include <unistd.h>
 }
 
@@ -43,12 +44,17 @@ spot_on_lite_daemon_tcp_listener::spot_on_lite_daemon_tcp_listener
   ** The configuration is assumed to be correct.
   */
 
+  connect(&m_purge_timer,
+	  SIGNAL(timeout(void)),
+	  this,
+	  SLOT(slot_purge_timeout(void)));
   connect(&m_start_timer,
 	  SIGNAL(timeout(void)),
 	  this,
 	  SLOT(slot_start_timeout(void)));
   m_configuration = configuration;
   m_parent = parent;
+  m_purge_timer.start(2500);
   m_start_timer.start(5000);
 }
 
@@ -164,13 +170,31 @@ void spot_on_lite_daemon_tcp_listener::incomingConnection
   else
     {
       ::close(sd);
-      m_child_pids[pid] = 0;
+
+      if(pid > 0)
+	m_child_pids[pid] = 0;
     }
 }
 
 void spot_on_lite_daemon_tcp_listener::slot_child_died(const pid_t pid)
 {
   m_child_pids.remove(pid);
+}
+
+void spot_on_lite_daemon_tcp_listener::slot_purge_timeout(void)
+{
+  QMutableHashIterator<pid_t, char> it(m_child_pids);
+
+  while(it.hasNext())
+    {
+      it.next();
+
+      if(kill(it.key(), 0) == -1)
+	{
+	  waitpid(it.key(), nullptr, WNOHANG);
+	  it.remove();
+	}
+    }
 }
 
 void spot_on_lite_daemon_tcp_listener::slot_start_timeout(void)
