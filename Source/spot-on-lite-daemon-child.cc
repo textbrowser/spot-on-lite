@@ -877,6 +877,9 @@ void spot_on_lite_daemon_child::generate_certificate
   X509_NAME *subject = nullptr;
   X509_NAME_ENTRY *common_name_entry = nullptr;
   char *buffer = nullptr;
+  const unsigned char *organization =
+    reinterpret_cast<const unsigned char *>
+    ("Spot-On-Lite Self-Signed Certificate");  
   int length = 0;
   unsigned char *common_name = nullptr;
 
@@ -964,6 +967,18 @@ void spot_on_lite_daemon_child::generate_certificate
   if(!subject)
     {
       error = "X509_NAME_new() returned zero";
+      goto done_label;
+    }
+  
+  if(X509_NAME_add_entry_by_txt(subject,
+				"O",
+				MBSTRING_ASC,
+				organization,
+				-1,
+				-1,
+				0) != 1)
+    {
+      error = "X509_NAME_add_entry_by_txt() failure";
       goto done_label;
     }
 
