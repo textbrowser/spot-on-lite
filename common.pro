@@ -1,5 +1,5 @@
 CONFIG += qt warn_on
-CONFIG -= app_bundle
+CONFIG -= app_bundle gui
 LANGUAGE = C++
 QMAKE_CXXFLAGS_RELEASE -= -O2
 
