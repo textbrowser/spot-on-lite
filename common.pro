@@ -12,8 +12,6 @@ QMAKE_CXXFLAGS_RELEASE += -O3 \
                           -Wconversion \
                           -Wdouble-promotion \
                           -Wextra \
-                          -Wformat-overflow=2 \
-                          -Wformat-truncation=2 \
 			  -Wformat=2 \
                           -Woverloaded-virtual \
                           -Wpointer-arith \
@@ -25,7 +23,6 @@ QMAKE_CXXFLAGS_RELEASE += -O3 \
                           -fPIE \
                           -fstack-protector-all \
                           -fwrapv \
-                          -march=generic \
                           -pedantic \
                           -std=c++11
 } else:linux-* {
