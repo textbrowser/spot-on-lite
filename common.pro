@@ -9,13 +9,11 @@ QMAKE_CXXFLAGS_RELEASE += -O3 \
                           -Wall \
                           -Wcast-align \
                           -Wcast-qual \
-                          -Wconversion \
                           -Wdouble-promotion \
                           -Wextra \
 			  -Wformat=2 \
                           -Woverloaded-virtual \
                           -Wpointer-arith \
-                          -Wsign-conversion \
                           -Wstack-protector \
                           -Wstrict-overflow=5 \
                           -Wundef \
@@ -24,7 +22,7 @@ QMAKE_CXXFLAGS_RELEASE += -O3 \
                           -fstack-protector-all \
                           -fwrapv \
                           -pedantic \
-                          -std=c++11
+                          -std=c++17
 } else:linux-* {
 DEFINES += SPOTON_LITE_DAEMON_DTLS_SUPPORTED
 QMAKE_CXXFLAGS_RELEASE += -O3 \
