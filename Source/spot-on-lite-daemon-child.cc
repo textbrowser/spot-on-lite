@@ -80,8 +80,9 @@ static int MAXIMUM_REMOTE_IDENTITIES =
   SPOTON_LITE_DAEMON_IDENTITIES_CONTAINER_MAXIMUM_SIZE;
 #endif
 #endif
-static long int FIVE_YEARS = 5L * 24L * 60L * 60L * 365L; // Five years.
-static qint64 END_OF_MESSAGE_MARKER_WINDOW = 10000;
+static auto END_OF_MESSAGE_MARKER_WINDOW = 10000;
+static auto FIVE_YEARS = 5L * 24L * 60L * 60L * 365L; // Five years.
+static auto s_certificate_version = 3;
 
 spot_on_lite_daemon_child::spot_on_lite_daemon_child
 (const QByteArray &initial_data,
@@ -914,7 +915,7 @@ void spot_on_lite_daemon_child::generate_certificate
   ** Set some attributes.
   */
 
-  if(X509_set_version(x509, 3) == 0)
+  if(X509_set_version(x509, s_certificate_version) == 0)
     {
       error = "X509_set_version() returned zero";
       goto done_label;
