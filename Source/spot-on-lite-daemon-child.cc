@@ -68,7 +68,7 @@ static int hash_algorithm_key_length(const QByteArray &a)
 {
   QByteArray algorithm(a.toLower().trimmed());
 
-  if(a == "sha-512" || a == "sha3-512")
+  if(algorithm == "sha-512" || algorithm == "sha3-512")
     return 64;
   else
     return 0;
