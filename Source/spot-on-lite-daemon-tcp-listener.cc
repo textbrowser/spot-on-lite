@@ -35,8 +35,8 @@ extern "C"
 
 #include <QStringList>
 
-#include "spot-on-lite-daemon.h"
 #include "spot-on-lite-daemon-tcp-listener.h"
+#include "spot-on-lite-daemon.h"
 
 spot_on_lite_daemon_tcp_listener::spot_on_lite_daemon_tcp_listener
 (const QString &configuration, spot_on_lite_daemon *parent):QTcpServer(parent)
@@ -73,7 +73,7 @@ void spot_on_lite_daemon_tcp_listener::incomingConnection
       return;
     }
 
-  int sd = dup(static_cast<int> (socket_descriptor));
+  auto sd = dup(static_cast<int> (socket_descriptor));
 
   ::close(static_cast<int> (socket_descriptor));
 
@@ -85,9 +85,9 @@ void spot_on_lite_daemon_tcp_listener::incomingConnection
 #else
   QStringList list(m_configuration.split(",", QString::KeepEmptyParts));
 #endif
-  int listener_sd = static_cast<int> (socketDescriptor());
-  int maximum_accumulated_bytes = m_parent->maximum_accumulated_bytes();
-  int so_linger = list.value(6).toInt();
+  auto listener_sd = static_cast<int> (socketDescriptor());
+  auto maximum_accumulated_bytes = m_parent->maximum_accumulated_bytes();
+  auto so_linger = list.value(6).toInt();
   pid_t pid = 0;
   std::string certificates_file_name
     (m_parent->certificates_file_name().toStdString());
@@ -115,7 +115,7 @@ void spot_on_lite_daemon_tcp_listener::incomingConnection
       if(so_linger > -1)
 	{
 	  socklen_t length = 0;
-	  struct linger l;
+	  struct linger l = {};
 
 	  memset(&l, 0, sizeof(l));
 	  l.l_linger = so_linger;
@@ -211,7 +211,7 @@ void spot_on_lite_daemon_tcp_listener::slot_start_timeout(void)
 #else
   QStringList list(m_configuration.split(",", QString::KeepEmptyParts));
 #endif
-  int maximum_clients = list.value(2).toInt();
+  auto maximum_clients = list.value(2).toInt();
 
   if(m_child_pids.size() >= maximum_clients)
     {
@@ -224,11 +224,10 @@ void spot_on_lite_daemon_tcp_listener::slot_start_timeout(void)
 
   if(listen(QHostAddress(list.value(0)), list.value(1).toUShort()))
     {
-      int maximum_accumulated_bytes = m_parent ?
+      auto maximum_accumulated_bytes = m_parent ?
 	m_parent->maximum_accumulated_bytes() : 8388608;
-      int sd = static_cast<int> (socketDescriptor());
-      socklen_t optlen = static_cast<socklen_t>
-	(sizeof(maximum_accumulated_bytes));
+      auto optlen = static_cast<socklen_t> (sizeof(maximum_accumulated_bytes));
+      auto sd = static_cast<int> (socketDescriptor());
 
       setMaxPendingConnections(maximum_clients);
       setsockopt(sd, SOL_SOCKET, SO_RCVBUF, &maximum_accumulated_bytes, optlen);

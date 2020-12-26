@@ -95,7 +95,7 @@ void spot_on_lite_daemon::handler_signal(int signal_number)
 
 static int make_daemon(void)
 {
-  struct rlimit rl;
+  struct rlimit rl = {};
 
   /*
   ** Turn into a daemon.
@@ -149,7 +149,7 @@ static int make_daemon(void)
 
 static int prepare_signal_handlers(void)
 {
-  struct sigaction act;
+  struct sigaction act = {};
 
   /*
   ** Ignore SIGHUP.

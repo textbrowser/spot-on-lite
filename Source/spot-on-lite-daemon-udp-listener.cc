@@ -33,9 +33,9 @@ extern "C"
 
 #include <QStringList>
 
-#include "spot-on-lite-daemon.h"
 #include "spot-on-lite-daemon-child.h"
 #include "spot-on-lite-daemon-udp-listener.h"
+#include "spot-on-lite-daemon.h"
 
 spot_on_lite_daemon_udp_listener::spot_on_lite_daemon_udp_listener
 (const QString &configuration, spot_on_lite_daemon *parent):QUdpSocket(parent)
@@ -70,7 +70,7 @@ void spot_on_lite_daemon_udp_listener::new_connection
   if(!m_parent)
     return;
 
-  int sd = dup(static_cast<int> (socketDescriptor()));
+  auto sd = dup(static_cast<int> (socketDescriptor()));
 
   if(sd == -1)
     return;
@@ -83,8 +83,8 @@ void spot_on_lite_daemon_udp_listener::new_connection
 #else
   QStringList list(m_configuration.split(",", QString::KeepEmptyParts));
 #endif
-  int maximum_accumulated_bytes = m_parent->maximum_accumulated_bytes();
-  socklen_t optlen = static_cast<socklen_t> (sizeof(maximum_accumulated_bytes));
+  auto maximum_accumulated_bytes = m_parent->maximum_accumulated_bytes();
+  auto optlen = static_cast<socklen_t> (sizeof(maximum_accumulated_bytes));
 
   setsockopt(sd, SOL_SOCKET, SO_RCVBUF, &maximum_accumulated_bytes, optlen);
   setsockopt(sd, SOL_SOCKET, SO_SNDBUF, &maximum_accumulated_bytes, optlen);
@@ -129,11 +129,10 @@ void spot_on_lite_daemon_udp_listener::slot_general_timeout(void)
 
   if(state() != QAbstractSocket::BoundState)
     {
-      int maximum_accumulated_bytes = m_parent ?
+      auto maximum_accumulated_bytes = m_parent ?
 	m_parent->maximum_accumulated_bytes() : 8388608;
-      int sd = static_cast<int> (socketDescriptor());
-      socklen_t optlen = static_cast<socklen_t>
-	(sizeof(maximum_accumulated_bytes));
+      auto optlen = static_cast<socklen_t> (sizeof(maximum_accumulated_bytes));
+      auto sd = static_cast<int> (socketDescriptor());
 
       setsockopt(sd, SOL_SOCKET, SO_RCVBUF, &maximum_accumulated_bytes, optlen);
       setsockopt(sd, SOL_SOCKET, SO_SNDBUF, &maximum_accumulated_bytes, optlen);
@@ -163,8 +162,8 @@ void spot_on_lite_daemon_udp_listener::slot_ready_read(void)
     {
       QByteArray data;
       QHostAddress peer_address;
+      auto size = qMax(static_cast<qint64> (0), pendingDatagramSize());
       quint16 peer_port = 0;
-      qint64 size = qMax(static_cast<qint64> (0), pendingDatagramSize());
 
       data.resize(static_cast<int> (size));
 

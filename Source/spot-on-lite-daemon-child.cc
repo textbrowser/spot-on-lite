@@ -1342,7 +1342,7 @@ void spot_on_lite_daemon_child::process_configuration_file(void)
 {
   QSettings settings(m_configuration_file_name, QSettings::IniFormat);
 
-  foreach(const QString &key, settings.allKeys())
+  foreach(const auto &key, settings.allKeys())
     if(key == "type_capabilities" ||
        key == "type_identity" ||
        key == "type_spot_on_lite_client")
@@ -1371,7 +1371,7 @@ void spot_on_lite_daemon_child::process_local_content(void)
 
       if(!ok)
 	{
-	  struct timespec ts;
+	  struct timespec ts = {};
 
 	  ts.tv_nsec = 250000000; // 250 Milliseconds
 	  ts.tv_sec = 0;
@@ -1435,10 +1435,8 @@ void spot_on_lite_daemon_child::process_local_content(void)
   save_statistic("vector size", QString::number(vector.size()));
 #endif
 
-  for(int i = 0; i < vector.size(); i++)
+  for(const auto &bytes : vector)
     {
-      const QByteArray &bytes(vector.at(i));
-
       if(bytes.contains("type=" + type_identity + "&content="))
 	{
 	  if(m_spot_on_lite)

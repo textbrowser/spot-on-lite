@@ -27,8 +27,8 @@
 
 #include <QCryptographicHash>
 #include <QtCore>
-#include <QtGlobal>
 #include <QtEndian>
+#include <QtGlobal>
 
 #include "spot-on-lite-daemon-sha.h"
 

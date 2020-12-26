@@ -51,9 +51,9 @@ extern "C"
 #include <QtConcurrent>
 #include <QtDebug>
 
-#include "spot-on-lite-daemon.h"
 #include "spot-on-lite-daemon-tcp-listener.h"
 #include "spot-on-lite-daemon-udp-listener.h"
+#include "spot-on-lite-daemon.h"
 
 int spot_on_lite_daemon::s_signal_fd[2];
 
@@ -923,9 +923,8 @@ void spot_on_lite_daemon::slot_new_local_connection(void)
   else
     socket->setReadBufferSize(m_maximum_accumulated_bytes);
 
-  int sockfd = static_cast<int> (socket->socketDescriptor());
-  socklen_t optlen = static_cast<socklen_t>
-    (sizeof(m_local_so_rcvbuf_so_sndbuf));
+  auto optlen = static_cast<socklen_t> (sizeof(m_local_so_rcvbuf_so_sndbuf));
+  auto sockfd = static_cast<int> (socket->socketDescriptor());
 
   setsockopt
     (sockfd, SOL_SOCKET, SO_RCVBUF, &m_local_so_rcvbuf_so_sndbuf, optlen);
@@ -1009,7 +1008,7 @@ void spot_on_lite_daemon::slot_signal(void)
 	      string = string.mid(1);
 	      std::reverse(string.begin(), string.end());
 
-	      pid_t pid = static_cast<pid_t> (string.toLongLong());
+	      auto pid = static_cast<pid_t> (string.toLongLong());
 
 	      if(kill(pid, 0) == -1 && errno == ESRCH)
 		emit child_died(pid);
