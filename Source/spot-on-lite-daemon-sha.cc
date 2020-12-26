@@ -150,11 +150,6 @@ static int s_block_length = 1024 / CHAR_BIT;
 
 spot_on_lite_daemon_sha::spot_on_lite_daemon_sha(void)
 {
-  m_K.resize(80);
-
-  for(size_t i = 0; i <= 79; i++)
-    m_K[static_cast<int> (i)] = qFromBigEndian<quint64>
-      (reinterpret_cast<const uchar *> (s_sha_512_k[i].constData()));
 }
 
 QByteArray spot_on_lite_daemon_sha::sha_512(const QByteArray &data) const
@@ -200,6 +195,15 @@ QByteArray spot_on_lite_daemon_sha::sha_512(const QByteArray &data) const
   return hash;
 #else
   return QCryptographicHash::hash(data, QCryptographicHash::Sha512);
+
+  if(m_K.isEmpty())
+    {
+      m_K.resize(80);
+
+      for(size_t i = 0; i <= 79; i++)
+	m_K[static_cast<int> (i)] = qFromBigEndian<quint64>
+	  (reinterpret_cast<const uchar *> (s_sha_512_k[i].constData()));
+    }
 
   /*
   ** Please read the NIST.FIPS.180-4.pdf publication.
