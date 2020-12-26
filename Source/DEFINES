@@ -9,6 +9,10 @@ SPOTON_LITE_DAEMON_DISABLE_SOME_STATISTICS
 If defined, some statistics are not enabled. Enable this option on
 systems where storage performance is limited.
 
+SPOTON_LITE_DAEMON_DTLS_SUPPORTED
+
+Enable if the system's Qt supports DTLS. Requires Qt 5.12.
+
 SPOTON_LITE_DAEMON_ENABLE_IDENTITIES_CONTAINER
 
 If enabled, remote identities are recorded in a memory-resident container.
