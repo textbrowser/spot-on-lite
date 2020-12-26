@@ -55,7 +55,7 @@ extern "C"
 
 extern "C"
 {
-  extern void init_lib_SPOT_ON_LITE_DAEMON_SHA(cl_object);
+  extern void init_lib_SPOTON_LITE_DAEMON_SHA(cl_object);
 }
 #endif
 

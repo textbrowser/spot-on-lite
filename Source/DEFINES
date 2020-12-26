@@ -20,3 +20,7 @@ If enabled, remote identities are recorded in a memory-resident container.
 SPOTON_LITE_DAEMON_IDENTITIES_CONTAINER_MAXIMUM_SIZE
 
 Maximum size of memory-resident identities container.
+
+SPOTON_LITE_DAEMON_SHA_TEST
+
+If enabled, test SHA-512.

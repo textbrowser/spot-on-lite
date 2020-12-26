@@ -43,7 +43,7 @@ extern "C"
 #include <iostream>
 
 #include "spot-on-lite-daemon.h"
-#ifdef SPOT_ON_LITE_DAEMON_SHA_TEST
+#ifdef SPOTON_LITE_DAEMON_SHA_TEST
 #include "spot-on-lite-daemon-sha.h"
 #endif
 
@@ -205,7 +205,7 @@ static int prepare_signal_handlers(void)
 
 int main(int argc, char *argv[])
 {
-#ifdef SPOT_ON_LITE_DAEMON_SHA_TEST
+#ifdef SPOTON_LITE_DAEMON_SHA_TEST
   spot_on_lite_daemon_sha s;
 
   qDebug() << "SHA-512 test 1: "
