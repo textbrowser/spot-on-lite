@@ -59,6 +59,19 @@ extern "C"
 }
 #endif
 
+static int spoton_atoi(bool *ok, const char *argv)
+{
+  if(!argv)
+    {
+      if(ok)
+	*ok = false;
+
+      return 0;
+    }
+
+  return QString(argv).toInt(ok);
+}
+
 static void handler_signal(int signal_number)
 {
   Q_UNUSED(signal_number);
@@ -214,9 +227,12 @@ int main(int argc, char *argv[])
 	  {
 	    i += 1;
 
-	    if(argc > i && argv[i])
-	      identities_lifetime = std::atoi(argv[i]);
-	    else
+	    bool ok = false;
+
+	    if(argc > i)
+	      identities_lifetime = spoton_atoi(&ok, argv[i]);
+
+	    if(!ok)
 	      {
 		std::cerr << "Invalid identities-lifetime usage. Exiting."
 			  << std::endl;
@@ -247,9 +263,12 @@ int main(int argc, char *argv[])
 	  {
 	    i += 1;
 
-	    if(argc > i && argv[i])
-	      local_so_rcvbuf_so_sndbuf = std::atoi(argv[i]);
-	    else
+	    bool ok = false;
+
+	    if(argc > i)
+	      local_so_rcvbuf_so_sndbuf = spoton_atoi(&ok, argv[i]);
+
+	    if(!ok)
 	      {
 		std::cerr << "Invalid local-so-rcvbuf-so-sndbuf usage. "
 			  << "Exiting."
@@ -281,9 +300,12 @@ int main(int argc, char *argv[])
 	  {
 	    i += 1;
 
-	    if(argc > i && argv[i])
-	      maximum_accumulated_bytes = std::atoi(argv[i]);
-	    else
+	    bool ok = false;
+
+	    if(argc > i)
+	      maximum_accumulated_bytes = spoton_atoi(&ok, argv[i]);
+
+	    if(!ok)
 	      {
 		std::cerr << "Invalid maximum-accumulated-bytes usage. Exiting."
 			  << std::endl;
@@ -313,9 +335,12 @@ int main(int argc, char *argv[])
 	  {
 	    i += 1;
 
-	    if(argc > i && argv[i])
-	      peer_port = static_cast<quint16> (std::atoi(argv[i]));
-	    else
+	    bool ok = false;
+
+	    if(argc > i)
+	      peer_port = static_cast<quint16> (spoton_atoi(&ok, argv[i]));
+
+	    if(!ok)
 	      {
 		std::cerr << "Invalid peer-port usage. Exiting."
 			  << std::endl;
@@ -379,9 +404,12 @@ int main(int argc, char *argv[])
 	  {
 	    i += 1;
 
-	    if(argc > i && argv[i])
-	      silence = std::atoi(argv[i]);
-	    else
+	    bool ok = false;
+
+	    if(argc > i)
+	      silence = spoton_atoi(&ok, argv[i]);
+
+	    if(!ok)
 	      {
 		std::cerr << "Invalid silence-timeout usage. Exiting."
 			  << std::endl;
@@ -395,9 +423,12 @@ int main(int argc, char *argv[])
 	  {
 	    i += 1;
 
-	    if(argc > i && argv[i])
-	      sd = std::atoi(argv[i]);
-	    else
+	    bool ok = false;
+
+	    if(argc > i)
+	      sd = spoton_atoi(&ok, argv[i]);
+
+	    if(!ok)
 	      {
 		std::cerr << "Invalid socket-descriptor usage. Exiting."
 			  << std::endl;
@@ -427,9 +458,12 @@ int main(int argc, char *argv[])
 	  {
 	    i += 1;
 
-	    if(argc > i && argv[i])
-	      ssl_key_size = atoi(argv[i]);
-	    else
+	    bool ok = false;
+
+	    if(argc > i)
+	      ssl_key_size = spoton_atoi(&ok, argv[i]);
+
+	    if(!ok)
 	      {
 		/*
 		** Not an error.
