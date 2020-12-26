@@ -82,6 +82,8 @@ static int MAXIMUM_REMOTE_IDENTITIES =
 #endif
 static auto END_OF_MESSAGE_MARKER_WINDOW = 10000;
 static auto FIVE_YEARS = 5L * 24L * 60L * 60L * 365L; // Five years.
+static auto MAXIMUM_TCP_WRITE_SIZE = 8192;
+static auto MAXIMUM_UDP_WRITE_SIZE = 508;
 static auto s_certificate_version = 3;
 
 spot_on_lite_daemon_child::spot_on_lite_daemon_child
@@ -1093,9 +1095,9 @@ void spot_on_lite_daemon_child::generate_ssl_tls(void)
       error = "m_ssl_key_size is less than or equal to zero";
       goto done_label;
     }
-  else if(m_ssl_key_size > 4096)
+  else if(m_ssl_key_size > 7680)
     {
-      error = "m_ssl_key_size is greater than 4096";
+      error = "m_ssl_key_size is greater than 7680";
       goto done_label;
     }
 
@@ -2325,7 +2327,6 @@ void spot_on_lite_daemon_child::write(const QByteArray &data)
     {
     case QAbstractSocket::TcpSocket:
       {
-	const int maximum_packet_size = 4096;
 	int i = 0;
 
 	while(data.size() > i)
@@ -2336,7 +2337,7 @@ void spot_on_lite_daemon_child::write(const QByteArray &data)
 	      {
 		int rc = static_cast<int>
 		  (m_remote_socket->
-		   write(data.mid(i, qMin(maximum, maximum_packet_size))));
+		   write(data.mid(i, qMin(MAXIMUM_TCP_WRITE_SIZE, maximum))));
 
 		if(rc > 0)
 		  {
@@ -2354,7 +2355,6 @@ void spot_on_lite_daemon_child::write(const QByteArray &data)
       }
     case QAbstractSocket::UdpSocket:
       {
-	const int maximum_datagram_size = 508;
 	int i = 0;
 
 	while(data.size() > i)
@@ -2366,15 +2366,15 @@ void spot_on_lite_daemon_child::write(const QByteArray &data)
 	    if(m_dtls)
 	      rc = m_dtls->writeDatagramEncrypted
 		(qobject_cast<QUdpSocket *> (m_remote_socket),
-		 data.mid(i, maximum_datagram_size));
+		 data.mid(MAXIMUM_UDP_WRITE_SIZE, i));
 	    else
 #endif
 #endif
 	    if(m_client_role)
-	      rc = m_remote_socket->write(data.mid(i, maximum_datagram_size));
+	      rc = m_remote_socket->write(data.mid(MAXIMUM_UDP_WRITE_SIZE, i));
 	    else
 	      rc = qobject_cast<QUdpSocket *> (m_remote_socket)->writeDatagram
-		(data.mid(i, maximum_datagram_size),
+		(data.mid(MAXIMUM_UDP_WRITE_SIZE, i),
 		 m_peer_address,
 		 m_peer_port);
 
