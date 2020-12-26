@@ -67,7 +67,7 @@ static void handler_signal(int signal_number)
 
 static int prepare_signal_handlers(void)
 {
-  struct sigaction act;
+  struct sigaction act = {};
 
   /*
   ** Ignore SIGHUP.

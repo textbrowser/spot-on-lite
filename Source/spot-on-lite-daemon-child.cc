@@ -886,10 +886,9 @@ void spot_on_lite_daemon_child::generate_certificate
   X509_NAME *name = nullptr;
   X509_NAME *subject = nullptr;
   X509_NAME_ENTRY *common_name_entry = nullptr;
-  char *buffer = nullptr;
-  const unsigned char *organization =
-    reinterpret_cast<const unsigned char *>
+  auto organization = reinterpret_cast<const unsigned char *>
     ("Spot-On-Lite Self-Signed Certificate");  
+  char *buffer = nullptr;
   int length = 0;
   unsigned char *common_name = nullptr;
 
