@@ -852,15 +852,21 @@ void spot_on_lite_daemon_child::data_received
 	    }
 	}
     }
+  else if(m_protocol == QAbstractSocket::UdpSocket)
+    process_read_data(data);
 #else
-  Q_UNUSED(data);
   Q_UNUSED(peer_address);
   Q_UNUSED(peer_port);
+
+  if(m_protocol == QAbstractSocket::UdpSocket)
+    process_read_data(data);
 #endif
 #else
-  Q_UNUSED(data);
   Q_UNUSED(peer_address);
   Q_UNUSED(peer_port);
+
+  if(m_protocol == QAbstractSocket::UdpSocket)
+    process_read_data(data);
 #endif
 }
 
