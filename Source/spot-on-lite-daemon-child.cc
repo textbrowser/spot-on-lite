@@ -1979,7 +1979,7 @@ void spot_on_lite_daemon_child::slot_broadcast_capabilities(void)
   const QString &type_capabilities(m_message_types.value("type_capabilities"));
   const QUuid &uuid(QUuid::createUuid());
 
-  data.append(uuid.toString());
+  data.append(uuid.toString().toUtf8());
   data.append("\n");
   data.append(QByteArray::number(m_maximum_accumulated_bytes));
   data.append("\n");
@@ -1988,7 +1988,7 @@ void spot_on_lite_daemon_child::slot_broadcast_capabilities(void)
 		 "Content-Type: application/x-www-form-urlencoded\r\n"
 		 "Content-Length: %1\r\n"
 		 "\r\n"
-		 "type=" + type_capabilities + "&content=%2\r\n"
+		 "type=" + type_capabilities.toUtf8() + "&content=%2\r\n"
 		 "\r\n\r\n");
   results.replace
     ("%1",
