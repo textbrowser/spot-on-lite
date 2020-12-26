@@ -380,6 +380,8 @@ spot_on_lite_daemon_child::spot_on_lite_daemon_child
       m_peer_port = static_cast<quint16> (list.value(1).toInt());
       m_remote_socket->connectToHost(m_peer_address, m_peer_port);
     }
+  else if(m_protocol == QAbstractSocket::UdpSocket)
+    process_read_data(initial_data);
 
   process_configuration_file();
   save_statistic("client?", QVariant(m_client_role).toString());
