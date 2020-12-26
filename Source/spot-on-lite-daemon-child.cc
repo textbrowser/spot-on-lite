@@ -643,8 +643,7 @@ QList<QSslCipher> spot_on_lite_daemon_child::default_ssl_ciphers(void) const
   return list;
 }
 
-bool spot_on_lite_daemon_child::memcmp(const QByteArray &a,
-				       const QByteArray &b)
+bool spot_on_lite_daemon_child::memcmp(const QByteArray &a, const QByteArray &b)
 {
   int length = qMax(a.length(), b.length());
   int rc = 0;
@@ -1528,13 +1527,11 @@ void spot_on_lite_daemon_child::process_local_content(void)
     }
 }
 
-void spot_on_lite_daemon_child::process_read_data(const QByteArray &d)
+void spot_on_lite_daemon_child::process_read_data(const QByteArray &data)
 {
   /*
   ** Process data received from the remote socket.
   */
-
-  QByteArray data(d);
 
   if(data.isEmpty())
     return;
@@ -2042,9 +2039,8 @@ void spot_on_lite_daemon_child::slot_connected(void)
   m_remote_content_last_parsed = QDateTime::currentMSecsSinceEpoch();
   m_remote_socket->setSocketOption(QAbstractSocket::LowDelayOption, 1);
 
-  int sd = static_cast<int> (m_remote_socket->socketDescriptor());
-  socklen_t optlen = static_cast<socklen_t>
-    (sizeof(m_maximum_accumulated_bytes));
+  auto optlen = static_cast<socklen_t> (sizeof(m_maximum_accumulated_bytes));
+  auto sd = static_cast<int> (m_remote_socket->socketDescriptor());
 
   setsockopt(sd, SOL_SOCKET, SO_RCVBUF, &m_maximum_accumulated_bytes, optlen);
   setsockopt(sd, SOL_SOCKET, SO_SNDBUF, &m_maximum_accumulated_bytes, optlen);
@@ -2170,9 +2166,8 @@ void spot_on_lite_daemon_child::slot_local_socket_connected(void)
     m_local_content_last_parsed = QDateTime::currentMSecsSinceEpoch();
   }
 
-  int sd = static_cast<int> (m_local_socket->socketDescriptor());
-  socklen_t optlen = static_cast<socklen_t>
-    (sizeof(m_local_so_rcvbuf_so_sndbuf));
+  auto optlen = static_cast<socklen_t> (sizeof(m_local_so_rcvbuf_so_sndbuf));
+  auto sd = static_cast<int> (m_local_socket->socketDescriptor());
 
   setsockopt(sd, SOL_SOCKET, SO_RCVBUF, &m_local_so_rcvbuf_so_sndbuf, optlen);
   setsockopt(sd, SOL_SOCKET, SO_SNDBUF, &m_local_so_rcvbuf_so_sndbuf, optlen);
