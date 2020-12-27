@@ -329,7 +329,7 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
   QHash<QString, char> listeners;
   QHash<QString, char> peers;
   QSettings settings(m_configuration_file_name, QSettings::IniFormat);
-  bool o = true;
+  auto o = true;
 
   foreach(const QString &key, settings.allKeys())
     if(key == "certificates_file")

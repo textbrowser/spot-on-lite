@@ -212,7 +212,7 @@ QByteArray spot_on_lite_daemon_sha::sha_512(const QByteArray &data) const
   QByteArray hash;
   QByteArray number(8, 0);
   QVector<quint64> H(8);
-  int N = qCeil(static_cast<double> (data.size() + 17) / 128.0);
+  auto N = qCeil(static_cast<double> (data.size() + 17) / 128.0);
 
   /*
   ** Padding the hash (5.1.2).
@@ -311,19 +311,19 @@ QByteArray spot_on_lite_daemon_sha::sha_512(const QByteArray &data) const
 	      s0_512(W.at(t - 15)) +
 	      W.at(t - 16));
 
-      quint64 a = H.at(0);
-      quint64 b = H.at(1);
-      quint64 c = H.at(2);
-      quint64 d = H.at(3);
-      quint64 e = H.at(4);
-      quint64 f = H.at(5);
-      quint64 g = H.at(6);
-      quint64 h = H.at(7);
+      auto a = H.at(0);
+      auto b = H.at(1);
+      auto c = H.at(2);
+      auto d = H.at(3);
+      auto e = H.at(4);
+      auto f = H.at(5);
+      auto g = H.at(6);
+      auto h = H.at(7);
 
       for(int t = 0; t <= 79; t++)
 	{
-	  quint64 T1 = h + S1_512(e) + Ch(e, f, g) + m_K.at(t) + W.at(t);
-	  quint64 T2 = S0_512(a) + Maj(a, b, c);
+	  auto T1 = h + S1_512(e) + Ch(e, f, g) + m_K.at(t) + W.at(t);
+	  auto T2 = S0_512(a) + Maj(a, b, c);
 
 	  h = g;
 	  g = f;

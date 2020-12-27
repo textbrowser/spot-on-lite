@@ -227,7 +227,7 @@ int main(int argc, char *argv[])
 	  {
 	    i += 1;
 
-	    bool ok = false;
+	    auto ok = false;
 
 	    if(argc > i)
 	      identities_lifetime = spoton_atoi(&ok, argv[i]);
@@ -263,7 +263,7 @@ int main(int argc, char *argv[])
 	  {
 	    i += 1;
 
-	    bool ok = false;
+	    auto ok = false;
 
 	    if(argc > i)
 	      local_so_rcvbuf_so_sndbuf = spoton_atoi(&ok, argv[i]);
@@ -300,7 +300,7 @@ int main(int argc, char *argv[])
 	  {
 	    i += 1;
 
-	    bool ok = false;
+	    auto ok = false;
 
 	    if(argc > i)
 	      maximum_accumulated_bytes = spoton_atoi(&ok, argv[i]);
@@ -335,7 +335,7 @@ int main(int argc, char *argv[])
 	  {
 	    i += 1;
 
-	    bool ok = false;
+	    auto ok = false;
 
 	    if(argc > i)
 	      peer_port = static_cast<quint16> (spoton_atoi(&ok, argv[i]));
@@ -404,7 +404,7 @@ int main(int argc, char *argv[])
 	  {
 	    i += 1;
 
-	    bool ok = false;
+	    auto ok = false;
 
 	    if(argc > i)
 	      silence = spoton_atoi(&ok, argv[i]);
@@ -423,7 +423,7 @@ int main(int argc, char *argv[])
 	  {
 	    i += 1;
 
-	    bool ok = false;
+	    auto ok = false;
 
 	    if(argc > i)
 	      sd = spoton_atoi(&ok, argv[i]);
@@ -458,7 +458,7 @@ int main(int argc, char *argv[])
 	  {
 	    i += 1;
 
-	    bool ok = false;
+	    auto ok = false;
 
 	    if(argc > i)
 	      ssl_key_size = spoton_atoi(&ok, argv[i]);

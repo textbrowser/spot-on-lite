@@ -49,8 +49,8 @@ extern "C"
 
 void spot_on_lite_daemon::handler_signal(int signal_number)
 {
+  auto pid = waitpid(-1, nullptr, WNOHANG);
   char a[32];
-  pid_t pid = waitpid(-1, nullptr, WNOHANG);
 
   for(size_t i = 0; i < sizeof(a); i++) // memset()
     a[i] = 0;
@@ -133,9 +133,9 @@ static int make_daemon(void)
   for(rlim_t i = 0; i < rl.rlim_max; i++)
     close((int) i);
 
-  int fd0 = open("/dev/null", O_RDWR);
-  int fd1 = dup(0);
-  int fd2 = dup(1);
+  auto fd0 = open("/dev/null", O_RDWR);
+  auto fd1 = dup(0);
+  auto fd2 = dup(1);
 
   if(fd0 != 0 || fd1 != 1 || fd2 != 2)
     {
@@ -239,7 +239,7 @@ int main(int argc, char *argv[])
         return EXIT_SUCCESS;
       }
 
-  bool keep_terminal = false;
+  auto keep_terminal = false;
 
   for(int i = 0; i < argc; i++)
     if(argv && argv[i] && strcmp(argv[i], "--keep-terminal") == 0)
@@ -251,7 +251,7 @@ int main(int argc, char *argv[])
 
 	if(argc > i && argv[i])
 	  {
-	    bool ok = true;
+	    auto ok = true;
 	    spot_on_lite_daemon daemon;
 
 	    daemon.validate_configuration_file(argv[i], &ok);
