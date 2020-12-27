@@ -148,8 +148,7 @@ void spot_on_lite_daemon_udp_listener::slot_general_timeout(void)
 #else
       QStringList list(m_configuration.split(",", QString::KeepEmptyParts));
 #endif
-      QUdpSocket::BindMode flags = QUdpSocket::ReuseAddressHint |
-	QUdpSocket::ShareAddress;
+      auto flags = QUdpSocket::ReuseAddressHint | QUdpSocket::ShareAddress;
 
       if(bind(QHostAddress(list.value(0)), list.value(1).toUShort(), flags))
 	m_max_pending_connections = list.value(2).toInt();

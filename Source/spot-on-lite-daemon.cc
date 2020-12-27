@@ -331,7 +331,7 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
   QSettings settings(m_configuration_file_name, QSettings::IniFormat);
   auto o = true;
 
-  foreach(const QString &key, settings.allKeys())
+  foreach(const auto &key, settings.allKeys())
     if(key == "certificates_file")
       {
 	QFileInfo file_info(settings.value(key).toString());
@@ -873,7 +873,7 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
 void spot_on_lite_daemon::purge_congestion_control(void)
 {
   {
-    QSqlDatabase db = QSqlDatabase::addDatabase
+    auto db = QSqlDatabase::addDatabase
       ("QSQLITE", "congestion_control_database");
 
     db.setDatabaseName(m_congestion_control_file_name);

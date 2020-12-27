@@ -512,7 +512,7 @@ int main(int argc, char *argv[])
 	  rc = qapplication.exec();
 	}
     }
-  catch(const std::bad_alloc &)
+  catch(const std::bad_alloc &exception)
     {
       std::cerr << "Spot-On-Lite-Daemon-Child memory failure! "
 		<< "Aborting!" << std::endl;

@@ -80,11 +80,11 @@ static int MAXIMUM_REMOTE_IDENTITIES =
   SPOTON_LITE_DAEMON_IDENTITIES_CONTAINER_MAXIMUM_SIZE;
 #endif
 #endif
-static auto END_OF_MESSAGE_MARKER_WINDOW = 10000;
 static auto FIVE_YEARS = 5L * 24L * 60L * 60L * 365L; // Five years.
-static auto MAXIMUM_TCP_WRITE_SIZE = 8192;
-static auto MAXIMUM_UDP_WRITE_SIZE = 508;
-static auto s_certificate_version = 3;
+static int END_OF_MESSAGE_MARKER_WINDOW = 10000;
+static int MAXIMUM_TCP_WRITE_SIZE = 8192;
+static int MAXIMUM_UDP_WRITE_SIZE = 508;
+static int s_certificate_version = 3;
 
 spot_on_lite_daemon_child::spot_on_lite_daemon_child
 (const QByteArray &initial_data,
@@ -414,10 +414,10 @@ remote_identities(bool *ok)
 #else
   create_remote_identities_database();
 
-  quint64 db_connection_id = db_id();
+  auto db_connection_id = db_id();
 
   {
-    QSqlDatabase db = QSqlDatabase::addDatabase
+    auto db = QSqlDatabase::addDatabase
       ("QSQLITE", QString::number(db_connection_id));
 
     db.setDatabaseName(m_remote_identities_file_name);
@@ -454,10 +454,10 @@ QList<QByteArray> spot_on_lite_daemon_child::
 local_certificate_configuration(void)
 {
   QList<QByteArray> list;
-  quint64 db_connection_id = db_id();
+  auto db_connection_id = db_id();
 
   {
-    QSqlDatabase db = QSqlDatabase::addDatabase
+    auto db = QSqlDatabase::addDatabase
       ("QSQLITE", QString::number(db_connection_id));
 
     db.setDatabaseName(m_certificates_file_name);
@@ -645,7 +645,7 @@ QList<QSslCipher> spot_on_lite_daemon_child::default_ssl_ciphers(void) const
 
 bool spot_on_lite_daemon_child::memcmp(const QByteArray &a, const QByteArray &b)
 {
-  int length = qMax(a.length(), b.length());
+  auto length = qMax(a.length(), b.length());
   int rc = 0;
 
   for(int i = 0; i < length; i++)
@@ -657,11 +657,11 @@ bool spot_on_lite_daemon_child::memcmp(const QByteArray &a, const QByteArray &b)
 bool spot_on_lite_daemon_child::record_congestion
 (const QByteArray &data)
 {
-  bool added = false;
-  quint64 db_connection_id = db_id();
+  auto added = false;
+  auto db_connection_id = db_id();
 
   {
-    QSqlDatabase db = QSqlDatabase::addDatabase
+    auto db = QSqlDatabase::addDatabase
       ("QSQLITE", QString::number(db_connection_id));
 
     db.setDatabaseName(m_congestion_control_file_name);
@@ -713,7 +713,7 @@ int spot_on_lite_daemon_child::bytes_in_send_queue(void) const
 	   &count) == -1)
     count = 0;
 #elif defined(Q_OS_MAC)
-  socklen_t length = static_cast<socklen_t> (sizeof(count));
+  auto length = static_cast<socklen_t> (sizeof(count));
 
   if(getsockopt(static_cast<int> (m_remote_socket->socketDescriptor()),
 		SOL_SOCKET,
@@ -741,10 +741,10 @@ quint64 spot_on_lite_daemon_child::db_id(void)
 
 void spot_on_lite_daemon_child::create_remote_identities_database(void)
 {
-  quint64 db_connection_id = db_id();
+  auto db_connection_id = db_id();
 
   {
-    QSqlDatabase db = QSqlDatabase::addDatabase
+    auto db = QSqlDatabase::addDatabase
       ("QSQLITE", QString::number(db_connection_id));
 
     db.setDatabaseName(m_remote_identities_file_name);
@@ -768,10 +768,10 @@ void spot_on_lite_daemon_child::create_remote_identities_database(void)
 
 void spot_on_lite_daemon_child::create_statistics_database(void)
 {
-  quint64 db_connection_id = db_id();
+  auto db_connection_id = db_id();
 
   {
-    QSqlDatabase db = QSqlDatabase::addDatabase
+    auto db = QSqlDatabase::addDatabase
       ("QSQLITE", QString::number(db_connection_id));
 
     db.setDatabaseName(m_statistics_file_name);
@@ -1086,9 +1086,9 @@ void spot_on_lite_daemon_child::generate_ssl_tls(void)
   QByteArray public_key;
   QString error("");
   RSA *rsa = nullptr;
+  auto days = FIVE_YEARS;
   char *private_buffer = nullptr;
   char *public_buffer = nullptr;
-  long int days = FIVE_YEARS;
 
   if(m_ssl_key_size <= 0)
     {
@@ -1364,7 +1364,7 @@ void spot_on_lite_daemon_child::process_local_content(void)
 
   do
     {
-      bool ok = true;
+      auto ok = true;
 
       identities = remote_identities(&ok);
 
@@ -1399,7 +1399,7 @@ void spot_on_lite_daemon_child::process_local_content(void)
   }
 
   QVector<QByteArray> vector;
-  const QByteArray &type_identity(m_message_types.value("type_identity"));
+  QByteArray type_identity(m_message_types.value("type_identity"));
   int index = 0;
 
   {
@@ -1574,10 +1574,10 @@ void spot_on_lite_daemon_child::process_remote_content(void)
     return;
 
   QByteArray data;
-  const QByteArray &type_capabilities
+  QByteArray type_capabilities
     (m_message_types.value("type_capabilities"));
-  const QByteArray &type_identity(m_message_types.value("type_identity"));
-  const QByteArray &type_spot_on_lite_client
+  QByteArray type_identity(m_message_types.value("type_identity"));
+  QByteArray type_spot_on_lite_client
     (m_message_types.value("type_spot_on_lite_client"));
   int index = 0;
 
@@ -1647,10 +1647,10 @@ void spot_on_lite_daemon_child::purge_remote_identities(void)
 
   m_remote_identities.clear();
 #else
-  quint64 db_connection_id = db_id();
+  auto db_connection_id = db_id();
 
   {
-    QSqlDatabase db = QSqlDatabase::addDatabase
+    auto db = QSqlDatabase::addDatabase
       ("QSQLITE", QString::number(db_connection_id));
 
     db.setDatabaseName(m_remote_identities_file_name);
@@ -1673,10 +1673,10 @@ void spot_on_lite_daemon_child::purge_remote_identities(void)
 
 void spot_on_lite_daemon_child::purge_statistics(void)
 {
-  quint64 db_connection_id = db_id();
+  auto db_connection_id = db_id();
 
   {
-    QSqlDatabase db = QSqlDatabase::addDatabase
+    auto db = QSqlDatabase::addDatabase
       ("QSQLITE", QString::number(db_connection_id));
 
     db.setDatabaseName(m_statistics_file_name);
@@ -1704,10 +1704,10 @@ void spot_on_lite_daemon_child::record_certificate
   if(m_client_role)
     return;
 
-  quint64 db_connection_id = db_id();
+  auto db_connection_id = db_id();
 
   {
-    QSqlDatabase db = QSqlDatabase::addDatabase
+    auto db = QSqlDatabase::addDatabase
       ("QSQLITE", QString::number(db_connection_id));
 
     db.setDatabaseName(m_certificates_file_name);
@@ -1743,7 +1743,7 @@ void spot_on_lite_daemon_child::record_remote_identity
 {
   QByteArray algorithm;
   QByteArray identity;
-  int index = data.indexOf("content=");
+  auto index = data.indexOf("content=");
 
   if(index >= 0)
     identity = data.mid(8 + index).trimmed();
@@ -1779,10 +1779,10 @@ void spot_on_lite_daemon_child::record_remote_identity
 #else
       create_remote_identities_database();
 
-      quint64 db_connection_id = db_id();
+      auto db_connection_id = db_id();
 
       {
-	QSqlDatabase db = QSqlDatabase::addDatabase
+	auto db = QSqlDatabase::addDatabase
 	  ("QSQLITE", QString::number(db_connection_id));
 
 	db.setDatabaseName(m_remote_identities_file_name);
@@ -1818,7 +1818,7 @@ void spot_on_lite_daemon_child::remove_expired_identities(void)
 
   while(it.hasNext())
     {
-      unsigned int now = QDateTime::currentDateTime().toTime_t();
+      auto now = QDateTime::currentDateTime().toTime_t();
 
       it.next();
 
@@ -1827,10 +1827,10 @@ void spot_on_lite_daemon_child::remove_expired_identities(void)
 	it.remove();
     }
 #else
-  quint64 db_connection_id = db_id();
+  auto db_connection_id = db_id();
 
   {
-    QSqlDatabase db = QSqlDatabase::addDatabase
+    auto db = QSqlDatabase::addDatabase
       ("QSQLITE", QString::number(db_connection_id));
 
     db.setDatabaseName(m_remote_identities_file_name);
@@ -1858,10 +1858,10 @@ void spot_on_lite_daemon_child::save_statistic
 {
   create_statistics_database();
 
-  quint64 db_connection_id = db_id();
+  auto db_connection_id = db_id();
 
   {
-    QSqlDatabase db = QSqlDatabase::addDatabase
+    auto db = QSqlDatabase::addDatabase
       ("QSQLITE", QString::number(db_connection_id));
 
     db.setDatabaseName(m_statistics_file_name);
@@ -1975,8 +1975,8 @@ void spot_on_lite_daemon_child::slot_broadcast_capabilities(void)
 
   QByteArray data;
   QByteArray results;
-  const QString &type_capabilities(m_message_types.value("type_capabilities"));
-  const QUuid &uuid(QUuid::createUuid());
+  QString type_capabilities(m_message_types.value("type_capabilities"));
+  QUuid uuid(QUuid::createUuid());
 
   data.append(uuid.toString().toUtf8());
   data.append("\n");
@@ -2006,7 +2006,7 @@ void spot_on_lite_daemon_child::slot_broadcast_capabilities(void)
 
       QByteArray data;
       QByteArray results;
-      const QByteArray &type_spot_on_lite_client
+      QByteArray type_spot_on_lite_client
 	(m_message_types.value("type_spot_on_lite_client"));
 
       data.append("Spot-On-Lite");
@@ -2325,11 +2325,11 @@ void spot_on_lite_daemon_child::write(const QByteArray &data)
 
 	while(data.size() > i)
 	  {
-	    int maximum = m_maximum_accumulated_bytes - bytes_in_send_queue();
+	    auto maximum = m_maximum_accumulated_bytes - bytes_in_send_queue();
 
 	    if(maximum > 0)
 	      {
-		int rc = static_cast<int>
+		auto rc = static_cast<int>
 		  (m_remote_socket->
 		   write(data.mid(i, qMin(MAXIMUM_TCP_WRITE_SIZE, maximum))));
 
