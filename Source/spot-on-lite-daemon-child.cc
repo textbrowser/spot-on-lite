@@ -2039,6 +2039,8 @@ void spot_on_lite_daemon_child::slot_connected(void)
   m_remote_content_last_parsed = QDateTime::currentMSecsSinceEpoch();
   m_remote_socket->setSocketOption(QAbstractSocket::LowDelayOption, 1);
 
+  auto sd = static_cast<int> (m_remote_socket->socketDescriptor());
+
   if(m_so_linger > -1)
     {
       socklen_t length = 0;
@@ -2052,7 +2054,6 @@ void spot_on_lite_daemon_child::slot_connected(void)
     }
 
   auto optlen = static_cast<socklen_t> (sizeof(m_maximum_accumulated_bytes));
-  auto sd = static_cast<int> (m_remote_socket->socketDescriptor());
 
   setsockopt(sd, SOL_SOCKET, SO_RCVBUF, &m_maximum_accumulated_bytes, optlen);
   setsockopt(sd, SOL_SOCKET, SO_SNDBUF, &m_maximum_accumulated_bytes, optlen);
