@@ -307,7 +307,7 @@ void spot_on_lite_daemon::prepare_peers(void)
 		    "--silence-timeout",
 		    list.value(5).toStdString().data(),
 		    "--so-linger",
-		    QString::number(so_linger),
+		    QString::number(so_linger).toStdString().data(),
 		    "--socket-descriptor",
 		    "-1",
 		    "--ssl-tls-control-string",
