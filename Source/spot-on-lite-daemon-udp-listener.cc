@@ -106,6 +106,7 @@ void spot_on_lite_daemon_udp_listener::new_connection
      list.value(8).toInt(),
      m_parent->maximum_accumulated_bytes(),
      list.value(5).toInt(),
+     list.value(6).toInt(),
      sd,
      list.value(4).toInt(),
      peer_port);

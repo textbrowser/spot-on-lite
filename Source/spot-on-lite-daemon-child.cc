@@ -104,6 +104,7 @@ spot_on_lite_daemon_child::spot_on_lite_daemon_child
  const int local_so_rcvbuf_so_sndbuf,
  const int maximum_accumulated_bytes,
  const int silence,
+ const int so_linger,
  const int socket_descriptor,
  const int ssl_key_size,
  const quint16 peer_port):QObject()
@@ -145,6 +146,7 @@ spot_on_lite_daemon_child::spot_on_lite_daemon_child
   m_remote_socket->setReadBufferSize(m_maximum_accumulated_bytes);
   m_server_identity = server_identity;
   m_silence = 1000 * qBound(15, silence, 3600);
+  m_so_linger = qBound(-1, so_linger, std::numeric_limits<int>::max());
   m_spot_on_lite = m_client_role;
   m_ssl_control_string = ssl_control_string.trimmed();
   m_ssl_key_size = ssl_key_size;
@@ -888,7 +890,7 @@ void spot_on_lite_daemon_child::generate_certificate
   X509_NAME *subject = nullptr;
   X509_NAME_ENTRY *common_name_entry = nullptr;
   auto organization = reinterpret_cast<const unsigned char *>
-    ("Spot-On-Lite Self-Signed Certificate");  
+    ("Spot-On-Lite Self-Signed Certificate");
   char *buffer = nullptr;
   int length = 0;
   unsigned char *common_name = nullptr;
@@ -979,7 +981,7 @@ void spot_on_lite_daemon_child::generate_certificate
       error = "X509_NAME_new() returned zero";
       goto done_label;
     }
-  
+
   if(X509_NAME_add_entry_by_txt(subject,
 				"O",
 				MBSTRING_ASC,
@@ -2036,6 +2038,18 @@ void spot_on_lite_daemon_child::slot_connected(void)
   m_capabilities_timer.start(m_silence / 2);
   m_remote_content_last_parsed = QDateTime::currentMSecsSinceEpoch();
   m_remote_socket->setSocketOption(QAbstractSocket::LowDelayOption, 1);
+
+  if(m_so_linger > -1)
+    {
+      socklen_t length = 0;
+      struct linger l = {};
+
+      memset(&l, 0, sizeof(l));
+      l.l_linger = m_so_linger;
+      l.l_onoff = 1;
+      length = static_cast<socklen_t> (sizeof(l));
+      setsockopt(sd, SOL_SOCKET, SO_LINGER, &l, length);
+    }
 
   auto optlen = static_cast<socklen_t> (sizeof(m_maximum_accumulated_bytes));
   auto sd = static_cast<int> (m_remote_socket->socketDescriptor());

@@ -260,6 +260,7 @@ void spot_on_lite_daemon::prepare_peers(void)
       QStringList list
 	(m_peers_properties.at(i).split(",", QString::KeepEmptyParts));
 #endif
+      auto so_linger = list.value(6).toInt();
       pid_t pid = 0;
       std::string command(m_child_process_file_name.toStdString());
 #ifdef Q_OS_MAC
@@ -305,6 +306,8 @@ void spot_on_lite_daemon::prepare_peers(void)
 		    server_identity.toStdString().data(),
 		    "--silence-timeout",
 		    list.value(5).toStdString().data(),
+		    "--so-linger",
+		    QString::number(so_linger),
 		    "--socket-descriptor",
 		    "-1",
 		    "--ssl-tls-control-string",

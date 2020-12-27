@@ -150,6 +150,7 @@ int main(int argc, char *argv[])
   int rc = EXIT_SUCCESS;
   int sd = -1;
   int silence = -1;
+  int so_linger = -1;
   int ssl_key_size = -1;
   quint16 peer_port = 0;
 
@@ -417,6 +418,24 @@ int main(int argc, char *argv[])
 	      }
 	  }
       }
+    else if(argv && argv[i] && strcmp(argv[i], "--so-linger") == 0)
+      {
+	if(so_linger == -1)
+	  {
+	    i += 1;
+
+	    auto ok = false;
+
+	    if(argc > i)
+	      so_linger = spoton_atoi(&ok, argv[i]);
+
+	    if(!ok)
+	      {
+		std::cerr << "Invalid so-linger usage. Exiting." << std::endl;
+		return EXIT_FAILURE;
+	      }
+	  }
+      }
     else if(argv && argv[i] && strcmp(argv[i], "--socket-descriptor") == 0)
       {
 	if(sd == -1)
@@ -505,6 +524,7 @@ int main(int argc, char *argv[])
 	     local_so_rcvbuf_so_sndbuf,
 	     maximum_accumulated_bytes,
 	     silence,
+	     so_linger,
 	     sd,
 	     ssl_key_size,
 	     peer_port);

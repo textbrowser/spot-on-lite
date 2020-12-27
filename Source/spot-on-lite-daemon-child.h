@@ -75,6 +75,7 @@ class spot_on_lite_daemon_child: public QObject
      const int local_so_rcvbuf_so_sndbuf,
      const int maximum_accumulated_bytes,
      const int silence,
+     const int so_linger,
      const int socket_descriptor,
      const int ssl_key_size,
      const quint16 peer_port);
@@ -136,6 +137,7 @@ class spot_on_lite_daemon_child: public QObject
   int m_local_so_rcvbuf_so_sndbuf;
   int m_maximum_accumulated_bytes;
   int m_silence;
+  int m_so_linger;
   int m_ssl_key_size;
   qint64 m_pid;
   qint64 m_local_content_last_parsed;
