@@ -329,6 +329,7 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
   QHash<QString, char> listeners;
   QHash<QString, char> peers;
   QSettings settings(m_configuration_file_name, QSettings::IniFormat);
+  bool o = true;
 
   foreach(const QString &key, settings.allKeys())
     if(key == "certificates_file")
@@ -430,8 +431,7 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
       }
     else if(key == "congestion_control_lifetime")
       {
-	bool o = true;
-	int congestion_control_lifetime = settings.value(key).toInt(&o);
+	auto congestion_control_lifetime = settings.value(key).toInt(&o);
 
 	if(congestion_control_lifetime < 1 || !o)
 	  {
@@ -455,8 +455,7 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
       }
     else if(key == "local_so_rcvbuf_so_sndbuf")
       {
-	bool o = true;
-	int so_rcvbuf_so_sndbuf = settings.value(key).toInt(&o);
+	auto so_rcvbuf_so_sndbuf = settings.value(key).toInt(&o);
 
 	if(so_rcvbuf_so_sndbuf < 4096 || !o)
 	  {
@@ -544,8 +543,7 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
       }
     else if(key == "maximum_accumulated_bytes")
       {
-	bool o = true;
-	int maximum_accumulated_bytes = settings.value(key).toInt(&o);
+	auto maximum_accumulated_bytes = settings.value(key).toInt(&o);
 
 	if(maximum_accumulated_bytes < 1024 || !o)
 	  {
@@ -629,8 +627,7 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
 		      << std::endl;
 	  }
 
-	bool o = true;
-	int port = list.at(1).toInt(&o);
+	auto port = list.at(1).toInt(&o);
 
 	if(!o || port < 0 || port > 65535)
 	  {
@@ -648,7 +645,7 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
 		      << std::endl;
 	  }
 
-	int backlog = list.at(2).toInt(&o);
+	auto backlog = list.at(2).toInt(&o);
 
 	if(backlog < 1 || !o)
 	  {
@@ -670,7 +667,7 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
 
 	if(!list.at(4).isEmpty())
 	  {
-	    int keySize = list.at(4).toInt(&o);
+	    auto keySize = list.at(4).toInt(&o);
 
 	    if(!(keySize == 2048 ||
 		 keySize == 3072 ||
@@ -695,7 +692,7 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
 	      }
 	  }
 
-	int silence = list.at(5).toInt(&o);
+	auto silence = list.at(5).toInt(&o);
 
 	if(!o || silence < 15 || silence > 3600)
 	  {
@@ -713,7 +710,7 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
 		      << std::endl;
 	  }
 
-	int so_linger = list.at(6).toInt(&o);
+	auto so_linger = list.at(6).toInt(&o);
 
 	if(!o || so_linger < -1 || so_linger > 65535)
 	  {
@@ -731,7 +728,7 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
 		      << std::endl;
 	  }
 
-	int so_rcvbuf_so_sndbuf = list.at(8).toInt(&o);
+	auto so_rcvbuf_so_sndbuf = list.at(8).toInt(&o);
 
 	if(!o || so_rcvbuf_so_sndbuf < 4096)
 	  {
@@ -750,7 +747,7 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
 		      << std::endl;
 	  }
 
-	int identities_lifetime = list.at(9).toInt(&o);
+	auto identities_lifetime = list.at(9).toInt(&o);
 
 	if(identities_lifetime < 30 || identities_lifetime > 600 || !o)
 	  {
