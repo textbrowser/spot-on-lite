@@ -646,10 +646,11 @@ QList<QSslCipher> spot_on_lite_daemon_child::default_ssl_ciphers(void) const
 bool spot_on_lite_daemon_child::memcmp(const QByteArray &a, const QByteArray &b)
 {
   auto length = qMax(a.length(), b.length());
-  int rc = 0;
+  quint64 rc = 0;
 
   for(int i = 0; i < length; i++)
-    rc |= (i < a.length() ? a.at(i) : 0) ^ (i < b.length() ? b.at(i) : 0);
+    rc |= (i < a.length() ? static_cast<quint64> (a.at(i)) : 0ULL) ^
+      (i < b.length() ? static_cast<quint64> (b.at(i)) : 0ULL);
 
   return rc == 0;
 }
