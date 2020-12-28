@@ -105,9 +105,15 @@ spot_on_lite_daemon::spot_on_lite_daemon(void):QObject()
 
 spot_on_lite_daemon::~spot_on_lite_daemon()
 {
-  QFile::remove(m_congestion_control_file_name);
-  QFile::remove(m_remote_identities_file_name);
-  QFile::remove(m_statistics_file_name);
+  if(!m_congestion_control_file_name.isEmpty())
+    QFile::remove(m_congestion_control_file_name);
+
+  if(!m_remote_identities_file_name.isEmpty())
+    QFile::remove(m_remote_identities_file_name);
+
+  if(!m_statistics_file_name.isEmpty())
+    QFile::remove(m_statistics_file_name);
+
   m_congestion_control_future.cancel();
   m_congestion_control_future.waitForFinished();
   m_congestion_control_timer.stop();
@@ -429,7 +435,9 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
 	else
 	  {
 	    m_congestion_control_file_name = settings.value(key).toString();
-	    QFile::remove(m_congestion_control_file_name);
+
+	    if(!m_congestion_control_file_name.isEmpty())
+	      QFile::remove(m_congestion_control_file_name);
 	  }
       }
     else if(key == "congestion_control_lifetime")
@@ -868,7 +876,9 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
 	else
 	  {
 	    m_remote_identities_file_name = settings.value(key).toString();
-	    QFile::remove(m_congestion_control_file_name);
+
+	    if(!m_remote_identities_file_name.isEmpty())
+	      QFile::remove(m_remote_identities_file_name);
 	  }
       }
 }
@@ -1059,4 +1069,10 @@ void spot_on_lite_daemon::validate_configuration_file
   m_listeners_properties.clear();
   m_peers_properties.clear();
   process_configuration_file(ok);
+
+  for(const auto &i : m_listeners_properties)
+    qDebug() << i.split(',');
+
+  for(const auto &i : m_peers_properties)
+    qDebug() << i.split(',');
 }
