@@ -40,6 +40,8 @@ QMAKE_CXXFLAGS_RELEASE += -O3 \
                           -Wundef \
                           -Wsign-conversion \
                           -Wstack-protector \
+                          -Wstrict-overflow=5 \
+                          -Wundef \
                           -Wzero-as-null-pointer-constant \
                           -fPIE \
                           -fstack-protector-all \
