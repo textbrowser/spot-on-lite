@@ -32,6 +32,7 @@ QMAKE_CXXFLAGS_RELEASE += -O3 \
                           -Wdouble-promotion \
                           -Wextra \
                           -Wformat=2 \
+                          -Wlogical-op \
                           -Wno-class-memaccess \
                           -Wno-deprecated-copy \
                           -Wno-unused-variable \
