@@ -27,11 +27,14 @@ QMAKE_CXXFLAGS_RELEASE += -O3 \
 DEFINES += SPOTON_LITE_DAEMON_DTLS_SUPPORTED
 QMAKE_CXXFLAGS_RELEASE += -O3 \
                           -Wall \
+                          -Wcast-align \
                           -Wcast-qual \
                           -Wconversion \
                           -Wdouble-promotion \
                           -Wextra \
+                          -Wfloat-equal \
                           -Wformat=2 \
+                          -Wformat-overflow=2 \
                           -Wlogical-op \
                           -Wno-class-memaccess \
                           -Wno-deprecated-copy \
