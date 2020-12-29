@@ -4,6 +4,7 @@ LANGUAGE = C++
 QMAKE_CXXFLAGS_RELEASE -= -O2
 
 freebsd-* {
+DEFINES += SPOTON_LITE_DAEMON_DTLS_SUPPORTED
 QMAKE_CXX = clang++
 QMAKE_CXXFLAGS_RELEASE += -O3 \
                           -Wall \
@@ -78,10 +79,6 @@ QMAKE_CXXFLAGS_RELEASE += -O3 \
                           -pedantic \
                           -std=c++11
 } else:netbsd-* {
-INCLUDEPATH += /usr/pkg/qt4/include/QtCore \
-               /usr/pkg/qt4/include/QtNetwork \
-               /usr/pkg/qt4/include/QtSql
-LIBS += -L/usr/pkg/qt4/lib
 QMAKE_CXXFLAGS_RELEASE += -O3 \
                           -Wall \
                           -Wcast-qual \
@@ -103,7 +100,6 @@ QMAKE_CXXFLAGS_RELEASE += -O3 \
                           -pedantic \
                           -pie \
                           -std=c++11
-QMAKE_MOC = /usr/pkg/qt4/bin/moc
 } else:openbsd-* {
 QMAKE_CXXFLAGS_RELEASE += -O3 \
                           -Wall \
