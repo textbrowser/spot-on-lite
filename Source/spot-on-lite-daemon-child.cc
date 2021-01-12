@@ -386,7 +386,11 @@ spot_on_lite_daemon_child::spot_on_lite_daemon_child
     process_read_data(initial_data);
 
   process_configuration_file();
+  save_statistic
+    ("arguments", QCoreApplication::instance()->arguments().join(','));
   save_statistic("client?", QVariant(m_client_role).toString());
+  save_statistic("name", QCoreApplication::instance()->arguments().value(0));
+  save_statistic("pid", QString::number(QCoreApplication::applicationPid()));
   save_statistic("spot-on-lite?", QVariant(m_spot_on_lite).toString());
 }
 
