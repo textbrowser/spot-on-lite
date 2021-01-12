@@ -87,6 +87,8 @@ class spot_on_lite_daemon_child: public QObject
 
  private:
   QAbstractSocket::SocketType m_protocol;
+  QAtomicInteger<quint64> m_bytes_read;
+  QAtomicInteger<quint64> m_bytes_written;
   QByteArray m_end_of_message_marker;
   QByteArray m_local_content;
   QByteArray m_remote_content;

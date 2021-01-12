@@ -2210,6 +2210,8 @@ void spot_on_lite_daemon_child::slot_local_socket_ready_read(void)
 
       if(!data.isEmpty())
 	{
+	  m_bytes_read += static_cast<quint64> (data.length());
+
 	  QWriteLocker lock(&m_local_content_mutex);
 
 	  if(m_local_content.length() >= m_maximum_accumulated_bytes)
@@ -2218,11 +2220,9 @@ void spot_on_lite_daemon_child::slot_local_socket_ready_read(void)
 	  m_local_content.append
 	    (data.mid(0, qAbs(m_maximum_accumulated_bytes -
 			      m_local_content.length())));
-#ifdef SPOTON_LITE_DAEMON_DISABLE_SOME_STATISTICS
-#else
 	  save_statistic
-	    ("m_local_content", QString::number(m_local_content.length()));
-#endif
+	    ("bytes_read",
+	     QString::number(m_bytes_read.fetchAndAddOrdered(0ULL)));
 	}
     }
 
@@ -2243,6 +2243,14 @@ void spot_on_lite_daemon_child::slot_ready_read(void)
   while(m_remote_socket->bytesAvailable() > 0)
     {
       QByteArray data(m_remote_socket->readAll());
+
+      if(data.isEmpty())
+	{
+	  m_bytes_read += static_cast<quint64> (data.length());
+	  save_statistic
+	    ("bytes_read",
+	     QString::number(m_bytes_read.fetchAndAddOrdered(0ULL)));
+	}
 
 #ifdef SPOTON_LITE_DAEMON_DTLS_SUPPORTED
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 12, 0))
