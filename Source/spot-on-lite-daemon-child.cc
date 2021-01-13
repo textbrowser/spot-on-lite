@@ -722,6 +722,20 @@ bool spot_on_lite_daemon_child::record_congestion
   return added;
 }
 
+int spot_on_lite_daemon_child::bytes_accumulated(void) const
+{
+  int size = 0;
+
+  {
+    QReadLocker lock(&m_local_content_mutex);
+
+    size += m_local_content.length();
+  }
+
+  size += m_remote_content.length();
+  return size;
+}
+
 int spot_on_lite_daemon_child::bytes_in_send_queue(void) const
 {
   int count = 0;

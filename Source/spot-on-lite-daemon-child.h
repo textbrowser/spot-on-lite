@@ -114,7 +114,6 @@ class spot_on_lite_daemon_child: public QObject
   QPointer<QDtls> m_dtls;
 #endif
 #endif
-  QReadWriteLock m_local_content_mutex;
 #ifdef SPOTON_LITE_DAEMON_ENABLE_IDENTITIES_CONTAINER
   QReadWriteLock m_remote_identities_mutex;
 #endif
@@ -141,6 +140,7 @@ class spot_on_lite_daemon_child: public QObject
   int m_silence;
   int m_so_linger;
   int m_ssl_key_size;
+  mutable QReadWriteLock m_local_content_mutex;
   qint64 m_pid;
   qint64 m_local_content_last_parsed;
   qint64 m_remote_content_last_parsed;
@@ -153,6 +153,7 @@ class spot_on_lite_daemon_child: public QObject
   QList<QByteArray> local_certificate_configuration(void);
   QList<QSslCipher> default_ssl_ciphers(void) const;
   bool record_congestion(const QByteArray &data);
+  int bytes_accumulated(void) const;
   int bytes_in_send_queue(void) const;
   quint64 db_id(void);
   void create_remote_identities_database(void);
