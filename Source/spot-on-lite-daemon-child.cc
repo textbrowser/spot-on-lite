@@ -182,6 +182,7 @@ spot_on_lite_daemon_child::spot_on_lite_daemon_child
 	      SIGNAL(connected(void)),
 	      this,
 	      SLOT(slot_connected(void)));
+      save_statistic("type", "client");
     }
   else
     {
@@ -206,6 +207,13 @@ spot_on_lite_daemon_child::spot_on_lite_daemon_child
       m_attempt_local_connection_timer.start();
       m_capabilities_timer.start(m_silence / 2);
       m_remote_socket->setSocketOption(QAbstractSocket::LowDelayOption, 1);
+      save_statistic("ip_information",
+		     m_remote_socket->peerAddress().toString() +
+		     ":" +
+		     QString::number(m_remote_socket->peerPort()) +
+		     ":" +
+		     socket_type_to_string(m_remote_socket->socketType()));
+      save_statistic("type", "server");
     }
 
   m_expired_identities_timer.start(15000);
