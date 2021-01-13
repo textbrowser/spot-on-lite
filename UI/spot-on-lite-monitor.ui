@@ -120,12 +120,12 @@
       </column>
       <column>
        <property name="text">
-        <string>Bytes Received</string>
+        <string>Bytes Read</string>
        </property>
       </column>
       <column>
        <property name="text">
-        <string>Bytes Sent</string>
+        <string>Bytes Written</string>
        </property>
       </column>
       <column>

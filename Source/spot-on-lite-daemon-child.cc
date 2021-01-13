@@ -64,6 +64,15 @@ extern "C"
 QReadWriteLock spot_on_lite_daemon_child::s_db_id_mutex;
 quint64 spot_on_lite_daemon_child::s_db_id = 0;
 
+static QString socket_type_to_string
+(const QAbstractSocket::SocketType socket_type)
+{
+  if(socket_type == QAbstractSocket::TcpSocket)
+    return "TCP";
+  else
+    return "UDP";
+}
+
 static int hash_algorithm_key_length(const QByteArray &a)
 {
   QByteArray algorithm(a.toLower().trimmed());
@@ -2070,6 +2079,12 @@ void spot_on_lite_daemon_child::slot_connected(void)
   m_capabilities_timer.start(m_silence / 2);
   m_remote_content_last_parsed = QDateTime::currentMSecsSinceEpoch();
   m_remote_socket->setSocketOption(QAbstractSocket::LowDelayOption, 1);
+  save_statistic("ip_information",
+		 m_remote_socket->peerAddress().toString() +
+		 ":" +
+		 QString::number(m_remote_socket->peerPort()) +
+		 ":" +
+		 socket_type_to_string(m_remote_socket->socketType()));
 
   auto sd = static_cast<int> (m_remote_socket->socketDescriptor());
 
@@ -2248,6 +2263,7 @@ void spot_on_lite_daemon_child::slot_local_socket_ready_read(void)
 	  m_local_content.append
 	    (data.mid(0, qAbs(m_maximum_accumulated_bytes -
 			      m_local_content.length())));
+	  lock.unlock();
 	  save_statistic
 	    ("bytes_read",
 	     QString::number(m_bytes_read.fetchAndAddOrdered(0ULL)));
