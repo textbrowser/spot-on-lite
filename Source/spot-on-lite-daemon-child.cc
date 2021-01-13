@@ -1551,7 +1551,17 @@ void spot_on_lite_daemon_child::process_read_data(const QByteArray &data)
 	    static_cast<int> (m_local_socket->bytesToWrite());
 
 	  if(maximum > 0)
-	    m_local_socket->write(data.mid(0, maximum));
+	    {
+	      qint64 rc = m_local_socket->write(data.mid(0, maximum));
+
+	      if(rc > 0)
+		{
+		  m_bytes_written += static_cast<quint64> (rc);
+		  save_statistic
+		    ("bytes_written",
+		     QString::number(m_bytes_written.fetchAndAddOrdered(0ULL)));
+		}
+	    }
 	}
 
       if(m_end_of_message_marker.isEmpty())
@@ -1622,7 +1632,17 @@ void spot_on_lite_daemon_child::process_remote_content(void)
 	    static_cast<int> (m_local_socket->bytesToWrite());
 
 	  if(maximum > 0)
-	    m_local_socket->write(data.mid(0, maximum));
+	    {
+	      qint64 rc = m_local_socket->write(data.mid(0, maximum));
+
+	      if(rc > 0)
+		{
+		  m_bytes_written += static_cast<quint64> (rc);
+		  save_statistic
+		    ("bytes_written",
+		     QString::number(m_bytes_written.fetchAndAddOrdered(0ULL)));
+		}
+	    }
 	}
     }
 
@@ -1912,7 +1932,15 @@ set_ssl_ciphers(const QList<QSslCipher> &ciphers,
 
 void spot_on_lite_daemon_child::share_identity(const QByteArray &data)
 {
-  m_local_socket->write(data);
+  qint64 rc = m_local_socket->write(data);
+
+  if(rc > 0)
+    {
+      m_bytes_written += static_cast<quint64> (rc);
+      save_statistic
+	("bytes_written",
+	 QString::number(m_bytes_written.fetchAndAddOrdered(0ULL)));
+    }
 }
 
 void spot_on_lite_daemon_child::slot_attempt_local_connection(void)
@@ -2364,7 +2392,12 @@ void spot_on_lite_daemon_child::write(const QByteArray &data)
 		if(rc > 0)
 		  {
 		    i += rc;
+		    m_bytes_written += static_cast<quint64> (rc);
 		    m_remote_socket->flush();
+		    save_statistic
+		      ("bytes_written",
+		       QString::
+		       number(m_bytes_written.fetchAndAddOrdered(0ULL)));
 		  }
 		else
 		  break;
@@ -2401,7 +2434,13 @@ void spot_on_lite_daemon_child::write(const QByteArray &data)
 		 m_peer_port);
 
 	    if(rc > 0)
-	      i += static_cast<int> (rc);
+	      {
+		i += static_cast<int> (rc);
+		m_bytes_written += static_cast<quint64> (rc);
+		save_statistic
+		  ("bytes_written",
+		   QString::number(m_bytes_written.fetchAndAddOrdered(0ULL)));
+	      }
 	    else
 	      break;
 	  }
