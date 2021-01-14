@@ -2196,6 +2196,7 @@ void spot_on_lite_daemon_child::slot_general_timer_timeout(void)
   save_statistic
     ("m_remote_content", QString::number(m_remote_content.length()));
 #endif
+  save_statistic("memory", QString::number(sizeof(*this)));
 }
 
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 12, 0))
