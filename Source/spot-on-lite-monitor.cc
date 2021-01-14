@@ -36,6 +36,9 @@ int main(int argc, char *argv[])
 
   try
     {
+      spot_on_lite_monitor spot_on_lite_monitor;
+
+      spot_on_lite_monitor.show();
       rc = qapplication.exec();
     }
   catch(const std::bad_alloc &exception)
@@ -52,6 +55,7 @@ int main(int argc, char *argv[])
 
 spot_on_lite_monitor::spot_on_lite_monitor(void):QMainWindow()
 {
+  m_ui.setupUi(this);
 }
 
 spot_on_lite_monitor::~spot_on_lite_monitor()

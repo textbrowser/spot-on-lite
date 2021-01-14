@@ -39,6 +39,7 @@ class spot_on_lite_monitor: public QMainWindow
   ~spot_on_lite_monitor();
 
  private:
+  Ui_spot_on_lite_monitor m_ui;
 
  private slots:
 };
