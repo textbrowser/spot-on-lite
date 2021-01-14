@@ -1312,6 +1312,7 @@ void spot_on_lite_daemon_child::prepare_local_socket(void)
 
   m_local_socket->abort();
   m_local_socket->connectToServer(m_local_server_file_name);
+  save_statistic("bytes_accumulated", QString::number(bytes_accumulated()));
 }
 
 void spot_on_lite_daemon_child::prepare_ssl_tls_configuration
@@ -1432,6 +1433,8 @@ void spot_on_lite_daemon_child::process_local_content(void)
 	emit write_signal(m_local_content);
 	m_local_content.clear();
 	m_local_content_last_parsed = QDateTime::currentMSecsSinceEpoch();
+	save_statistic
+	  ("bytes_accumulated", QString::number(bytes_accumulated()));
 	return;
       }
   }
@@ -1457,6 +1460,7 @@ void spot_on_lite_daemon_child::process_local_content(void)
 	m_local_content.remove(0, bytes.length());
       }
 
+    save_statistic("bytes_accumulated", QString::number(bytes_accumulated()));
 #ifdef SPOTON_LITE_DAEMON_DISABLE_SOME_STATISTICS
 #else
     save_statistic
@@ -1552,6 +1556,8 @@ void spot_on_lite_daemon_child::process_local_content(void)
       QWriteLocker lock(&m_local_content_mutex);
 
       m_local_content.clear();
+      save_statistic
+	("bytes_accumulated", QString::number(bytes_accumulated()));
     }
   else
     {
@@ -1608,6 +1614,7 @@ void spot_on_lite_daemon_child::process_read_data(const QByteArray &data)
     append(data.mid(0, qAbs(m_maximum_accumulated_bytes -
 			    m_remote_content.length())));
   process_remote_content();
+  save_statistic("bytes_accumulated", QString::number(bytes_accumulated()));
 #ifdef SPOTON_LITE_DAEMON_DISABLE_SOME_STATISTICS
 #else
   save_statistic
@@ -1634,6 +1641,8 @@ void spot_on_lite_daemon_child::process_remote_content(void)
       data = m_remote_content.mid(0, index + m_end_of_message_marker.length());
       m_remote_content.remove(0, data.length());
       m_remote_content_last_parsed = QDateTime::currentMSecsSinceEpoch();
+      save_statistic
+	("bytes_accumulated", QString::number(bytes_accumulated()));
 
       if(m_client_role)
 	{
@@ -1696,6 +1705,7 @@ void spot_on_lite_daemon_child::purge_containers(void)
   m_remote_content.clear();
   m_remote_content_last_parsed = 0;
   purge_remote_identities();
+  save_statistic("bytes_accumulated", QString::number(bytes_accumulated()));
 }
 
 void spot_on_lite_daemon_child::purge_remote_identities(void)
@@ -2180,6 +2190,7 @@ void spot_on_lite_daemon_child::slot_general_timer_timeout(void)
       m_remote_content_last_parsed = QDateTime::currentMSecsSinceEpoch();
     }
 
+  save_statistic("bytes_accumulated", QString::number(bytes_accumulated()));
 #ifdef SPOTON_LITE_DAEMON_DISABLE_SOME_STATISTICS
 #else
   save_statistic
@@ -2287,10 +2298,14 @@ void spot_on_lite_daemon_child::slot_local_socket_ready_read(void)
 			      m_local_content.length())));
 	  lock.unlock();
 	  save_statistic
+	    ("bytes_accumulated", QString::number(bytes_accumulated()));
+	  save_statistic
 	    ("bytes_read",
 	     QString::number(m_bytes_read.fetchAndAddOrdered(0ULL)));
 	}
     }
+
+  save_statistic("bytes_accumulated", QString::number(bytes_accumulated()));
 
   QReadLocker lock(&m_local_content_mutex);
 
