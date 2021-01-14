@@ -26,8 +26,36 @@
 */
 
 #include <QApplication>
+#include <QSqlDatabase>
+#include <QSqlQuery>
+#include <QtConcurrent>
 
 #include "spot-on-lite-monitor.h"
+
+static spot_on_lite_monitor::Columns statistic_to_column
+(const QString &statistic)
+{
+  if(statistic == "arguments")
+    return spot_on_lite_monitor::ARGUMENTS;
+  else if(statistic == "bytes_accumulated")
+    return spot_on_lite_monitor::BYTES_ACCUMULATED;
+  else if(statistic == "bytes_read")
+    return spot_on_lite_monitor::BYTES_READ;
+  else if(statistic == "bytes_written")
+    return spot_on_lite_monitor::BYTES_WRITTEN;
+  else if(statistic == "ip_information")
+    return spot_on_lite_monitor::IP_INFORMATION;
+  else if(statistic == "memory")
+    return spot_on_lite_monitor::MEMORY;
+  else if(statistic == "name")
+    return spot_on_lite_monitor::NAME;
+  else if(statistic == "pid")
+    return spot_on_lite_monitor::PID;
+  else if(statistic == "type")
+    return spot_on_lite_monitor::TYPE;
+  else
+    return spot_on_lite_monitor::ZZZ;
+}
 
 int main(int argc, char *argv[])
 {
@@ -56,8 +84,54 @@ int main(int argc, char *argv[])
 spot_on_lite_monitor::spot_on_lite_monitor(void):QMainWindow()
 {
   m_ui.setupUi(this);
+  m_future = QtConcurrent::run
+    (this, &spot_on_lite_monitor::read_statistics_database);
 }
 
 spot_on_lite_monitor::~spot_on_lite_monitor()
 {
+  m_future.cancel();
+  m_future.waitForFinished();
+}
+
+void spot_on_lite_monitor::read_statistics_database(void)
+{
+  const QString db_connection_id("1");
+
+  while(true)
+    {
+      if(m_future.isCanceled())
+	break;
+
+      QThread::sleep(100);
+
+      {
+	auto db = QSqlDatabase::addDatabase("QSQLITE", db_connection_id);
+
+	db.setDatabaseName(QDir::tempPath() +
+			   QDir::separator() +
+			   "spot-on-lite-daemon-statistics.sqlite");
+
+	if(db.open())
+	  {
+	    QList<qint64> added;
+	    QSqlQuery query(db);
+
+	    query.setForwardOnly(true);
+
+	    if(query.exec("SELECT pid, statistic, value FROM statistics"))
+	      while(query.next())
+		{
+		  qint64 pid = query.value(0).toLongLong();
+
+		  if(!m_cache.contains(pid))
+		    added << pid;
+		}
+	  }
+
+	db.close();
+      }
+
+      QSqlDatabase::removeDatabase(db_connection_id);
+    }
 }
