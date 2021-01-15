@@ -1433,6 +1433,7 @@ void spot_on_lite_daemon_child::process_local_content(void)
 	emit write_signal(m_local_content);
 	m_local_content.clear();
 	m_local_content_last_parsed = QDateTime::currentMSecsSinceEpoch();
+	lock.unlock();
 	save_statistic
 	  ("bytes_accumulated", QString::number(bytes_accumulated()));
 	return;
@@ -1460,13 +1461,14 @@ void spot_on_lite_daemon_child::process_local_content(void)
 	m_local_content.remove(0, bytes.length());
       }
 
-    save_statistic("bytes_accumulated", QString::number(bytes_accumulated()));
 #ifdef SPOTON_LITE_DAEMON_DISABLE_SOME_STATISTICS
 #else
     save_statistic
       ("m_local_content remaining", QString::number(m_local_content.length()));
 #endif
   }
+
+  save_statistic("bytes_accumulated", QString::number(bytes_accumulated()));
 
   if(m_process_local_content_future.isCanceled() || vector.isEmpty())
     goto done_label;
@@ -1553,9 +1555,12 @@ void spot_on_lite_daemon_child::process_local_content(void)
 
   if(m_process_local_content_future.isCanceled())
     {
-      QWriteLocker lock(&m_local_content_mutex);
+      {
+	QWriteLocker lock(&m_local_content_mutex);
 
-      m_local_content.clear();
+	m_local_content.clear();
+      }
+
       save_statistic
 	("bytes_accumulated", QString::number(bytes_accumulated()));
     }
@@ -2289,15 +2294,17 @@ void spot_on_lite_daemon_child::slot_local_socket_ready_read(void)
 	{
 	  m_bytes_read += static_cast<quint64> (data.length());
 
-	  QWriteLocker lock(&m_local_content_mutex);
+	  {
+	    QWriteLocker lock(&m_local_content_mutex);
 
-	  if(m_local_content.length() >= m_maximum_accumulated_bytes)
-	    m_local_content.clear();
+	    if(m_local_content.length() >= m_maximum_accumulated_bytes)
+	      m_local_content.clear();
 
-	  m_local_content.append
-	    (data.mid(0, qAbs(m_maximum_accumulated_bytes -
-			      m_local_content.length())));
-	  lock.unlock();
+	    m_local_content.append
+	      (data.mid(0, qAbs(m_maximum_accumulated_bytes -
+				m_local_content.length())));
+	  }
+
 	  save_statistic
 	    ("bytes_accumulated", QString::number(bytes_accumulated()));
 	  save_statistic
@@ -2308,12 +2315,12 @@ void spot_on_lite_daemon_child::slot_local_socket_ready_read(void)
 
   save_statistic("bytes_accumulated", QString::number(bytes_accumulated()));
 
-  QReadLocker lock(&m_local_content_mutex);
+  {
+    QReadLocker lock(&m_local_content_mutex);
 
-  if(m_local_content.isEmpty())
-    return;
-  else
-    lock.unlock();
+    if(m_local_content.isEmpty())
+      return;
+  }
 
   if(m_process_local_content_future.isFinished())
     m_process_local_content_future = QtConcurrent::run

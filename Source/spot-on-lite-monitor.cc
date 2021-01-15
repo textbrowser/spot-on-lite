@@ -108,12 +108,9 @@ void spot_on_lite_monitor::read_statistics_database(void)
 
 	    query.setForwardOnly(true);
 
-	    if(query.exec("SELECT pid, statistic, value FROM statistics "
-			  "ORDER BY 1, 2"))
+	    if(query.exec("SELECT statistic, value FROM statistics"))
 	      while(query.next())
 		{
-		  QString statistic(query.value(1).toString());
-		  QString value(query.value(2).toString());
 		}
 	  }
 
