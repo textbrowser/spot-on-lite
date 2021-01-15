@@ -108,7 +108,7 @@ void spot_on_lite_monitor::read_statistics_database(void)
 
 	    query.setForwardOnly(true);
 
-	    if(query.exec("SELECT statistic, value FROM statistics"))
+	    if(query.exec("SELECT * FROM statistics"))
 	      while(query.next())
 		{
 		}

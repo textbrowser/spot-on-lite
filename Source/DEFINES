@@ -6,8 +6,7 @@ SHA-512 is included if one of the aforementioned directories exists.
 
 SPOTON_LITE_DAEMON_DISABLE_SOME_STATISTICS
 
-If defined, some statistics are not enabled. Enable this option on
-systems where storage performance is limited.
+Not utilized.
 
 SPOTON_LITE_DAEMON_DTLS_SUPPORTED
 

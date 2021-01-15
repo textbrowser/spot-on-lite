@@ -162,6 +162,7 @@ spot_on_lite_daemon_child::spot_on_lite_daemon_child
   m_statistics_file_name = QDir::tempPath() +
     QDir::separator() +
     "spot-on-lite-daemon-statistics.sqlite";
+  save_statistic("pid", QString::number(QCoreApplication::applicationPid()));
 
   if(!(m_ssl_key_size == 2048 ||
        m_ssl_key_size == 3072 ||
@@ -405,10 +406,7 @@ spot_on_lite_daemon_child::spot_on_lite_daemon_child
   process_configuration_file();
   save_statistic
     ("arguments", QCoreApplication::instance()->arguments().join(','));
-  save_statistic("client?", QVariant(m_client_role).toString());
   save_statistic("name", QCoreApplication::instance()->arguments().value(0));
-  save_statistic("pid", QString::number(QCoreApplication::applicationPid()));
-  save_statistic("spot-on-lite?", QVariant(m_spot_on_lite).toString());
 }
 
 spot_on_lite_daemon_child::~spot_on_lite_daemon_child()
@@ -819,10 +817,15 @@ void spot_on_lite_daemon_child::create_statistics_database(void)
 	QSqlQuery query(db);
 
 	query.exec("CREATE TABLE IF NOT EXISTS statistics ("
-		   "pid BIGINT NOT NULL, "
-		   "statistic TEXT NOT NULL, "
-		   "value TEXT NOT NULL, "
-		   "PRIMARY KEY (pid, statistic))");
+		   "arguments TEXT, "
+		   "bytes_accumulated TEXT, "
+		   "bytes_read TEXT, "
+		   "bytes_written TEXT, "
+		   "ip_information TEXT, "
+		   "memory TEXT, "
+		   "name TEXT, "
+		   "pid BIGINT NOT NULL PRIMARY KEY, "
+		   "type TEXT)");
       }
 
     db.close();
@@ -1384,10 +1387,7 @@ void spot_on_lite_daemon_child::process_configuration_file(void)
     if(key == "type_capabilities" ||
        key == "type_identity" ||
        key == "type_spot_on_lite_client")
-      {
-	m_message_types[key] = settings.value(key).toByteArray();
-	save_statistic(key, settings.value(key).toString());
-      }
+      m_message_types[key] = settings.value(key).toByteArray();
 }
 
 void spot_on_lite_daemon_child::process_local_content(void)
@@ -1419,11 +1419,6 @@ void spot_on_lite_daemon_child::process_local_content(void)
 	break;
     }
   while(!m_process_local_content_future.isCanceled());
-
-#ifdef SPOTON_LITE_DAEMON_DISABLE_SOME_STATISTICS
-#else
-  save_statistic("identities", QString::number(identities.size()));
-#endif
 
   {
     QWriteLocker lock(&m_local_content_mutex);
@@ -1460,23 +1455,12 @@ void spot_on_lite_daemon_child::process_local_content(void)
 	vector.append(bytes);
 	m_local_content.remove(0, bytes.length());
       }
-
-#ifdef SPOTON_LITE_DAEMON_DISABLE_SOME_STATISTICS
-#else
-    save_statistic
-      ("m_local_content remaining", QString::number(m_local_content.length()));
-#endif
   }
 
   save_statistic("bytes_accumulated", QString::number(bytes_accumulated()));
 
   if(m_process_local_content_future.isCanceled() || vector.isEmpty())
     goto done_label;
-
-#ifdef SPOTON_LITE_DAEMON_DISABLE_SOME_STATISTICS
-#else
-  save_statistic("vector size", QString::number(vector.size()));
-#endif
 
   for(const auto &bytes : vector)
     {
@@ -1620,11 +1604,6 @@ void spot_on_lite_daemon_child::process_read_data(const QByteArray &data)
 			    m_remote_content.length())));
   process_remote_content();
   save_statistic("bytes_accumulated", QString::number(bytes_accumulated()));
-#ifdef SPOTON_LITE_DAEMON_DISABLE_SOME_STATISTICS
-#else
-  save_statistic
-    ("m_remote_content", QString::number(m_remote_content.length()));
-#endif
 }
 
 void spot_on_lite_daemon_child::process_remote_content(void)
@@ -1667,7 +1646,6 @@ void spot_on_lite_daemon_child::process_remote_content(void)
       else if(data.contains("type=" + type_spot_on_lite_client + "&content="))
 	{
 	  m_spot_on_lite = true;
-	  save_statistic("spot-on-lite?", "true");
 	  continue;
 	}
 
@@ -1690,12 +1668,6 @@ void spot_on_lite_daemon_child::process_remote_content(void)
 	    }
 	}
     }
-
-#ifdef SPOTON_LITE_DAEMON_DISABLE_SOME_STATISTICS
-#else
-  save_statistic
-    ("m_remote_content remaining", QString::number(m_remote_content.length()));
-#endif
 }
 
 void spot_on_lite_daemon_child::purge_containers(void)
@@ -1945,12 +1917,21 @@ void spot_on_lite_daemon_child::save_statistic
 
 	query.exec("PRAGMA journal_mode = OFF");
 	query.exec("PRAGMA synchronous = OFF");
-	query.prepare("INSERT OR REPLACE INTO statistics "
-		      "(pid, statistic, value) "
-		      "VALUES (?, ?, ?)");
-	query.addBindValue(m_pid);
-	query.addBindValue(key);
-	query.addBindValue(value);
+
+	if(key == "pid")
+	  {
+	    query.prepare
+	      ("INSERT OR REPLACE INTO statistics (pid) VALUES (?)");
+	    query.addBindValue(m_pid);
+	  }
+	else
+	  {
+	    query.prepare
+	      (QString("UPDATE statistics SET %1 = ? WHERE pid = ?").arg(key));
+	    query.addBindValue(value);
+	    query.addBindValue(m_pid);
+	  }
+
 	query.exec();
       }
 
@@ -2180,12 +2161,6 @@ void spot_on_lite_daemon_child::slot_general_timer_timeout(void)
 	m_local_content.clear();
 	m_local_content_last_parsed = QDateTime::currentMSecsSinceEpoch();
       }
-
-#ifdef SPOTON_LITE_DAEMON_DISABLE_SOME_STATISTICS
-#else
-    save_statistic
-      ("m_local_content", QString::number(m_local_content.length()));
-#endif
   }
 
   if(QDateTime::currentMSecsSinceEpoch() - m_remote_content_last_parsed >
@@ -2196,11 +2171,6 @@ void spot_on_lite_daemon_child::slot_general_timer_timeout(void)
     }
 
   save_statistic("bytes_accumulated", QString::number(bytes_accumulated()));
-#ifdef SPOTON_LITE_DAEMON_DISABLE_SOME_STATISTICS
-#else
-  save_statistic
-    ("m_remote_content", QString::number(m_remote_content.length()));
-#endif
   save_statistic("memory", QString::number(sizeof(*this)));
 }
 
