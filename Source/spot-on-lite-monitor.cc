@@ -160,7 +160,11 @@ void spot_on_lite_monitor::read_statistics_database(void)
 		  if(!processes.contains(pid))
 		    {
 		      processes[pid] = values;
-		      emit added(values);
+
+		      if(!values.value(ARGUMENTS).isEmpty() &&
+			 !values.value(NAME).isEmpty() &&
+			 !values.value(TYPE).isEmpty())
+			emit added(values);
 		    }
 		  else
 		    {
@@ -216,7 +220,7 @@ void spot_on_lite_monitor::slot_changed(const QMap<Columns, QString> &values)
     (values.value(BYTES_ACCUMULATED));
   m_ui.processes->item(row, BYTES_READ)->setText(values.value(BYTES_READ));
   m_ui.processes->item(row, BYTES_WRITTEN)->setText
-  (values.value(BYTES_WRITTEN));
+    (values.value(BYTES_WRITTEN));
   m_ui.processes->item(row, IP_INFORMATION)->setText
     (values.value(IP_INFORMATION));
   m_ui.processes->item(row, MEMORY)->setText(values.value(MEMORY));
