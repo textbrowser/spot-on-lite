@@ -93,6 +93,10 @@ spot_on_lite_monitor::spot_on_lite_monitor(void):QMainWindow()
 	  SIGNAL(added(const QMap<Columns, QString> &)),
 	  this,
 	  SLOT(slot_added(const QMap<Columns, QString> &)));
+  connect(this,
+	  SIGNAL(changed(const QMap<Columns, QString> &)),
+	  this,
+	  SLOT(slot_changed(const QMap<Columns, QString> &)));
 }
 
 spot_on_lite_monitor::~spot_on_lite_monitor()
