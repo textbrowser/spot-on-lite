@@ -37,29 +37,19 @@ class spot_on_lite_monitor: public QMainWindow
   Q_OBJECT
 
  public:
-  enum Columns
-    {
-     ARGUMENTS = 8,
-     BYTES_ACCUMULATED = 4,
-     BYTES_READ = 5,
-     BYTES_WRITTEN = 6,
-     IP_INFORMATION = 2,
-     MEMORY = 3,
-     NAME = 0,
-     PID = 1,
-     TYPE = 7,
-     ZZZ = 999
-    };
   spot_on_lite_monitor(void);
   ~spot_on_lite_monitor();
 
  private:
   QFuture<void> m_future;
-  QMap<qint64, QMap<Columns, QVariant> > m_cache;
   Ui_spot_on_lite_monitor m_ui;
   void read_statistics_database(void);
 
  private slots:
+  void slot_new_text(const QString &text);
+
+ signals:
+  void new_text(const QString &text);
 };
 
 #endif

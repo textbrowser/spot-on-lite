@@ -32,31 +32,6 @@
 
 #include "spot-on-lite-monitor.h"
 
-static spot_on_lite_monitor::Columns statistic_to_column
-(const QString &statistic)
-{
-  if(statistic == "arguments")
-    return spot_on_lite_monitor::ARGUMENTS;
-  else if(statistic == "bytes_accumulated")
-    return spot_on_lite_monitor::BYTES_ACCUMULATED;
-  else if(statistic == "bytes_read")
-    return spot_on_lite_monitor::BYTES_READ;
-  else if(statistic == "bytes_written")
-    return spot_on_lite_monitor::BYTES_WRITTEN;
-  else if(statistic == "ip_information")
-    return spot_on_lite_monitor::IP_INFORMATION;
-  else if(statistic == "memory")
-    return spot_on_lite_monitor::MEMORY;
-  else if(statistic == "name")
-    return spot_on_lite_monitor::NAME;
-  else if(statistic == "pid")
-    return spot_on_lite_monitor::PID;
-  else if(statistic == "type")
-    return spot_on_lite_monitor::TYPE;
-  else
-    return spot_on_lite_monitor::ZZZ;
-}
-
 int main(int argc, char *argv[])
 {
   QApplication qapplication(argc, argv);
@@ -86,6 +61,10 @@ spot_on_lite_monitor::spot_on_lite_monitor(void):QMainWindow()
   m_ui.setupUi(this);
   m_future = QtConcurrent::run
     (this, &spot_on_lite_monitor::read_statistics_database);
+  connect(this,
+	  SIGNAL(new_text(const QString &)),
+	  this,
+	  SLOT(slot_new_text(const QString &)));
 }
 
 spot_on_lite_monitor::~spot_on_lite_monitor()
@@ -96,7 +75,19 @@ spot_on_lite_monitor::~spot_on_lite_monitor()
 
 void spot_on_lite_monitor::read_statistics_database(void)
 {
+  const QString columns("PID\t"
+			"Name\t"
+			"Type\t"
+			"IP Information\t"
+			"Bytes Accumulated\t"
+			"Bytes Read\t"
+			"Bytes Written\t"
+			"Memory\t"
+			"Arguments\n\n");
   const QString db_connection_id("1");
+  const QString db_path(QDir::tempPath() +
+			QDir::separator() +
+			"spot-on-lite-daemon-statistics.sqlite");
 
   while(true)
     {
@@ -108,24 +99,21 @@ void spot_on_lite_monitor::read_statistics_database(void)
       {
 	auto db = QSqlDatabase::addDatabase("QSQLITE", db_connection_id);
 
-	db.setDatabaseName(QDir::tempPath() +
-			   QDir::separator() +
-			   "spot-on-lite-daemon-statistics.sqlite");
+	db.setDatabaseName(db_path);
 
 	if(db.open())
 	  {
-	    QList<qint64> added;
 	    QSqlQuery query(db);
+	    QString str("");
 
 	    query.setForwardOnly(true);
 
-	    if(query.exec("SELECT pid, statistic, value FROM statistics"))
+	    if(query.exec("SELECT pid, statistic, value FROM statistics "
+			  "ORDER BY 1, 2"))
 	      while(query.next())
 		{
-		  qint64 pid = query.value(0).toLongLong();
-
-		  if(!m_cache.contains(pid))
-		    added << pid;
+		  QString statistic(query.value(1).toString());
+		  QString value(query.value(2).toString());
 		}
 	  }
 
@@ -134,4 +122,9 @@ void spot_on_lite_monitor::read_statistics_database(void)
 
       QSqlDatabase::removeDatabase(db_connection_id);
     }
+}
+
+void spot_on_lite_monitor::slot_new_text(const QString &text)
+{
+  m_ui.text->setPlainText(text);
 }
