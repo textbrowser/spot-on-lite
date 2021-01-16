@@ -242,6 +242,8 @@ void spot_on_lite_monitor::slot_added(const QMap<Columns, QString> &values)
     }
 
   m_ui.processes->setSortingEnabled(true);
+  statusBar()->showMessage
+    (tr("%1 Process(es)").arg(m_ui.processes->rowCount()));
 }
 
 void spot_on_lite_monitor::slot_changed(const QMap<Columns, QString> &values)
@@ -275,6 +277,8 @@ void spot_on_lite_monitor::slot_deleted(const qint64 pid)
     return;
 
   m_ui.processes->removeRow(index.row());
+  statusBar()->showMessage
+    (tr("%1 Process(es)").arg(m_ui.processes->rowCount()));
 }
 
 void spot_on_lite_monitor::slot_quit(void)
