@@ -40,7 +40,11 @@ class spot_on_lite_monitor_table: public QTableWidget
   {
   }
 
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 10, 0))
   QModelIndex indexFromItem(const QTableWidgetItem *item) const
+#else
+  QModelIndex indexFromItem(QTableWidgetItem *item) const
+#endif
   {
     return QTableWidget::indexFromItem(item);
   }
