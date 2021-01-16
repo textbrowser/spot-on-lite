@@ -30,6 +30,11 @@
 #include <QSqlQuery>
 #include <QtConcurrent>
 
+extern "C"
+{
+#include <signal.h>
+}
+
 #include "spot-on-lite-monitor.h"
 
 static spot_on_lite_monitor::Columns field_name_to_column
@@ -85,10 +90,18 @@ int main(int argc, char *argv[])
 
 spot_on_lite_monitor::spot_on_lite_monitor(void):QMainWindow()
 {
+  QDir home_dir(QDir::home());
+
+  home_dir.mkdir(".spot-on-lite-monitor");
   qRegisterMetaType<QMap<Columns, QString> > ("QMap<Columns, QString>");
-  m_ui.setupUi(this);
   m_future = QtConcurrent::run
     (this, &spot_on_lite_monitor::read_statistics_database);
+  m_ui.setupUi(this);
+  m_ui.processes->sortByColumn(PID, Qt::AscendingOrder);
+  connect(m_ui.action_Quit,
+	  SIGNAL(triggered(void)),
+	  this,
+	  SLOT(slot_quit(void)));
   connect(this,
 	  SIGNAL(added(const QMap<Columns, QString> &)),
 	  this,
@@ -97,6 +110,10 @@ spot_on_lite_monitor::spot_on_lite_monitor(void):QMainWindow()
 	  SIGNAL(changed(const QMap<Columns, QString> &)),
 	  this,
 	  SLOT(slot_changed(const QMap<Columns, QString> &)));
+  connect(this,
+	  SIGNAL(deleted(const qint64)),
+	  this,
+	  SLOT(slot_deleted(const qint64)));
 }
 
 spot_on_lite_monitor::~spot_on_lite_monitor()
@@ -127,6 +144,7 @@ void spot_on_lite_monitor::read_statistics_database(void)
 
 	if(db.open())
 	  {
+	    QSet<qint64> dead_processes(processes.keys().toSet());
 	    QSqlQuery query(db);
 
 	    query.setForwardOnly(true);
@@ -143,6 +161,17 @@ void spot_on_lite_monitor::read_statistics_database(void)
 			  "FROM statistics"))
 	      while(query.next())
 		{
+		  {
+		    auto pid = static_cast<pid_t> (query.value(7).toLongLong());
+
+		    if(kill(pid, 0) != 0)
+		      {
+			dead_processes.insert(static_cast<qint64> (pid));
+			processes.remove(static_cast<qint64> (pid));
+			continue;
+		      }
+		  }
+
 		  QMap<Columns, QString> values;
 
 		  values[ARGUMENTS] = query.value(0).toString();
@@ -157,23 +186,27 @@ void spot_on_lite_monitor::read_statistics_database(void)
 
 		  auto pid = values.value(PID).toLongLong();
 
+		  dead_processes.remove(pid);
+
 		  if(!processes.contains(pid))
 		    {
-		      processes[pid] = values;
-
 		      if(!values.value(ARGUMENTS).isEmpty() &&
 			 !values.value(NAME).isEmpty() &&
 			 !values.value(TYPE).isEmpty())
-			emit added(values);
+			{
+			  processes[pid] = values;
+			  emit added(values);
+			}
 		    }
-		  else
+		  else if(processes.value(pid) != values)
 		    {
-		      if(processes.value(pid) != values)
-			emit changed(values);
-
+		      emit changed(values);
 		      processes[pid] = values;
 		    }
 		}
+
+	    for(auto pid : dead_processes)
+	      emit deleted(pid);
 	  }
 
 	db.close();
@@ -225,4 +258,31 @@ void spot_on_lite_monitor::slot_changed(const QMap<Columns, QString> &values)
     (values.value(IP_INFORMATION));
   m_ui.processes->item(row, MEMORY)->setText(values.value(MEMORY));
   m_ui.processes->setSortingEnabled(true);
+}
+
+void spot_on_lite_monitor::slot_deleted(const qint64 pid)
+{
+  auto row = m_pid_to_row.value(pid, -1);
+
+  m_pid_to_row.remove(pid);
+
+  if(row < 0)
+    return;
+
+  m_ui.processes->removeRow(row);
+
+  QMutableMapIterator<qint64, int> it(m_pid_to_row);
+
+  while(it.hasNext())
+    {
+      it.next();
+
+      if(it.value() > row)
+	it.setValue(it.value() - 1);
+    }
+}
+
+void spot_on_lite_monitor::slot_quit(void)
+{
+  QApplication::instance()->quit();
 }
