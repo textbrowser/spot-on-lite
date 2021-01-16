@@ -220,8 +220,6 @@ void spot_on_lite_monitor::slot_added(const QMap<Columns, QString> &values)
 {
   m_ui.processes->setSortingEnabled(false);
   m_ui.processes->setRowCount(m_ui.processes->rowCount() + 1);
-  m_pid_to_row[values.value(PID).toLongLong()] =
-    m_ui.processes->rowCount() - 1;
 
   QMapIterator<Columns, QString> it(values);
   auto row = m_ui.processes->rowCount() - 1;
@@ -236,6 +234,11 @@ void spot_on_lite_monitor::slot_added(const QMap<Columns, QString> &values)
       item->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
       m_ui.processes->setItem(row, i, item);
       i += 1;
+
+      auto pid = values.value(PID).toLongLong();
+
+      if(!m_pid_to_index.contains(pid))
+	m_pid_to_index[pid] = m_ui.processes->indexFromItem(item);
     }
 
   m_ui.processes->setSortingEnabled(true);
@@ -243,10 +246,12 @@ void spot_on_lite_monitor::slot_added(const QMap<Columns, QString> &values)
 
 void spot_on_lite_monitor::slot_changed(const QMap<Columns, QString> &values)
 {
-  auto row = m_pid_to_row.value(values.value(PID).toLongLong(), -1);
+  auto index = m_pid_to_index.value(values.value(PID).toLongLong());
 
-  if(row < 0)
+  if(!index.isValid())
     return;
+
+  auto row = index.row();
 
   m_ui.processes->setSortingEnabled(false);
   m_ui.processes->item(row, BYTES_ACCUMULATED)->setText
@@ -262,24 +267,14 @@ void spot_on_lite_monitor::slot_changed(const QMap<Columns, QString> &values)
 
 void spot_on_lite_monitor::slot_deleted(const qint64 pid)
 {
-  auto row = m_pid_to_row.value(pid, -1);
+  auto index = m_pid_to_index.value(pid);
 
-  m_pid_to_row.remove(pid);
+  m_pid_to_index.remove(pid);
 
-  if(row < 0)
+  if(!index.isValid())
     return;
 
-  m_ui.processes->removeRow(row);
-
-  QMutableMapIterator<qint64, int> it(m_pid_to_row);
-
-  while(it.hasNext())
-    {
-      it.next();
-
-      if(it.value() > row)
-	it.setValue(it.value() - 1);
-    }
+  m_ui.processes->removeRow(index.row());
 }
 
 void spot_on_lite_monitor::slot_quit(void)

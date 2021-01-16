@@ -29,6 +29,22 @@
 #define _spot_on_lite_monitor_h_
 
 #include <QFuture>
+#include <QTableWidget>
+
+class spot_on_lite_monitor_table: public QTableWidget
+{
+  Q_OBJECT
+
+ public:
+  spot_on_lite_monitor_table(QWidget *parent):QTableWidget(parent)
+  {
+  }
+
+  QModelIndex indexFromItem(const QTableWidgetItem *item) const
+  {
+    return QTableWidget::indexFromItem(item);
+  }
+};
 
 #include "ui_spot-on-lite-monitor.h"
 
@@ -56,7 +72,7 @@ class spot_on_lite_monitor: public QMainWindow
 
  private:
   QFuture<void> m_future;
-  QMap<qint64, int> m_pid_to_row;
+  QMap<qint64, QModelIndex> m_pid_to_index;
   Ui_spot_on_lite_monitor m_ui;
   void read_statistics_database(void);
 

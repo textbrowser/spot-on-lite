@@ -68,7 +68,7 @@
      </layout>
     </item>
     <item>
-     <widget class="QTableWidget" name="processes">
+     <widget class="spot_on_lite_monitor_table" name="processes">
       <property name="alternatingRowColors">
        <bool>true</bool>
       </property>
@@ -177,6 +177,13 @@
    </property>
   </action>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>spot_on_lite_monitor_table</class>
+   <extends>QTableWidget</extends>
+   <header>spot-on-lite-monitor.h</header>
+  </customwidget>
+ </customwidgets>
  <tabstops>
   <tabstop>configuration_file</tabstop>
   <tabstop>configuration_file_select</tabstop>
