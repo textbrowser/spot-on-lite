@@ -151,7 +151,6 @@ TEMPLATE = app
 greaterThan(QT_MAJOR_VERSION, 4) {
 openbsd-* {
 } else {
-QMAKE_CXXFLAGS_RELEASE += -Wzero-as-null-pointer-constant
 }
 QT += concurrent
 } else {
