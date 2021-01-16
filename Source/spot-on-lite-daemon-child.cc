@@ -1063,7 +1063,7 @@ void spot_on_lite_daemon_child::generate_certificate
     }
 
 #if OPENSSL_VERSION_NUMBER < 0x10101000L
-  if(X509_sign(x509, pk, EVP_sha2_512()) == 0)
+  if(X509_sign(x509, pk, EVP_sha_512()) == 0)
 #else
   if(X509_sign(x509, pk, EVP_sha3_512()) == 0)
 #endif
