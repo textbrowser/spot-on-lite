@@ -100,6 +100,8 @@ spot_on_lite_monitor::spot_on_lite_monitor(void):QMainWindow()
     (this, &spot_on_lite_monitor::read_statistics_database);
   m_ui.setupUi(this);
   m_ui.processes->sortByColumn(PID, Qt::AscendingOrder);
+  statusBar()->showMessage
+    (tr("%1 Process(es)").arg(m_ui.processes->rowCount()));
   connect(m_ui.action_Quit,
 	  SIGNAL(triggered(void)),
 	  this,
