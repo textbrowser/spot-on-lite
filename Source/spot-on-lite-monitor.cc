@@ -218,6 +218,7 @@ void spot_on_lite_monitor::slot_added(const QMap<Columns, QString> &values)
   m_ui.processes->setRowCount(m_ui.processes->rowCount() + 1);
 
   QMapIterator<Columns, QString> it(values);
+  auto pid = values.value(PID).toLongLong();
   auto row = m_ui.processes->rowCount() - 1;
 
   while(it.hasNext())
@@ -228,8 +229,6 @@ void spot_on_lite_monitor::slot_added(const QMap<Columns, QString> &values)
 
       item->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
       m_ui.processes->setItem(row, it.key(), item);
-
-      auto pid = values.value(PID).toLongLong();
 
       if(!m_pid_to_index.contains(pid))
 	m_pid_to_index[pid] = m_ui.processes->indexFromItem(item);
