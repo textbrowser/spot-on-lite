@@ -219,7 +219,6 @@ void spot_on_lite_monitor::slot_added(const QMap<Columns, QString> &values)
 
   QMapIterator<Columns, QString> it(values);
   auto row = m_ui.processes->rowCount() - 1;
-  int i = 0;
 
   while(it.hasNext())
     {
@@ -228,14 +227,20 @@ void spot_on_lite_monitor::slot_added(const QMap<Columns, QString> &values)
       auto item = new QTableWidgetItem(it.value());
 
       item->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
-      m_ui.processes->setItem(row, i, item);
-      i += 1;
+      m_ui.processes->setItem(row, it.key(), item);
 
       auto pid = values.value(PID).toLongLong();
 
       if(!m_pid_to_index.contains(pid))
 	m_pid_to_index[pid] = m_ui.processes->indexFromItem(item);
     }
+  
+  if(m_ui.processes->item(row, STATUS)->text() == "Active")
+    m_ui.processes->item(row, STATUS)->setBackground
+      (QBrush(QColor("lightgreen")));
+  else
+    m_ui.processes->item(row, STATUS)->setBackground
+      (QBrush(QColor(240, 128, 128)));
 
   m_ui.processes->setSortingEnabled(true);
   statusBar()->showMessage
