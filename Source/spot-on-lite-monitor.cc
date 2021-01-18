@@ -56,6 +56,8 @@ static spot_on_lite_monitor::Columns field_name_to_column
     return spot_on_lite_monitor::NAME;
   else if(field_name == "pid")
     return spot_on_lite_monitor::PID;
+  else if(field_name == "status")
+    return spot_on_lite_monitor::STATUS;
   else if(field_name == "type")
     return spot_on_lite_monitor::TYPE;
   else
@@ -144,7 +146,7 @@ void spot_on_lite_monitor::read_statistics_database(void)
 
 	if(db.open())
 	  {
-	    QSet<qint64> dead_processes(processes.keys().toSet());
+	    QSet<qint64> deleted_processes(processes.keys().toSet());
 	    QSqlQuery query(db);
 
 	    query.setForwardOnly(true);
@@ -161,18 +163,8 @@ void spot_on_lite_monitor::read_statistics_database(void)
 			  "FROM statistics"))
 	      while(query.next())
 		{
-		  {
-		    auto pid = static_cast<pid_t> (query.value(7).toLongLong());
-
-		    if(kill(pid, 0) != 0)
-		      {
-			dead_processes.insert(static_cast<qint64> (pid));
-			processes.remove(static_cast<qint64> (pid));
-			continue;
-		      }
-		  }
-
 		  QMap<Columns, QString> values;
+		  QString status("Active");
 
 		  values[ARGUMENTS] = query.value(0).toString();
 		  values[BYTES_ACCUMULATED] = query.value(1).toString();
@@ -186,7 +178,11 @@ void spot_on_lite_monitor::read_statistics_database(void)
 
 		  auto pid = values.value(PID).toLongLong();
 
-		  dead_processes.remove(pid);
+		  if(kill(static_cast<pid_t> (pid), 0) != 0)
+		    status = "Dead";
+
+		  values[STATUS] = status;
+		  deleted_processes.remove(pid);
 
 		  if(!processes.contains(pid))
 		    {
@@ -205,7 +201,7 @@ void spot_on_lite_monitor::read_statistics_database(void)
 		    }
 		}
 
-	    for(auto pid : dead_processes)
+	    for(auto pid : deleted_processes)
 	      emit deleted(pid);
 	  }
 
@@ -264,6 +260,7 @@ void spot_on_lite_monitor::slot_changed(const QMap<Columns, QString> &values)
   m_ui.processes->item(row, IP_INFORMATION)->setText
     (values.value(IP_INFORMATION));
   m_ui.processes->item(row, MEMORY)->setText(values.value(MEMORY));
+  m_ui.processes->item(row, STATUS)->setText(values.value(STATUS));
   m_ui.processes->setSortingEnabled(true);
 }
 

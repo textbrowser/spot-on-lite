@@ -7,63 +7,86 @@
     <x>0</x>
     <y>0</y>
     <width>900</width>
-    <height>600</height>
+    <height>754</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Spot-On-Lite Monitor</string>
+  </property>
+  <property name="windowIcon">
+   <iconset resource="../Icons/icons.qrc">
+    <normaloff>:/monitor.png</normaloff>:/monitor.png</iconset>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout">
     <item>
      <layout class="QHBoxLayout" name="horizontalLayout">
       <item>
-       <widget class="QLineEdit" name="configuration_file">
-        <property name="placeholderText">
-         <string>Configuration File</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="configuration_file_select">
-        <property name="text">
-         <string>Select...</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </item>
-    <item>
-     <layout class="QHBoxLayout" name="horizontalLayout_2">
-      <item>
-       <widget class="QLineEdit" name="launch_script">
-        <property name="placeholderText">
-         <string>Launch Script</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="launch_script_location">
-        <property name="text">
-         <string>Select...</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QToolButton" name="off_on">
-        <property name="toolTip">
-         <string>Activate / Deactivate Daemon</string>
+       <widget class="QLabel" name="label">
+        <property name="maximumSize">
+         <size>
+          <width>128</width>
+          <height>128</height>
+         </size>
         </property>
         <property name="text">
          <string/>
         </property>
-        <property name="checkable">
+        <property name="pixmap">
+         <pixmap resource="../Icons/icons.qrc">:/monitor.png</pixmap>
+        </property>
+        <property name="scaledContents">
          <bool>true</bool>
         </property>
-        <property name="checked">
-         <bool>false</bool>
-        </property>
        </widget>
+      </item>
+      <item>
+       <layout class="QGridLayout" name="gridLayout">
+        <item row="0" column="0">
+         <widget class="QLineEdit" name="configuration_file">
+          <property name="placeholderText">
+           <string>Configuration File</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="1">
+         <widget class="QPushButton" name="configuration_file_select">
+          <property name="text">
+           <string>Select...</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="2">
+         <widget class="QToolButton" name="off_on">
+          <property name="toolTip">
+           <string>Activate / Deactivate Daemon</string>
+          </property>
+          <property name="text">
+           <string/>
+          </property>
+          <property name="checkable">
+           <bool>true</bool>
+          </property>
+          <property name="checked">
+           <bool>false</bool>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="0">
+         <widget class="QLineEdit" name="launch_script">
+          <property name="placeholderText">
+           <string>Launch Script</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="1">
+         <widget class="QPushButton" name="launch_script_location">
+          <property name="text">
+           <string>Select...</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
       </item>
      </layout>
     </item>
@@ -104,6 +127,11 @@
       <column>
        <property name="text">
         <string>PID</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>Status</string>
        </property>
       </column>
       <column>
@@ -192,6 +220,8 @@
   <tabstop>off_on</tabstop>
   <tabstop>processes</tabstop>
  </tabstops>
- <resources/>
+ <resources>
+  <include location="../Icons/icons.qrc"/>
+ </resources>
  <connections/>
 </ui>

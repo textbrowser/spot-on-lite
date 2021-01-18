@@ -59,15 +59,16 @@ class spot_on_lite_monitor: public QMainWindow
  public:
   enum Columns
     {
-     ARGUMENTS = 8,
-     BYTES_ACCUMULATED = 4,
-     BYTES_READ = 5,
-     BYTES_WRITTEN = 6,
-     IP_INFORMATION = 2,
-     MEMORY = 3,
+     ARGUMENTS = 9,
+     BYTES_ACCUMULATED = 5,
+     BYTES_READ = 6,
+     BYTES_WRITTEN = 7,
+     IP_INFORMATION = 3,
+     MEMORY = 4,
      NAME = 0,
      PID = 1,
-     TYPE = 7,
+     STATUS = 2,
+     TYPE = 8,
      ZZZ = 999
     };
 

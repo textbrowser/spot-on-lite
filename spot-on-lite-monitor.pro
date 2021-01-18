@@ -9,7 +9,7 @@ QT		+= gui sql widgets
 
 FORMS           = UI/spot-on-lite-monitor.ui
 HEADERS		= Source/spot-on-lite-monitor.h
-RESOURCES	=
+RESOURCES	= Icons/icons.qrc
 SOURCES		= Source/spot-on-lite-monitor.cc
 TRANSLATIONS    =
 UI_HEADERS_DIR  = .
