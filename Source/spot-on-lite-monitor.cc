@@ -231,7 +231,7 @@ void spot_on_lite_monitor::slot_added(const QMap<Columns, QString> &values)
       m_ui.processes->setItem(row, it.key(), item);
 
       if(!m_pid_to_index.contains(pid))
-	m_pid_to_index[pid] = m_ui.processes->indexFromItem(item);
+	m_pid_to_index[pid] = item;
     }
   
   if(m_ui.processes->item(row, STATUS)->text() == "Active")
@@ -248,31 +248,32 @@ void spot_on_lite_monitor::slot_added(const QMap<Columns, QString> &values)
 
 void spot_on_lite_monitor::slot_changed(const QMap<Columns, QString> &values)
 {
-  auto index = m_pid_to_index.value(values.value(PID).toLongLong());
+  auto item = m_pid_to_index.value(values.value(PID).toLongLong());
 
-  if(!index.isValid())
+  if(!item)
+    return;
+
+  auto row = item->row();
+
+  if(row < 0)
     return;
 
   m_ui.processes->setSortingEnabled(false);
-  m_ui.processes->itemFromIndex(index.siblingAtColumn(BYTES_ACCUMULATED))->
-    setText(values.value(BYTES_ACCUMULATED));
-  m_ui.processes->itemFromIndex(index.siblingAtColumn(BYTES_READ))->
-    setText(values.value(BYTES_READ));
-  m_ui.processes->itemFromIndex(index.siblingAtColumn(BYTES_WRITTEN))->setText
+  m_ui.processes->item(row, BYTES_ACCUMULATED)->setText
+    (values.value(BYTES_ACCUMULATED));
+  m_ui.processes->item(row, BYTES_READ)->setText(values.value(BYTES_READ));
+  m_ui.processes->item(row, BYTES_WRITTEN)->setText
     (values.value(BYTES_WRITTEN));
-  m_ui.processes->itemFromIndex(index.siblingAtColumn(IP_INFORMATION))->setText
+  m_ui.processes->item(row, IP_INFORMATION)->setText
     (values.value(IP_INFORMATION));
-  m_ui.processes->itemFromIndex(index.siblingAtColumn(MEMORY))->setText
-    (values.value(MEMORY));
-  m_ui.processes->itemFromIndex(index.siblingAtColumn(STATUS))->setText
-    (values.value(STATUS));
+  m_ui.processes->item(row, MEMORY)->setText(values.value(MEMORY));
+  m_ui.processes->item(row, STATUS)->setText(values.value(STATUS));
 
-  if(m_ui.processes->itemFromIndex(index.siblingAtColumn(STATUS))->
-     text() == "Active")
-    m_ui.processes->itemFromIndex(index.siblingAtColumn(STATUS))->setBackground
+  if(m_ui.processes->item(row, STATUS)->text() == "Active")
+    m_ui.processes->item(row, STATUS)->setBackground
       (QBrush(QColor("lightgreen")));
   else
-    m_ui.processes->itemFromIndex(index.siblingAtColumn(STATUS))->setBackground
+    m_ui.processes->item(row, STATUS)->setBackground
       (QBrush(QColor(240, 128, 128)));
 
   m_ui.processes->setSortingEnabled(true);
@@ -280,14 +281,14 @@ void spot_on_lite_monitor::slot_changed(const QMap<Columns, QString> &values)
 
 void spot_on_lite_monitor::slot_deleted(const qint64 pid)
 {
-  auto index = m_pid_to_index.value(pid);
+  auto item = m_pid_to_index.value(pid);
 
   m_pid_to_index.remove(pid);
 
-  if(!index.isValid())
+  if(!item)
     return;
 
-  m_ui.processes->removeRow(index.row());
+  m_ui.processes->removeRow(item->row());
   statusBar()->showMessage
     (tr("%1 Process(es)").arg(m_ui.processes->rowCount()));
 }

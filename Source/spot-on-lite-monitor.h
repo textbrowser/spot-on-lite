@@ -82,7 +82,7 @@ class spot_on_lite_monitor: public QMainWindow
 
  private:
   QFuture<void> m_future;
-  QMap<qint64, QModelIndex> m_pid_to_index;
+  QMap<qint64, QTableWidgetItem *> m_pid_to_index;
   Ui_spot_on_lite_monitor m_ui;
   void read_statistics_database(void);
 
