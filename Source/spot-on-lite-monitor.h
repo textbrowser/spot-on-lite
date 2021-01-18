@@ -48,6 +48,11 @@ class spot_on_lite_monitor_table: public QTableWidget
   {
     return QTableWidget::indexFromItem(item);
   }
+
+  QTableWidgetItem *itemFromIndex(const QModelIndex &index) const
+  {
+    return QTableWidget::itemFromIndex(index);
+  }
 };
 
 #include "ui_spot-on-lite-monitor.h"
