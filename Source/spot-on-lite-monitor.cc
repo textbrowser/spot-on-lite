@@ -261,6 +261,14 @@ void spot_on_lite_monitor::slot_changed(const QMap<Columns, QString> &values)
     (values.value(IP_INFORMATION));
   m_ui.processes->item(row, MEMORY)->setText(values.value(MEMORY));
   m_ui.processes->item(row, STATUS)->setText(values.value(STATUS));
+
+  if(m_ui.processes->item(row, STATUS)->text() == "Active")
+    m_ui.processes->item(row, STATUS)->setBackground
+      (QBrush(QColor("lightgreen")));
+  else
+    m_ui.processes->item(row, STATUS)->setBackground
+      (QBrush(QColor(240, 128, 128)));
+
   m_ui.processes->setSortingEnabled(true);
 }
 
