@@ -80,7 +80,7 @@
          </widget>
         </item>
         <item row="1" column="1">
-         <widget class="QPushButton" name="launch_script_location">
+         <widget class="QPushButton" name="launch_script_file_select">
           <property name="text">
            <string>Select...</string>
           </property>
@@ -216,7 +216,7 @@
   <tabstop>configuration_file</tabstop>
   <tabstop>configuration_file_select</tabstop>
   <tabstop>launch_script</tabstop>
-  <tabstop>launch_script_location</tabstop>
+  <tabstop>launch_script_file_select</tabstop>
   <tabstop>off_on</tabstop>
   <tabstop>processes</tabstop>
  </tabstops>

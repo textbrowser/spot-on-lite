@@ -91,6 +91,7 @@ class spot_on_lite_monitor: public QMainWindow
   void slot_changed(const QMap<Columns, QString> &values);
   void slot_deleted(const qint64 pid);
   void slot_quit(void);
+  void slot_select_path(void);
 
  signals:
   void added(const QMap<Columns, QString> &values);

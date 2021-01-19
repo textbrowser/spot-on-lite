@@ -26,6 +26,7 @@
 */
 
 #include <QApplication>
+#include <QFileDialog>
 #include <QSqlDatabase>
 #include <QSqlQuery>
 #include <QtConcurrent>
@@ -106,6 +107,14 @@ spot_on_lite_monitor::spot_on_lite_monitor(void):QMainWindow()
 	  SIGNAL(triggered(void)),
 	  this,
 	  SLOT(slot_quit(void)));
+  connect(m_ui.configuration_file_select,
+	  SIGNAL(clicked(void)),
+	  this,
+	  SLOT(slot_select_path(void)));
+  connect(m_ui.launch_script_file_select,
+	  SIGNAL(clicked(void)),
+	  this,
+	  SLOT(slot_select_path(void)));
   connect(this,
 	  SIGNAL(added(const QMap<Columns, QString> &)),
 	  this,
@@ -298,4 +307,29 @@ void spot_on_lite_monitor::slot_deleted(const qint64 pid)
 void spot_on_lite_monitor::slot_quit(void)
 {
   QApplication::instance()->quit();
+}
+
+void spot_on_lite_monitor::slot_select_path(void)
+{
+  QFileDialog dialog(this);
+
+  dialog.setAcceptMode(QFileDialog::AcceptOpen);
+  dialog.setDirectory(QDir::homePath());
+  dialog.setFileMode(QFileDialog::ExistingFile);
+  dialog.setLabelText(QFileDialog::Accept, tr("Select"));
+  dialog.setOption(QFileDialog::DontUseNativeDialog);
+
+  if(m_ui.configuration_file_select == sender())
+    dialog.setWindowTitle
+      (tr("Spot-On-Lite Monitor: Configuration File Selection"));
+  else
+    dialog.setWindowTitle
+      (tr("Spot-On-Lite Monitor: Launch Script Selection"));
+
+  if(dialog.exec() == QDialog::Accepted)
+    {
+      QApplication::processEvents();
+    }
+
+  QApplication::processEvents();
 }
