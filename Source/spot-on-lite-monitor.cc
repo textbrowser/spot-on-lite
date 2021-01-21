@@ -93,7 +93,7 @@ int main(int argc, char *argv[])
 
 spot_on_lite_monitor::spot_on_lite_monitor(void):QMainWindow()
 {
-  auto home_dir(QDir::home());
+  QDir home_dir(home_path());
 
   home_dir.mkdir(".spot-on-lite-monitor");
   qRegisterMetaType<QMap<Columns, QString> > ("QMap<Columns, QString>");
@@ -133,12 +133,7 @@ spot_on_lite_monitor::spot_on_lite_monitor(void):QMainWindow()
 	  this,
 	  SLOT(slot_deleted(const qint64)));
 
-  QSettings settings(QDir::homePath() +
-		     QDir::separator() +
-		     ".spot-on-lite-monitor" +
-		     QDir::separator() +
-		     "Spot-On-Lite-Monitor.INI",
-		     QSettings::IniFormat);
+  QSettings settings(ini_path(), QSettings::IniFormat);
 
   m_ui.configuration_file->setText
     (settings.value("configuration_file").toString().trimmed());
@@ -152,14 +147,27 @@ spot_on_lite_monitor::~spot_on_lite_monitor()
   m_future.cancel();
   m_future.waitForFinished();
 
-  QSettings settings(QDir::homePath() +
-		     QDir::separator() +
-		     ".spot-on-lite-monitor" +
-		     QDir::separator() +
-		     "Spot-On-Lite-Monitor.INI",
-		     QSettings::IniFormat);
+  QSettings settings(ini_path(), QSettings::IniFormat);
 
   settings.setValue("geometry", saveGeometry());
+}
+
+QString spot_on_lite_monitor::home_path(void)
+{
+#ifdef Q_OS_UNIX
+  return QDir::homePath();
+#else
+  return QDir::currentPath();
+#endif
+}
+
+QString spot_on_lite_monitor::ini_path(void)
+{
+  return home_path() +
+    QDir::separator() +
+    ".spot-on-lite-monitor" +
+    QDir::separator() +
+    "Spot-On-Lite-Monitor.INI";
 }
 
 void spot_on_lite_monitor::read_statistics_database(void)
@@ -271,7 +279,7 @@ void spot_on_lite_monitor::slot_added(const QMap<Columns, QString> &values)
       if(!m_pid_to_index.contains(pid))
 	m_pid_to_index[pid] = item;
     }
-  
+
   if(m_ui.processes->item(row, STATUS)->text() == "Active")
     m_ui.processes->item(row, STATUS)->setBackground
       (QBrush(QColor("lightgreen")));
@@ -386,12 +394,7 @@ void spot_on_lite_monitor::slot_select_path(void)
       else
 	m_ui.launch_script->setText(dialog.selectedFiles().value(0));
 
-      QSettings settings(QDir::homePath() +
-			 QDir::separator() +
-			 ".spot-on-lite-monitor" +
-			 QDir::separator() +
-			 "Spot-On-Lite-Monitor.INI",
-			 QSettings::IniFormat);
+      QSettings settings(ini_path(), QSettings::IniFormat);
 
       settings.setValue
 	("configuration_file", m_ui.configuration_file->text().trimmed());

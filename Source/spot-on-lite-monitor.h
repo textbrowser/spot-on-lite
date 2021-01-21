@@ -86,6 +86,8 @@ class spot_on_lite_monitor: public QMainWindow
   QMap<qint64, QTableWidgetItem *> m_pid_to_index;
   QTimer m_path_timer;
   Ui_spot_on_lite_monitor m_ui;
+  static QString home_path(void);
+  static QString ini_path(void);
   void read_statistics_database(void);
 
  private slots:
