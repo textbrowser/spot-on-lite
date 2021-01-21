@@ -32,3 +32,4 @@ Remaining Items
 - IPv6 scope identities?
 - Introduce QSsl::Ec.
 - Optionally share CD identities in client mode.
+- Windows? Yuck!
