@@ -88,7 +88,7 @@ void spot_on_lite_daemon::handler_signal(int signal_number)
       }
     }
 
-  ssize_t rc = ::write(s_signal_fd[0], a, strlen(a));
+  auto rc = ::write(s_signal_fd[0], a, strlen(a));
 
   Q_UNUSED(rc);
 }
@@ -307,7 +307,7 @@ int main(int argc, char *argv[])
     return EXIT_FAILURE;
 
   QCoreApplication qapplication(argc, argv);
-  int rc = EXIT_SUCCESS;
+  auto rc = EXIT_SUCCESS;
 
   try
     {

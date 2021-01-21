@@ -144,10 +144,10 @@ int main(int argc, char *argv[])
   QString remote_identities_file_name("");
   QString server_identity("");
   QString ssl_control_string("");
+  auto rc = EXIT_SUCCESS;
   int identities_lifetime = -1;
   int local_so_rcvbuf_so_sndbuf = -1;
   int maximum_accumulated_bytes = -1;
-  int rc = EXIT_SUCCESS;
   int sd = -1;
   int silence = -1;
   int so_linger = -1;

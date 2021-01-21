@@ -93,7 +93,7 @@ int main(int argc, char *argv[])
 
 spot_on_lite_monitor::spot_on_lite_monitor(void):QMainWindow()
 {
-  QDir home_dir(QDir::home());
+  auto home_dir(QDir::home());
 
   home_dir.mkdir(".spot-on-lite-monitor");
   qRegisterMetaType<QMap<Columns, QString> > ("QMap<Columns, QString>");
@@ -157,8 +157,8 @@ void spot_on_lite_monitor::read_statistics_database(void)
 
 	if(db.open())
 	  {
-	    QSet<qint64> deleted_processes(processes.keys().toSet());
 	    QSqlQuery query(db);
+	    auto deleted_processes(processes.keys().toSet());
 
 	    query.setForwardOnly(true);
 
@@ -329,6 +329,21 @@ void spot_on_lite_monitor::slot_select_path(void)
   if(dialog.exec() == QDialog::Accepted)
     {
       QApplication::processEvents();
+
+      if(m_ui.configuration_file_select == sender())
+	m_ui.configuration_file->setText(dialog.selectedFiles().value(0));
+      else
+	m_ui.launch_script->setText(dialog.selectedFiles().value(0));
+
+      QSettings settings(QDir::homePath() +
+			 QDir::separator() +
+			 ".spot-on-lite-monitor" +
+			 QDir::separator() +
+			 "Spot-On-Lite-Monitor.INI",
+			 QSettings::IniFormat);
+
+      settings.setValue("configuration_file", m_ui.configuration_file->text());
+      settings.setValue("launch_script", m_ui.launch_script->text());
     }
 
   QApplication::processEvents();

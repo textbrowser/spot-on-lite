@@ -75,7 +75,7 @@ static QString socket_type_to_string
 
 static int hash_algorithm_key_length(const QByteArray &a)
 {
-  QByteArray algorithm(a.toLower().trimmed());
+  auto algorithm(a.toLower().trimmed());
 
   if(algorithm == "sha-512" || algorithm == "sha3-512")
     return 64;
@@ -290,7 +290,7 @@ spot_on_lite_daemon_child::spot_on_lite_daemon_child
 	{
 	  generate_ssl_tls();
 
-	  QStringList list(m_server_identity.split(":"));
+	  auto list(m_server_identity.split(":"));
 
 	  m_peer_address = QHostAddress(list.value(0));
 	  m_peer_port = static_cast<quint16> (list.value(1).toInt());
@@ -339,7 +339,7 @@ spot_on_lite_daemon_child::spot_on_lite_daemon_child
 	}
       else
 	{
-	  QList<QByteArray> list(local_certificate_configuration());
+	  auto list(local_certificate_configuration());
 
 	  if(list.isEmpty())
 	    generate_ssl_tls();
@@ -394,7 +394,7 @@ spot_on_lite_daemon_child::spot_on_lite_daemon_child
     }
   else if(m_client_role)
     {
-      QStringList list(m_server_identity.split(":"));
+      auto list(m_server_identity.split(":"));
 
       m_peer_address = QHostAddress(list.value(0));
       m_peer_port = static_cast<quint16> (list.value(1).toInt());
@@ -533,7 +533,7 @@ QList<QSslCipher> spot_on_lite_daemon_child::default_ssl_ciphers(void) const
 
   while(!protocols.isEmpty())
     {
-      QString protocol(protocols.takeFirst());
+      auto protocol(protocols.takeFirst());
 
       index = 0;
       next = nullptr;
@@ -843,7 +843,7 @@ void spot_on_lite_daemon_child::data_received
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 12, 0))
   if(m_dtls && m_protocol == QAbstractSocket::UdpSocket)
     {
-      auto *socket = qobject_cast<QUdpSocket *> (m_remote_socket);
+      auto socket = qobject_cast<QUdpSocket *> (m_remote_socket);
 
       if(!socket)
 	{
@@ -1268,7 +1268,7 @@ void spot_on_lite_daemon_child::log(const QString &error) const
 
   if(file.open(QIODevice::Append | QIODevice::WriteOnly))
     {
-      QDateTime dateTime(QDateTime::currentDateTime());
+      auto dateTime(QDateTime::currentDateTime());
 
       file.write(dateTime.toString().toStdString().data());
       file.write("\n");
@@ -1440,7 +1440,7 @@ void spot_on_lite_daemon_child::process_local_content(void)
   }
 
   QVector<QByteArray> vector;
-  QByteArray type_identity(m_message_types.value("type_identity"));
+  auto type_identity(m_message_types.value("type_identity"));
   int index = 0;
 
   {
@@ -1495,12 +1495,12 @@ void spot_on_lite_daemon_child::process_local_content(void)
 
       if((index = bytes.indexOf("content=")) >= 0)
 	{
-	  QByteArray data(bytes.mid(8 + index).trimmed());
 	  QByteArray hash;
+	  auto data(bytes.mid(8 + index).trimmed());
 
 	  if(data.contains("\n")) // Spot-On
 	    {
-	      QList<QByteArray> list(data.split('\n'));
+	      auto list(data.split('\n'));
 
 	      if(list.size() >= 3)
 		{
@@ -1577,7 +1577,7 @@ void spot_on_lite_daemon_child::process_read_data(const QByteArray &data)
       if(m_local_socket->state() == QLocalSocket::ConnectedState &&
 	 record_congestion(data))
 	{
-	  int maximum = m_local_so_rcvbuf_so_sndbuf -
+	  auto maximum = m_local_so_rcvbuf_so_sndbuf -
 	    static_cast<int> (m_local_socket->bytesToWrite());
 
 	  if(maximum > 0)
@@ -1617,10 +1617,10 @@ void spot_on_lite_daemon_child::process_remote_content(void)
     return;
 
   QByteArray data;
-  QByteArray type_capabilities
+  auto type_capabilities
     (m_message_types.value("type_capabilities"));
-  QByteArray type_identity(m_message_types.value("type_identity"));
-  QByteArray type_spot_on_lite_client
+  auto type_identity(m_message_types.value("type_identity"));
+  auto type_spot_on_lite_client
     (m_message_types.value("type_spot_on_lite_client"));
   int index = 0;
 
@@ -1655,12 +1655,12 @@ void spot_on_lite_daemon_child::process_remote_content(void)
 
       if(record_congestion(data))
 	{
-	  int maximum = m_local_so_rcvbuf_so_sndbuf -
+	  auto maximum = m_local_so_rcvbuf_so_sndbuf -
 	    static_cast<int> (m_local_socket->bytesToWrite());
 
 	  if(maximum > 0)
 	    {
-	      qint64 rc = m_local_socket->write(data.mid(0, maximum));
+	      auto rc = m_local_socket->write(data.mid(0, maximum));
 
 	      if(rc > 0)
 		{
@@ -1949,7 +1949,7 @@ void spot_on_lite_daemon_child::
 set_ssl_ciphers(const QList<QSslCipher> &ciphers,
 		QSslConfiguration &configuration) const
 {
-  QList<QSslCipher> preferred(default_ssl_ciphers());
+  auto preferred(default_ssl_ciphers());
 
   for(int i = preferred.size() - 1; i >= 0; i--)
     if(!ciphers.contains(preferred.at(i)))
@@ -1963,7 +1963,7 @@ set_ssl_ciphers(const QList<QSslCipher> &ciphers,
 
 void spot_on_lite_daemon_child::share_identity(const QByteArray &data)
 {
-  qint64 rc = m_local_socket->write(data);
+  auto rc = m_local_socket->write(data);
 
   if(rc > 0)
     {
@@ -2041,8 +2041,8 @@ void spot_on_lite_daemon_child::slot_broadcast_capabilities(void)
 
   QByteArray data;
   QByteArray results;
-  QString type_capabilities(m_message_types.value("type_capabilities"));
-  QUuid uuid(QUuid::createUuid());
+  auto type_capabilities(m_message_types.value("type_capabilities"));
+  auto uuid(QUuid::createUuid());
 
   data.append(uuid.toString().toUtf8());
   data.append("\n");
@@ -2053,7 +2053,7 @@ void spot_on_lite_daemon_child::slot_broadcast_capabilities(void)
 		 "Content-Type: application/x-www-form-urlencoded\r\n"
 		 "Content-Length: %1\r\n"
 		 "\r\n"
-		 "type=" + type_capabilities.toUtf8() + "&content=%2\r\n"
+		 "type=" + type_capabilities + "&content=%2\r\n"
 		 "\r\n\r\n");
   results.replace
     ("%1",
@@ -2072,7 +2072,7 @@ void spot_on_lite_daemon_child::slot_broadcast_capabilities(void)
 
       QByteArray data;
       QByteArray results;
-      QByteArray type_spot_on_lite_client
+      auto type_spot_on_lite_client
 	(m_message_types.value("type_spot_on_lite_client"));
 
       data.append("Spot-On-Lite");
@@ -2262,7 +2262,7 @@ void spot_on_lite_daemon_child::slot_local_socket_ready_read(void)
 {
   while(m_local_socket->bytesAvailable() > 0)
     {
-      QByteArray data(m_local_socket->readAll());
+      auto data(m_local_socket->readAll());
 
       if(!data.isEmpty())
 	{
@@ -2305,7 +2305,7 @@ void spot_on_lite_daemon_child::slot_ready_read(void)
 {
   while(m_remote_socket->bytesAvailable() > 0)
     {
-      QByteArray data(m_remote_socket->readAll());
+      auto data(m_remote_socket->readAll());
 
       if(data.isEmpty())
 	{

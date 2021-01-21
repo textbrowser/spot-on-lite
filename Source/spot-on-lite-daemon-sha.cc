@@ -155,8 +155,8 @@ spot_on_lite_daemon_sha::spot_on_lite_daemon_sha(void)
 QByteArray spot_on_lite_daemon_sha::sha_512(const QByteArray &data) const
 {
 #ifdef SPOTON_LITE_DAEMON_CHILD_ECL_SUPPORTED
-  QByteArray bytes(QString("(sha_512 '#%1(").arg(data.length()).toLatin1());
   QByteArray hash;
+  auto bytes(QString("(sha_512 '#%1(").arg(data.length()).toLatin1());
 
   for(int i = 0; i < data.length(); i++)
     {
@@ -377,7 +377,7 @@ QByteArray spot_on_lite_daemon_sha::sha_512_hmac(const QByteArray &data,
   ** Please read https://en.wikipedia.org/wiki/SHA-2.
   */
 
-  QByteArray k(key);
+  auto k(key);
 
   if(s_block_length < k.length())
     k = sha_512(k);

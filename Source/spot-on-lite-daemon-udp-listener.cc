@@ -76,15 +76,15 @@ void spot_on_lite_daemon_udp_listener::new_connection
     return;
 
   QPointer<spot_on_lite_daemon_child> client;
-  QString server_identity
-    (QString("%1:%2").arg(localAddress().toString()).arg(localPort()));
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 15, 0))
-  QStringList list(m_configuration.split(",", Qt::KeepEmptyParts));
+  auto list(m_configuration.split(",", Qt::KeepEmptyParts));
 #else
-  QStringList list(m_configuration.split(",", QString::KeepEmptyParts));
+  auto list(m_configuration.split(",", QString::KeepEmptyParts));
 #endif
   auto maximum_accumulated_bytes = m_parent->maximum_accumulated_bytes();
   auto optlen = static_cast<socklen_t> (sizeof(maximum_accumulated_bytes));
+  auto server_identity
+    (QString("%1:%2").arg(localAddress().toString()).arg(localPort()));
 
   setsockopt(sd, SOL_SOCKET, SO_RCVBUF, &maximum_accumulated_bytes, optlen);
   setsockopt(sd, SOL_SOCKET, SO_SNDBUF, &maximum_accumulated_bytes, optlen);
@@ -144,12 +144,12 @@ void spot_on_lite_daemon_udp_listener::slot_general_timeout(void)
       ** 2 - Backlog
       */
 
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 15, 0))
-      QStringList list(m_configuration.split(",", Qt::KeepEmptyParts));
-#else
-      QStringList list(m_configuration.split(",", QString::KeepEmptyParts));
-#endif
       auto flags = QUdpSocket::ReuseAddressHint | QUdpSocket::ShareAddress;
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 15, 0))
+      auto list(m_configuration.split(",", Qt::KeepEmptyParts));
+#else
+      auto list(m_configuration.split(",", QString::KeepEmptyParts));
+#endif
 
       if(bind(QHostAddress(list.value(0)), list.value(1).toUShort(), flags))
 	m_max_pending_connections = list.value(2).toInt();

@@ -175,7 +175,7 @@ int spot_on_lite_daemon::maximum_accumulated_bytes(void) const
 
 void spot_on_lite_daemon::log(const QString &error) const
 {
-  QString e(error.trimmed());
+  auto e(error.trimmed());
 
   if(e.isEmpty())
     return;
@@ -202,7 +202,7 @@ void spot_on_lite_daemon::prepare_listeners(void)
   for(int i = 0; i < m_listeners_properties.size(); i++)
     if(m_listeners_properties.at(i).contains("tcp"))
       {
-	auto *listener = new spot_on_lite_daemon_tcp_listener
+	auto listener = new spot_on_lite_daemon_tcp_listener
 	  (m_listeners_properties.at(i), this);
 
 	connect(this,
@@ -260,10 +260,10 @@ void spot_on_lite_daemon::prepare_peers(void)
 
       QString server_identity;
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 15, 0))
-      QStringList list
+      auto list
 	(m_peers_properties.at(i).split(",", Qt::KeepEmptyParts));
 #else
-      QStringList list
+      auto list
 	(m_peers_properties.at(i).split(",", QString::KeepEmptyParts));
 #endif
       auto so_linger = list.value(6).toInt();
@@ -578,10 +578,10 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
     else if(key.startsWith("listener") || key.startsWith("peer"))
       {
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 15, 0))
-	QStringList list
+	auto list
 	  (settings.value(key).toString().split(",", Qt::KeepEmptyParts));
 #else
-	QStringList list
+	auto list
 	  (settings.value(key).toString().split(",", QString::KeepEmptyParts));
 #endif
 
@@ -621,7 +621,7 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
 	  if(i != 7) // EOM-Marker
 	    list.replace(i, list.at(i).trimmed());
 
-	bool entry_ok = true;
+	auto entry_ok = true;
 
 	if(list.at(0).isEmpty())
 	  {
@@ -777,7 +777,7 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
 		      << std::endl;
 	  }
 	
-	QString protocol(list.value(10));
+	auto protocol(list.value(10));
 
 	if(!(protocol == "tcp" || protocol == "udp"))
 	  {
@@ -912,7 +912,7 @@ void spot_on_lite_daemon::purge_congestion_control(void)
 
 void spot_on_lite_daemon::slot_local_socket_disconnected(void)
 {
-  auto *socket = qobject_cast<QLocalSocket *> (sender());
+  auto socket = qobject_cast<QLocalSocket *> (sender());
 
   if(!socket)
     return;
@@ -926,7 +926,7 @@ void spot_on_lite_daemon::slot_new_local_connection(void)
   if(!m_local_server)
     return;
 
-  auto *socket = m_local_server->nextPendingConnection();
+  auto socket = m_local_server->nextPendingConnection();
 
   if(!socket)
     return;
@@ -965,7 +965,7 @@ void spot_on_lite_daemon::slot_purge_congestion_control_timeout(void)
 
 void spot_on_lite_daemon::slot_ready_read(void)
 {
-  auto *socket = qobject_cast<QLocalSocket *> (sender());
+  auto socket = qobject_cast<QLocalSocket *> (sender());
 
   if(!socket)
     return;
@@ -985,7 +985,7 @@ void spot_on_lite_daemon::slot_ready_read(void)
 	 it.key() != socket &&
 	 it.key()->state() == QLocalSocket::ConnectedState)
 	{
-	  int maximum = m_local_so_rcvbuf_so_sndbuf -
+	  auto maximum = m_local_so_rcvbuf_so_sndbuf -
 	    static_cast<int> (it.key()->bytesToWrite());
 
 	  if(maximum > 0)
@@ -1005,7 +1005,7 @@ void spot_on_lite_daemon::slot_signal(void)
 
   memset(a, 0, sizeof(a));
 
-  ssize_t rc = ::read(s_signal_fd[1], a, sizeof(a));
+  auto rc = ::read(s_signal_fd[1], a, sizeof(a));
 
   if(rc > 0)
     {
