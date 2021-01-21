@@ -127,6 +127,18 @@ spot_on_lite_monitor::spot_on_lite_monitor(void):QMainWindow()
 	  SIGNAL(deleted(const qint64)),
 	  this,
 	  SLOT(slot_deleted(const qint64)));
+
+  QSettings settings(QDir::homePath() +
+		     QDir::separator() +
+		     ".spot-on-lite-monitor" +
+		     QDir::separator() +
+		     "Spot-On-Lite-Monitor.INI",
+		     QSettings::IniFormat);
+
+  m_ui.configuration_file->setText
+    (settings.value("configuration_file").toString().trimmed());
+  m_ui.launch_script->setText
+    (settings.value("launch_script").toString().trimmed());
 }
 
 spot_on_lite_monitor::~spot_on_lite_monitor()
@@ -342,8 +354,9 @@ void spot_on_lite_monitor::slot_select_path(void)
 			 "Spot-On-Lite-Monitor.INI",
 			 QSettings::IniFormat);
 
-      settings.setValue("configuration_file", m_ui.configuration_file->text());
-      settings.setValue("launch_script", m_ui.launch_script->text());
+      settings.setValue
+	("configuration_file", m_ui.configuration_file->text().trimmed());
+      settings.setValue("launch_script", m_ui.launch_script->text().trimmed());
     }
 
   QApplication::processEvents();
