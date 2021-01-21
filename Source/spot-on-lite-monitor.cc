@@ -99,10 +99,15 @@ spot_on_lite_monitor::spot_on_lite_monitor(void):QMainWindow()
   qRegisterMetaType<QMap<Columns, QString> > ("QMap<Columns, QString>");
   m_future = QtConcurrent::run
     (this, &spot_on_lite_monitor::read_statistics_database);
+  m_path_timer.start(1500);
   m_ui.setupUi(this);
   m_ui.processes->sortByColumn(PID, Qt::AscendingOrder);
   statusBar()->showMessage
     (tr("%1 Process(es)").arg(m_ui.processes->rowCount()));
+  connect(&m_path_timer,
+	  SIGNAL(timeout(void)),
+	  this,
+	  SLOT(slot_path_timeout(void)));
   connect(m_ui.action_Quit,
 	  SIGNAL(triggered(void)),
 	  this,
@@ -139,12 +144,22 @@ spot_on_lite_monitor::spot_on_lite_monitor(void):QMainWindow()
     (settings.value("configuration_file").toString().trimmed());
   m_ui.launch_script->setText
     (settings.value("launch_script").toString().trimmed());
+  restoreGeometry(settings.value("geometry").toByteArray());
 }
 
 spot_on_lite_monitor::~spot_on_lite_monitor()
 {
   m_future.cancel();
   m_future.waitForFinished();
+
+  QSettings settings(QDir::homePath() +
+		     QDir::separator() +
+		     ".spot-on-lite-monitor" +
+		     QDir::separator() +
+		     "Spot-On-Lite-Monitor.INI",
+		     QSettings::IniFormat);
+
+  settings.setValue("geometry", saveGeometry());
 }
 
 void spot_on_lite_monitor::read_statistics_database(void)
@@ -314,6 +329,30 @@ void spot_on_lite_monitor::slot_deleted(const qint64 pid)
   m_ui.processes->removeRow(item->row());
   statusBar()->showMessage
     (tr("%1 Process(es)").arg(m_ui.processes->rowCount()));
+}
+
+void spot_on_lite_monitor::slot_path_timeout(void)
+{
+  QColor color(144, 238, 144); // Light green!
+  QFileInfo file_info(m_ui.configuration_file->text());
+
+  if(!file_info.isReadable())
+    color = QColor(240, 128, 128);
+
+  QPalette palette(m_ui.configuration_file->palette());
+
+  palette.setColor(m_ui.configuration_file->backgroundRole(), color);
+  m_ui.configuration_file->setPalette(palette);
+  file_info = QFileInfo(m_ui.launch_script->text());
+
+  if(file_info.isExecutable() && file_info.isReadable())
+    color = QColor(144, 238, 144);
+  else
+    color = QColor(240, 128, 128);
+
+  palette = m_ui.launch_script->palette();
+  palette.setColor(m_ui.launch_script->backgroundRole(), color);
+  m_ui.launch_script->setPalette(palette);
 }
 
 void spot_on_lite_monitor::slot_quit(void)

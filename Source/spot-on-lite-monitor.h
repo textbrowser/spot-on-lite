@@ -30,6 +30,7 @@
 
 #include <QFuture>
 #include <QTableWidget>
+#include <QTimer>
 
 class spot_on_lite_monitor_table: public QTableWidget
 {
@@ -83,6 +84,7 @@ class spot_on_lite_monitor: public QMainWindow
  private:
   QFuture<void> m_future;
   QMap<qint64, QTableWidgetItem *> m_pid_to_index;
+  QTimer m_path_timer;
   Ui_spot_on_lite_monitor m_ui;
   void read_statistics_database(void);
 
@@ -90,6 +92,7 @@ class spot_on_lite_monitor: public QMainWindow
   void slot_added(const QMap<Columns, QString> &values);
   void slot_changed(const QMap<Columns, QString> &values);
   void slot_deleted(const qint64 pid);
+  void slot_path_timeout(void);
   void slot_quit(void);
   void slot_select_path(void);
 
