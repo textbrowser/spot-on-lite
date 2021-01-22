@@ -116,10 +116,18 @@ spot_on_lite_monitor::spot_on_lite_monitor(void):QMainWindow()
 	  SIGNAL(triggered(void)),
 	  this,
 	  SLOT(slot_quit(void)));
+  connect(m_ui.configuration_file,
+	  SIGNAL(returnPressed(void)),
+	  this,
+	  SLOT(slot_set_path(void)));
   connect(m_ui.configuration_file_select,
 	  SIGNAL(clicked(void)),
 	  this,
 	  SLOT(slot_select_path(void)));
+  connect(m_ui.launch_executable,
+	  SIGNAL(returnPressed(void)),
+	  this,
+	  SLOT(slot_set_path(void)));
   connect(m_ui.launch_executable_file_select,
 	  SIGNAL(clicked(void)),
 	  this,
@@ -299,7 +307,7 @@ void spot_on_lite_monitor::slot_added(const QMap<Columns, QString> &values)
 
   if(m_ui.processes->item(row, STATUS)->text() == "Active")
     m_ui.processes->item(row, STATUS)->setBackground
-      (QBrush(QColor("lightgreen")));
+      (QBrush(QColor(144, 238, 144)));
   else
     m_ui.processes->item(row, STATUS)->setBackground
       (QBrush(QColor(240, 128, 128)));
@@ -312,6 +320,9 @@ void spot_on_lite_monitor::slot_added(const QMap<Columns, QString> &values)
     {
       m_daemon_pid = static_cast<pid_t> (values.value(PID).toLongLong());
       m_ui.off_on->setChecked(true);
+      m_ui.off_on->setStyleSheet
+	("QToolButton {background-color: rgb(144, 238, 144);}");
+      m_ui.off_on->setText(tr("Online"));
     }
 }
 
@@ -340,7 +351,7 @@ void spot_on_lite_monitor::slot_changed(const QMap<Columns, QString> &values)
 
   if(m_ui.processes->item(row, STATUS)->text() == "Active")
     m_ui.processes->item(row, STATUS)->setBackground
-      (QBrush(QColor("lightgreen")));
+      (QBrush(QColor(144, 238, 144)));
   else
     m_ui.processes->item(row, STATUS)->setBackground
       (QBrush(QColor(240, 128, 128)));
@@ -354,6 +365,9 @@ void spot_on_lite_monitor::slot_deleted(const qint64 pid)
     {
       m_daemon_pid = -1;
       m_ui.off_on->setChecked(false);
+      m_ui.off_on->setStyleSheet
+	("QToolButton {background-color: rgb(240, 128, 128);}");
+      m_ui.off_on->setText(tr("Offline"));
     }
 
   auto item = m_pid_to_index.value(pid);
@@ -436,6 +450,17 @@ void spot_on_lite_monitor::slot_select_path(void)
 
 void spot_on_lite_monitor::slot_set_path(void)
 {
+  auto lineedit = qobject_cast<QLineEdit *> (sender());
+
+  if(lineedit)
+    lineedit->selectAll();
+
+  QSettings settings(ini_path(), QSettings::IniFormat);
+
+  settings.setValue
+    ("configuration_file", m_ui.configuration_file->text().trimmed());
+  settings.setValue
+    ("launch_executable", m_ui.launch_executable->text().trimmed());
 }
 
 void spot_on_lite_monitor::slot_start_or_stop(void)
