@@ -29,7 +29,6 @@
 #define _spot_on_lite_monitor_h_
 
 #include <QFuture>
-#include <QProcess>
 #include <QTableWidget>
 #include <QTimer>
 
@@ -85,9 +84,9 @@ class spot_on_lite_monitor: public QMainWindow
  private:
   QFuture<void> m_future;
   QMap<qint64, QTableWidgetItem *> m_pid_to_index;
-  QProcess m_process;
   QTimer m_path_timer;
   Ui_spot_on_lite_monitor m_ui;
+  pid_t m_daemon_pid;
   static QString home_path(void);
   static QString ini_path(void);
   void read_statistics_database(void);

@@ -31,10 +31,13 @@
 #include <QSqlQuery>
 #include <QtConcurrent>
 
+#ifdef Q_OS_UNIX
 extern "C"
 {
 #include <signal.h>
+#include <sys/types.h>
 }
+#endif
 
 #include "spot-on-lite-monitor.h"
 
@@ -97,6 +100,7 @@ spot_on_lite_monitor::spot_on_lite_monitor(void):QMainWindow()
 
   home_dir.mkdir(".spot-on-lite-monitor");
   qRegisterMetaType<QMap<Columns, QString> > ("QMap<Columns, QString>");
+  m_daemon_pid = -1;
   m_future = QtConcurrent::run
     (this, &spot_on_lite_monitor::read_statistics_database);
   m_path_timer.start(1500);
@@ -120,6 +124,10 @@ spot_on_lite_monitor::spot_on_lite_monitor(void):QMainWindow()
 	  SIGNAL(clicked(void)),
 	  this,
 	  SLOT(slot_select_path(void)));
+  connect(m_ui.off_on,
+	  SIGNAL(clicked(void)),
+	  this,
+	  SLOT(slot_start_or_stop(void)));
   connect(this,
 	  SIGNAL(added(const QMap<Columns, QString> &)),
 	  this,
@@ -185,6 +193,14 @@ void spot_on_lite_monitor::read_statistics_database(void)
 	break;
 
       QThread::msleep(100);
+
+      if(!QFileInfo(db_path).isReadable())
+	{
+	  for(auto pid : processes.keys().toSet())
+	    emit deleted(pid);
+
+	  continue;
+	}
 
       {
 	auto db = QSqlDatabase::addDatabase("QSQLITE", db_connection_id);
@@ -291,6 +307,12 @@ void spot_on_lite_monitor::slot_added(const QMap<Columns, QString> &values)
   m_ui.processes->setSortingEnabled(true);
   statusBar()->showMessage
     (tr("%1 Process(es)").arg(m_ui.processes->rowCount()));
+
+  if(values.value(STATUS) == "Active" && values.value(TYPE) == "daemon")
+    {
+      m_daemon_pid = static_cast<pid_t> (values.value(PID).toLongLong());
+      m_ui.off_on->setChecked(true);
+    }
 }
 
 void spot_on_lite_monitor::slot_changed(const QMap<Columns, QString> &values)
@@ -328,6 +350,12 @@ void spot_on_lite_monitor::slot_changed(const QMap<Columns, QString> &values)
 
 void spot_on_lite_monitor::slot_deleted(const qint64 pid)
 {
+  if(m_daemon_pid == pid)
+    {
+      m_daemon_pid = -1;
+      m_ui.off_on->setChecked(false);
+    }
+
   auto item = m_pid_to_index.value(pid);
 
   m_pid_to_index.remove(pid);
@@ -414,12 +442,20 @@ void spot_on_lite_monitor::slot_start_or_stop(void)
 {
   if(m_ui.off_on->isChecked())
     {
-      m_process.setArguments
+      QProcess process;
+
+      process.setArguments
 	(QStringList() << "--configuration-file"
 	               << m_ui.configuration_file->text().trimmed());
-      m_process.setProgram(m_ui.launch_executable->text().trimmed());
-      m_process.startDetached();
+      process.setProgram(m_ui.launch_executable->text().trimmed());
+      process.startDetached();
     }
   else
-    m_process.kill();
+    {
+#ifdef Q_OS_UNIX
+      if(m_daemon_pid > -1)
+	::kill(m_daemon_pid, SIGTERM);
+#else
+#endif
+    }
 }

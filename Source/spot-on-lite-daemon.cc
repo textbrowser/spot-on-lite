@@ -94,9 +94,27 @@ spot_on_lite_daemon::spot_on_lite_daemon
 	  this,
 	  SLOT(slot_signal(void)));
   spot_on_lite_common::save_statistic
-    ("daemon_pid",
+    ("pid",
      m_statistics_file_name,
      QString::number(QCoreApplication::applicationPid()),
+     QCoreApplication::applicationPid(),
+     static_cast<quint64> (1));
+  spot_on_lite_common::save_statistic
+    ("arguments",
+     m_statistics_file_name,
+     QCoreApplication::instance()->arguments().join(','),
+     QCoreApplication::applicationPid(),
+     static_cast<quint64> (1));
+  spot_on_lite_common::save_statistic
+    ("name",
+     m_statistics_file_name,
+     QCoreApplication::instance()->arguments().value(0),
+     QCoreApplication::applicationPid(),
+     static_cast<quint64> (1));
+  spot_on_lite_common::save_statistic
+    ("type",
+     m_statistics_file_name,
+     "daemon",
      QCoreApplication::applicationPid(),
      static_cast<quint64> (1));
 }
