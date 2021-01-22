@@ -51,6 +51,7 @@ extern "C"
 #include <QtConcurrent>
 #include <QtDebug>
 
+#include "spot-on-lite-common.h"
 #include "spot-on-lite-daemon-tcp-listener.h"
 #include "spot-on-lite-daemon-udp-listener.h"
 #include "spot-on-lite-daemon.h"
@@ -92,6 +93,12 @@ spot_on_lite_daemon::spot_on_lite_daemon
 	  SIGNAL(activated(int)),
 	  this,
 	  SLOT(slot_signal(void)));
+  spot_on_lite_common::save_statistic
+    ("daemon_pid",
+     m_statistics_file_name,
+     QString::number(QCoreApplication::applicationPid()),
+     QCoreApplication::applicationPid(),
+     static_cast<quint64> (1));
 }
 
 spot_on_lite_daemon::spot_on_lite_daemon(void):QObject()

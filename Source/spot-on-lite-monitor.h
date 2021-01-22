@@ -33,8 +33,6 @@
 #include <QTableWidget>
 #include <QTimer>
 
-#include "spot-on-lite-common.h"
-
 class spot_on_lite_monitor_table: public QTableWidget
 {
   Q_OBJECT
