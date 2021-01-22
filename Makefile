@@ -34,12 +34,18 @@ distclean: clean purge
 
 install: all
 	install -d --group=staff /usr/local/spot-on-lite
+	cp -n *.conf /usr/local/spot-on-lite
 	install --group=staff Spot-On-Lite-* /usr/local/spot-on-lite
-	install --group=staff *.conf *.sh Scripts/spot-on-lite-daemon.sh \
+	install --group=staff *.sh Scripts/spot-on-lite-daemon.sh \
 		/usr/local/spot-on-lite
 	chmod -x /usr/local/spot-on-lite/*.conf
+	chown root:staff /usr/local/spot-on-lite/*.conf
 
 purge: Makefile.daemon Makefile.daemon_child Makefile.monitor
 	$(MAKE) -f Makefile.daemon purge
 	$(MAKE) -f Makefile.daemon_child purge
 	$(MAKE) -f Makefile.monitor purge
+
+uninstall:
+	rm /usr/local/spot-on-lite/*
+	rmdir /usr/local/spot-on-lite
