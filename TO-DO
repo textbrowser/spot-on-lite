@@ -1,5 +1,6 @@
 Completed Items
 
+- Configuration panel.
 - Congestion control, per child process.
 - Cryptographic Discovery. Requires SHA-512.
 - DTLS cookies.
@@ -25,7 +26,6 @@ Completed Items
 
 Remaining Items
 
-- Configuration panel.
 - Debian release.
 - Echo proxy.
 - Future-proof (replace SHA-512, etc.).
