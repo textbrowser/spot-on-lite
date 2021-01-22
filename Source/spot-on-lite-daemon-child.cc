@@ -406,7 +406,7 @@ spot_on_lite_daemon_child::spot_on_lite_daemon_child
 
   process_configuration_file();
   save_statistic
-    ("arguments", QCoreApplication::instance()->arguments().join(','));
+    ("arguments", QCoreApplication::instance()->arguments().join(' '));
   save_statistic("name", QCoreApplication::instance()->arguments().value(0));
 }
 

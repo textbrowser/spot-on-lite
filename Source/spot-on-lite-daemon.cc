@@ -102,7 +102,7 @@ spot_on_lite_daemon::spot_on_lite_daemon
   spot_on_lite_common::save_statistic
     ("arguments",
      m_statistics_file_name,
-     QCoreApplication::instance()->arguments().join(','),
+     QCoreApplication::instance()->arguments().join(' '),
      QCoreApplication::applicationPid(),
      static_cast<quint64> (1));
   spot_on_lite_common::save_statistic

@@ -157,6 +157,8 @@ spot_on_lite_monitor::spot_on_lite_monitor(void):QMainWindow()
     (settings.value("launch_executable").toString().trimmed());
   m_ui.processes->setFocus();
   restoreGeometry(settings.value("geometry").toByteArray());
+  slot_deleted(m_daemon_pid);
+  slot_path_timeout();
 }
 
 spot_on_lite_monitor::~spot_on_lite_monitor()
@@ -249,8 +251,11 @@ void spot_on_lite_monitor::read_statistics_database(void)
 
 		  auto pid = values.value(PID).toLongLong();
 
+#ifdef Q_OS_UNIX
 		  if(kill(static_cast<pid_t> (pid), 0) != 0)
 		    status = "Dead";
+#else
+#endif
 
 		  values[STATUS] = status;
 		  deleted_processes.remove(pid);
