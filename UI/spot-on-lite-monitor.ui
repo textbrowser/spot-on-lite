@@ -44,6 +44,9 @@
        <layout class="QGridLayout" name="gridLayout">
         <item row="0" column="0">
          <widget class="QLineEdit" name="configuration_file">
+          <property name="toolTip">
+           <string>Press the Enter key to save the path.</string>
+          </property>
           <property name="placeholderText">
            <string>Configuration File</string>
           </property>
@@ -73,14 +76,17 @@
          </widget>
         </item>
         <item row="1" column="0">
-         <widget class="QLineEdit" name="launch_script">
+         <widget class="QLineEdit" name="launch_executable">
+          <property name="toolTip">
+           <string>Press the Enter key to save the path.</string>
+          </property>
           <property name="placeholderText">
-           <string>Launch Script</string>
+           <string>Launch Executable</string>
           </property>
          </widget>
         </item>
         <item row="1" column="1">
-         <widget class="QPushButton" name="launch_script_file_select">
+         <widget class="QPushButton" name="launch_executable_file_select">
           <property name="text">
            <string>Select...</string>
           </property>
@@ -215,8 +221,8 @@
  <tabstops>
   <tabstop>configuration_file</tabstop>
   <tabstop>configuration_file_select</tabstop>
-  <tabstop>launch_script</tabstop>
-  <tabstop>launch_script_file_select</tabstop>
+  <tabstop>launch_executable</tabstop>
+  <tabstop>launch_executable_file_select</tabstop>
   <tabstop>off_on</tabstop>
   <tabstop>processes</tabstop>
  </tabstops>

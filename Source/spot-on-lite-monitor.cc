@@ -116,7 +116,7 @@ spot_on_lite_monitor::spot_on_lite_monitor(void):QMainWindow()
 	  SIGNAL(clicked(void)),
 	  this,
 	  SLOT(slot_select_path(void)));
-  connect(m_ui.launch_script_file_select,
+  connect(m_ui.launch_executable_file_select,
 	  SIGNAL(clicked(void)),
 	  this,
 	  SLOT(slot_select_path(void)));
@@ -137,8 +137,9 @@ spot_on_lite_monitor::spot_on_lite_monitor(void):QMainWindow()
 
   m_ui.configuration_file->setText
     (settings.value("configuration_file").toString().trimmed());
-  m_ui.launch_script->setText
-    (settings.value("launch_script").toString().trimmed());
+  m_ui.launch_executable->setText
+    (settings.value("launch_executable").toString().trimmed());
+  m_ui.processes->setFocus();
   restoreGeometry(settings.value("geometry").toByteArray());
 }
 
@@ -351,16 +352,16 @@ void spot_on_lite_monitor::slot_path_timeout(void)
 
   palette.setColor(m_ui.configuration_file->backgroundRole(), color);
   m_ui.configuration_file->setPalette(palette);
-  file_info = QFileInfo(m_ui.launch_script->text());
+  file_info = QFileInfo(m_ui.launch_executable->text());
 
   if(file_info.isExecutable() && file_info.isReadable())
     color = QColor(144, 238, 144);
   else
     color = QColor(240, 128, 128);
 
-  palette = m_ui.launch_script->palette();
-  palette.setColor(m_ui.launch_script->backgroundRole(), color);
-  m_ui.launch_script->setPalette(palette);
+  palette = m_ui.launch_executable->palette();
+  palette.setColor(m_ui.launch_executable->backgroundRole(), color);
+  m_ui.launch_executable->setPalette(palette);
 }
 
 void spot_on_lite_monitor::slot_quit(void)
@@ -383,7 +384,7 @@ void spot_on_lite_monitor::slot_select_path(void)
       (tr("Spot-On-Lite Monitor: Configuration File Selection"));
   else
     dialog.setWindowTitle
-      (tr("Spot-On-Lite Monitor: Launch Script Selection"));
+      (tr("Spot-On-Lite Monitor: Launch Executable Selection"));
 
   if(dialog.exec() == QDialog::Accepted)
     {
@@ -392,14 +393,33 @@ void spot_on_lite_monitor::slot_select_path(void)
       if(m_ui.configuration_file_select == sender())
 	m_ui.configuration_file->setText(dialog.selectedFiles().value(0));
       else
-	m_ui.launch_script->setText(dialog.selectedFiles().value(0));
+	m_ui.launch_executable->setText(dialog.selectedFiles().value(0));
 
       QSettings settings(ini_path(), QSettings::IniFormat);
 
       settings.setValue
 	("configuration_file", m_ui.configuration_file->text().trimmed());
-      settings.setValue("launch_script", m_ui.launch_script->text().trimmed());
+      settings.setValue
+	("launch_executable", m_ui.launch_executable->text().trimmed());
     }
 
   QApplication::processEvents();
+}
+
+void spot_on_lite_monitor::slot_set_path(void)
+{
+}
+
+void spot_on_lite_monitor::slot_start_or_stop(void)
+{
+  if(m_ui.off_on->isChecked())
+    {
+      m_process.setArguments
+	(QStringList() << "--configuration-file"
+	               << m_ui.configuration_file->text().trimmed());
+      m_process.setProgram(m_ui.launch_executable->text().trimmed());
+      m_process.startDetached();
+    }
+  else
+    m_process.kill();
 }

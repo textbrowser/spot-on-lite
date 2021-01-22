@@ -29,8 +29,11 @@
 #define _spot_on_lite_monitor_h_
 
 #include <QFuture>
+#include <QProcess>
 #include <QTableWidget>
 #include <QTimer>
+
+#include "spot-on-lite-common.h"
 
 class spot_on_lite_monitor_table: public QTableWidget
 {
@@ -84,6 +87,7 @@ class spot_on_lite_monitor: public QMainWindow
  private:
   QFuture<void> m_future;
   QMap<qint64, QTableWidgetItem *> m_pid_to_index;
+  QProcess m_process;
   QTimer m_path_timer;
   Ui_spot_on_lite_monitor m_ui;
   static QString home_path(void);
@@ -97,6 +101,8 @@ class spot_on_lite_monitor: public QMainWindow
   void slot_path_timeout(void);
   void slot_quit(void);
   void slot_select_path(void);
+  void slot_set_path(void);
+  void slot_start_or_stop(void);
 
  signals:
   void added(const QMap<Columns, QString> &values);

@@ -59,6 +59,7 @@ extern "C"
 
 #include <limits>
 
+#include "spot-on-lite-common.h"
 #include "spot-on-lite-daemon-child.h"
 
 QReadWriteLock spot_on_lite_daemon_child::s_db_id_mutex;
@@ -794,38 +795,6 @@ void spot_on_lite_daemon_child::create_remote_identities_database(void)
 		   "date_time_inserted BIGINT NOT NULL, "
 		   "identity TEXT NOT NULL PRIMARY KEY, "
 		   "pid BIGINT NOT NULL)");
-      }
-
-    db.close();
-  }
-
-  QSqlDatabase::removeDatabase(QString::number(db_connection_id));
-}
-
-void spot_on_lite_daemon_child::create_statistics_database(void)
-{
-  auto db_connection_id = db_id();
-
-  {
-    auto db = QSqlDatabase::addDatabase
-      ("QSQLITE", QString::number(db_connection_id));
-
-    db.setDatabaseName(m_statistics_file_name);
-
-    if(db.open())
-      {
-	QSqlQuery query(db);
-
-	query.exec("CREATE TABLE IF NOT EXISTS statistics ("
-		   "arguments TEXT, "
-		   "bytes_accumulated TEXT, "
-		   "bytes_read TEXT, "
-		   "bytes_written TEXT, "
-		   "ip_information TEXT, "
-		   "memory TEXT, "
-		   "name TEXT, "
-		   "pid BIGINT NOT NULL PRIMARY KEY, "
-		   "type TEXT)");
       }
 
     db.close();
@@ -1905,44 +1874,8 @@ void spot_on_lite_daemon_child::remove_expired_identities(void)
 void spot_on_lite_daemon_child::save_statistic
 (const QString &key, const QString &value)
 {
-  create_statistics_database();
-
-  auto db_connection_id = db_id();
-
-  {
-    auto db = QSqlDatabase::addDatabase
-      ("QSQLITE", QString::number(db_connection_id));
-
-    db.setDatabaseName(m_statistics_file_name);
-
-    if(db.open())
-      {
-	QSqlQuery query(db);
-
-	query.exec("PRAGMA journal_mode = OFF");
-	query.exec("PRAGMA synchronous = OFF");
-
-	if(key == "pid")
-	  {
-	    query.prepare
-	      ("INSERT OR REPLACE INTO statistics (pid) VALUES (?)");
-	    query.addBindValue(m_pid);
-	  }
-	else
-	  {
-	    query.prepare
-	      (QString("UPDATE statistics SET %1 = ? WHERE pid = ?").arg(key));
-	    query.addBindValue(value);
-	    query.addBindValue(m_pid);
-	  }
-
-	query.exec();
-      }
-
-    db.close();
-  }
-
-  QSqlDatabase::removeDatabase(QString::number(db_connection_id));
+  spot_on_lite_common::save_statistic
+    (key, m_statistics_file_name, value, m_pid, db_id());
 }
 
 void spot_on_lite_daemon_child::
