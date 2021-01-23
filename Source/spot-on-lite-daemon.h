@@ -87,6 +87,7 @@ class spot_on_lite_daemon: public QObject
   int m_local_so_rcvbuf_so_sndbuf;
   int m_maximum_accumulated_bytes;
   static int s_signal_fd[2];
+  size_t memory(void) const;
   void prepare_listeners(void);
   void prepare_local_socket_server(void);
   void prepare_peers(void);

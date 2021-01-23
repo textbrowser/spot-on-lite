@@ -198,6 +198,13 @@ int spot_on_lite_daemon::maximum_accumulated_bytes(void) const
   return m_maximum_accumulated_bytes;
 }
 
+size_t spot_on_lite_daemon::memory(void) const
+{
+  size_t memory = sizeof(*this);
+
+  return memory;
+}
+
 void spot_on_lite_daemon::log(const QString &error) const
 {
   auto e(error.trimmed());
