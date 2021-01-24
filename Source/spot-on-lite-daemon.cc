@@ -68,6 +68,7 @@ spot_on_lite_daemon::spot_on_lite_daemon
   m_configuration_file_name = configuration_file_name;
   m_congestion_control_lifetime = 90; // Seconds
   m_congestion_control_timer.start(15000); // 15 Seconds
+  m_general_timer.start(1500);
   m_local_so_rcvbuf_so_sndbuf = 32768; // 32 KiB
   m_local_socket_server_directory_name = QDir::tempPath();
   m_maximum_accumulated_bytes = 8 * 1024 * 1024; // 8 MiB
@@ -81,6 +82,10 @@ spot_on_lite_daemon::spot_on_lite_daemon
 	  SIGNAL(timeout(void)),
 	  this,
 	  SLOT(slot_purge_congestion_control_timeout(void)));
+  connect(&m_general_timer,
+	  SIGNAL(timeout(void)),
+	  this,
+	  SLOT(slot_general_timeout(void)));
   connect(&m_peer_process_timer,
 	  SIGNAL(timeout(void)),
 	  this,
@@ -200,9 +205,12 @@ int spot_on_lite_daemon::maximum_accumulated_bytes(void) const
 
 size_t spot_on_lite_daemon::memory(void) const
 {
-  size_t memory = sizeof(*this);
+  struct rusage rusage = {};
 
-  return memory;
+  if(getrusage(RUSAGE_SELF, &rusage) == 0)
+    return static_cast<size_t> (rusage.ru_maxrss);
+
+  return 0;
 }
 
 void spot_on_lite_daemon::log(const QString &error) const
@@ -940,6 +948,16 @@ void spot_on_lite_daemon::purge_congestion_control(void)
   }
 
   QSqlDatabase::removeDatabase("congestion_control_database");
+}
+
+void spot_on_lite_daemon::slot_general_timeout(void)
+{
+  spot_on_lite_common::save_statistic
+    ("memory",
+     m_statistics_file_name,
+     QString::number(memory()),
+     QCoreApplication::applicationPid(),
+     static_cast<quint64> (1));
 }
 
 void spot_on_lite_daemon::slot_local_socket_disconnected(void)

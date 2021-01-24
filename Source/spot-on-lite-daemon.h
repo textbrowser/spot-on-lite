@@ -80,6 +80,7 @@ class spot_on_lite_daemon: public QObject
   QString m_remote_identities_file_name;
   QString m_statistics_file_name;
   QTimer m_congestion_control_timer;
+  QTimer m_general_timer;
   QTimer m_peer_process_timer;
   QTimer m_start_timer;
   QVector<QString> m_listeners_properties;
@@ -95,6 +96,7 @@ class spot_on_lite_daemon: public QObject
   void purge_congestion_control(void);
 
  private slots:
+  void slot_general_timeout(void);
   void slot_local_socket_disconnected(void);
   void slot_new_local_connection(void);
   void slot_peer_process_timeout(void);

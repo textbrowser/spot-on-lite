@@ -37,6 +37,7 @@ extern "C"
 #include <openssl/ssl.h>
 #include <openssl/x509v3.h>
 #include <sys/ioctl.h>
+#include <sys/resource.h>
 #include <sys/socket.h>
 #include <time.h>
 #include <unistd.h>
@@ -2108,7 +2109,13 @@ void spot_on_lite_daemon_child::slot_general_timer_timeout(void)
     }
 
   save_statistic("bytes_accumulated", QString::number(bytes_accumulated()));
-  save_statistic("memory", QString::number(sizeof(*this)));
+
+  struct rusage rusage = {};
+
+  if(getrusage(RUSAGE_SELF, &rusage) == 0)
+    save_statistic("memory", QString::number(rusage.ru_maxrss));
+  else
+    save_statistic("memory", "0");
 }
 
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 12, 0))
