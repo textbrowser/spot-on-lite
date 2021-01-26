@@ -224,8 +224,14 @@ void spot_on_lite_monitor::read_statistics_database(void)
 
 	if(db.open())
 	  {
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 14, 0))
+	    QSet<qint64> deleted_processes(processes.keys().begin(),
+					   processes.keys().end());
+	    QSqlQuery query(db);
+#else
 	    QSqlQuery query(db);
 	    auto deleted_processes(processes.keys().toSet());
+#endif
 
 	    query.setForwardOnly(true);
 
