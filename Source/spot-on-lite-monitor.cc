@@ -213,8 +213,8 @@ void spot_on_lite_monitor::read_statistics_database(void)
 	      emit deleted(pid);
 #else
 	  for(auto pid : processes.keys().toSet())
-#endif
 	    emit deleted(pid);
+#endif
 
 	  continue;
 	}
