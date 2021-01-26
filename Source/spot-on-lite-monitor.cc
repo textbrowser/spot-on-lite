@@ -206,7 +206,12 @@ void spot_on_lite_monitor::read_statistics_database(void)
 
       if(!QFileInfo(db_path).isReadable())
 	{
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 14, 0))
+	  for(auto pid : QSet<qint64> (processes.keys().begin(),
+				       processes.keys().end()))
+#else
 	  for(auto pid : processes.keys().toSet())
+#endif
 	    emit deleted(pid);
 
 	  continue;
