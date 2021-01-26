@@ -206,15 +206,8 @@ void spot_on_lite_monitor::read_statistics_database(void)
 
       if(!QFileInfo(db_path).isReadable())
 	{
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 14, 0))
-	  if(!processes.isEmpty())
-	    for(auto pid : QSet<qint64> (processes.keys().begin(),
-					 processes.keys().end()))
-	      emit deleted(pid);
-#else
-	  for(auto pid : processes.keys().toSet())
+	  for(auto pid : processes.keys())
 	    emit deleted(pid);
-#endif
 
 	  continue;
 	}
@@ -226,17 +219,8 @@ void spot_on_lite_monitor::read_statistics_database(void)
 
 	if(db.open())
 	  {
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 14, 0))
-	    QSet<qint64> deleted_processes;
 	    QSqlQuery query(db);
-
-	    if(!processes.isEmpty())
-	      deleted_processes = QSet<qint64> (processes.keys().begin(),
-						processes.keys().end());
-#else
-	    QSqlQuery query(db);
-	    auto deleted_processes(processes.keys().toSet());
-#endif
+	    auto deleted_processes(processes.keys());
 
 	    query.setForwardOnly(true);
 
@@ -274,7 +258,11 @@ void spot_on_lite_monitor::read_statistics_database(void)
 #endif
 
 		  values[STATUS] = status;
-		  deleted_processes.remove(pid);
+
+		  auto index = deleted_processes.indexOf(pid);
+
+		  if(index >= 0)
+		    deleted_processes.removeAt(index);
 
 		  if(!processes.contains(pid))
 		    {
