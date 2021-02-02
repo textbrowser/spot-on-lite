@@ -193,9 +193,9 @@ void spot_on_lite_monitor::read_statistics_database(void)
 {
   QMap<qint64, QMap<Columns, QString> > processes;
   const QString db_connection_id("1");
-  const QString db_path(QDir::tempPath() +
-			QDir::separator() +
-			"spot-on-lite-daemon-statistics.sqlite");
+  const auto db_path(QDir::tempPath() +
+		     QDir::separator() +
+		     "spot-on-lite-daemon-statistics.sqlite");
 
   while(true)
     {
