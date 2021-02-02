@@ -475,15 +475,11 @@ void spot_on_lite_monitor::slot_set_path(void)
 void spot_on_lite_monitor::slot_start_or_stop(void)
 {
   if(m_ui.off_on->isChecked())
-    {
-      QProcess process;
-
-      process.setArguments
-	(QStringList() << "--configuration-file"
-	               << m_ui.configuration_file->text().trimmed());
-      process.setProgram(m_ui.launch_executable->text().trimmed());
-      process.startDetached();
-    }
+    QProcess::startDetached
+      (m_ui.launch_executable->text().trimmed(),
+       QStringList() << "--configuration-file"
+                     << m_ui.configuration_file->text().trimmed(),
+       QDir::tempPath());
   else
     {
 #ifdef Q_OS_UNIX
