@@ -153,8 +153,40 @@ spot_on_lite_monitor::spot_on_lite_monitor(void):QMainWindow()
 
   m_ui.configuration_file->setText
     (settings.value("configuration_file").toString().trimmed());
+
+  if(m_ui.configuration_file->text().isEmpty())
+    {
+      QFileInfo file_info("/usr/local/spot-on-lite/spot-on-lite-daemon.conf");
+
+      if(file_info.isReadable())
+	m_ui.configuration_file->setText(file_info.absoluteFilePath());
+      else
+	{
+	  file_info = QFileInfo("spot-on-lite-daemon.conf");
+
+	  if(file_info.isReadable())
+	    m_ui.configuration_file->setText(file_info.absoluteFilePath());
+	}
+    }
+
   m_ui.launch_executable->setText
     (settings.value("launch_executable").toString().trimmed());
+
+  if(m_ui.launch_executable->text().isEmpty())
+    {
+      QFileInfo file_info("/usr/local/spot-on-lite/Spot-On-Lite-Daemon");
+
+      if(file_info.isExecutable() && file_info.isReadable())
+	m_ui.launch_executable->setText(file_info.absoluteFilePath());
+      else
+	{
+	  file_info = QFileInfo("Spot-On-Lite-Daemon");
+
+	  if(file_info.isExecutable() && file_info.isReadable())
+	  m_ui.launch_executable->setText(file_info.absoluteFilePath());
+	}
+    }
+
   m_ui.processes->setFocus();
   restoreGeometry(settings.value("geometry").toByteArray());
   slot_deleted(m_daemon_pid);
