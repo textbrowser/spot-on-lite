@@ -15,8 +15,7 @@ then
 elif [ -r /usr/local/spot-on-lite/Spot-On-Lite-Monitor ] && \
      [ -x /usr/local/spot-on-lite/Spot-On-Lite-Monitor ]
 then
-    cd /usr/local/spot-on-lite/Spot-On-Lite-Monitor && \
-    exec ./Spot-On-Lite-Monitor "$@"
+    cd /usr/local/spot-on-lite && exec ./Spot-On-Lite-Monitor "$@"
     exit $?
 else
     exit 1
