@@ -1227,7 +1227,7 @@ void spot_on_lite_daemon_child::generate_ssl_tls(void)
 
 void spot_on_lite_daemon_child::log(const QString &error) const
 {
-  QString e(error.trimmed());
+  auto e(error.trimmed());
 
   if(e.isEmpty())
     return;
@@ -1423,7 +1423,7 @@ void spot_on_lite_daemon_child::process_local_content(void)
 	if(m_process_local_content_future.isCanceled())
 	  goto done_label;
 
-	QByteArray bytes
+	auto bytes
 	  (m_local_content.mid(0, index + m_end_of_message_marker.length()));
 
 	vector.append(bytes);
