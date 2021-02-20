@@ -1984,8 +1984,8 @@ void spot_on_lite_daemon_child::slot_broadcast_capabilities(void)
   data.append("\n");
   data.append("full");
   results.append("POST HTTP/1.1\r\n"
-		 "Content-Type: application/x-www-form-urlencoded\r\n"
 		 "Content-Length: %1\r\n"
+		 "Content-Type: application/x-www-form-urlencoded\r\n"
 		 "\r\n"
 		 "type=" + type_capabilities + "&content=%2\r\n"
 		 "\r\n\r\n");
@@ -2011,8 +2011,8 @@ void spot_on_lite_daemon_child::slot_broadcast_capabilities(void)
 
       data.append("Spot-On-Lite");
       results.append("POST HTTP/1.1\r\n"
-		     "Content-Type: application/x-www-form-urlencoded\r\n"
 		     "Content-Length: %1\r\n"
+		     "Content-Type: application/x-www-form-urlencoded\r\n"
 		     "\r\n"
 		     "type=" + type_spot_on_lite_client + "&content=%2\r\n"
 		     "\r\n\r\n");
