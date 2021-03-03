@@ -417,8 +417,7 @@ spot_on_lite_daemon_child::~spot_on_lite_daemon_child()
   stop_threads_and_timers();
 }
 
-QHash<QByteArray, QString>spot_on_lite_daemon_child::
-remote_identities(bool *ok)
+QHash<QByteArray, QString>spot_on_lite_daemon_child::remote_identities(bool *ok)
 {
   if(ok)
     *ok = true;
