@@ -1603,8 +1603,6 @@ void spot_on_lite_daemon_child::process_remote_content(void)
       data = m_remote_content.mid(0, index + m_end_of_message_marker.length());
       m_remote_content.remove(0, data.length());
       m_remote_content_last_parsed = QDateTime::currentMSecsSinceEpoch();
-      save_statistic
-	("bytes_accumulated", QString::number(bytes_accumulated()));
 
       if(m_client_role)
 	{
@@ -1637,15 +1635,14 @@ void spot_on_lite_daemon_child::process_remote_content(void)
 	      auto rc = m_local_socket->write(data.mid(0, maximum));
 
 	      if(rc > 0)
-		{
-		  m_bytes_written += static_cast<quint64> (rc);
-		  save_statistic
-		    ("bytes_written",
-		     QString::number(m_bytes_written.fetchAndAddOrdered(0ULL)));
-		}
+		m_bytes_written += static_cast<quint64> (rc);
 	    }
 	}
     }
+
+  save_statistic("bytes_accumulated", QString::number(bytes_accumulated()));
+  save_statistic("bytes_written",
+		 QString::number(m_bytes_written.fetchAndAddOrdered(0ULL)));
 }
 
 void spot_on_lite_daemon_child::purge_containers(void)
@@ -2227,15 +2224,12 @@ void spot_on_lite_daemon_child::slot_local_socket_ready_read(void)
 				m_local_content.length())));
 	  }
 
-	  save_statistic
-	    ("bytes_accumulated", QString::number(bytes_accumulated()));
-	  save_statistic
-	    ("bytes_read",
-	     QString::number(m_bytes_read.fetchAndAddOrdered(0ULL)));
 	}
     }
 
   save_statistic("bytes_accumulated", QString::number(bytes_accumulated()));
+  save_statistic
+    ("bytes_read", QString::number(m_bytes_read.fetchAndAddOrdered(0ULL)));
 
   {
     QReadLocker lock(&m_local_content_mutex);
@@ -2377,10 +2371,6 @@ void spot_on_lite_daemon_child::write(const QByteArray &data)
 		    i += rc;
 		    m_bytes_written += static_cast<quint64> (rc);
 		    m_remote_socket->flush();
-		    save_statistic
-		      ("bytes_written",
-		       QString::
-		       number(m_bytes_written.fetchAndAddOrdered(0ULL)));
 		  }
 		else
 		  break;
@@ -2420,9 +2410,6 @@ void spot_on_lite_daemon_child::write(const QByteArray &data)
 	      {
 		i += static_cast<int> (rc);
 		m_bytes_written += static_cast<quint64> (rc);
-		save_statistic
-		  ("bytes_written",
-		   QString::number(m_bytes_written.fetchAndAddOrdered(0ULL)));
 	      }
 	    else
 	      break;
@@ -2435,4 +2422,7 @@ void spot_on_lite_daemon_child::write(const QByteArray &data)
 	break;
       }
     }
+
+  save_statistic("bytes_written",
+		 QString::number(m_bytes_written.fetchAndAddOrdered(0ULL)));
 }
