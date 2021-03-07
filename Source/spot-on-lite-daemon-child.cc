@@ -1349,7 +1349,7 @@ void spot_on_lite_daemon_child::process_configuration_file(void)
 
 void spot_on_lite_daemon_child::process_local_content(const QByteArray &data)
 {
-  if(data.isEmpty())
+  if(data.isEmpty() || m_abort.fetchAndAddOrdered(0) == 1)
     return;
 
   if(m_end_of_message_marker.isEmpty())
