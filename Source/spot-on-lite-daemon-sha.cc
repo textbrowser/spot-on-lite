@@ -385,9 +385,9 @@ QByteArray spot_on_lite_daemon_sha::sha_512_hmac(const QByteArray &data,
   if(s_block_length > k.length())
     k.append(QByteArray(s_block_length - k.length(), 0));
 
-  QByteArray ipad(s_block_length, 0x36);
   QByteArray left(s_block_length, 0);
-  QByteArray opad(s_block_length, 0x5c);
+  const QByteArray ipad(s_block_length, 0x36);
+  const QByteArray opad(s_block_length, 0x5c);
 
   for(int i = 0; i < s_block_length; i++)
     left[i] = static_cast<char> (k.at(i) ^ opad.at(i));
