@@ -120,6 +120,7 @@ spot_on_lite_daemon_child::spot_on_lite_daemon_child
  const int ssl_key_size,
  const quint16 peer_port):QObject()
 {
+  m_abort = 0;
   m_attempt_local_connection_timer.setInterval(2500);
   m_attempt_remote_connection_timer.setInterval(2500);
   m_certificates_file_name = certificates_file_name;
@@ -266,10 +267,6 @@ spot_on_lite_daemon_child::spot_on_lite_daemon_child
 	  SIGNAL(readyRead(void)),
 	  this,
 	  SLOT(slot_ready_read(void)));
-  connect(this,
-	  SIGNAL(read_signal(void)),
-	  this,
-	  SLOT(slot_local_socket_ready_read(void)));
   connect(this,
 	  SIGNAL(write_signal(const QByteArray &)),
 	  this,
@@ -723,16 +720,7 @@ bool spot_on_lite_daemon_child::record_congestion
 
 int spot_on_lite_daemon_child::bytes_accumulated(void) const
 {
-  int size = 0;
-
-  {
-    QReadLocker lock(&m_local_content_mutex);
-
-    size += m_local_content.length();
-  }
-
-  size += m_remote_content.length();
-  return size;
+  return m_local_content.length() + m_remote_content.length();
 }
 
 int spot_on_lite_daemon_child::bytes_in_send_queue(void) const
@@ -1280,12 +1268,8 @@ void spot_on_lite_daemon_child::prepare_dtls(void)
 
 void spot_on_lite_daemon_child::prepare_local_socket(void)
 {
-  {
-    QWriteLocker lock(&m_local_content_mutex);
-
-    m_local_content.clear();
-  }
-
+  m_local_content.clear();
+  m_local_content_last_parsed = QDateTime::currentMSecsSinceEpoch();
   m_local_socket->abort();
   m_local_socket->connectToServer(m_local_server_file_name);
   save_statistic("bytes_accumulated", QString::number(bytes_accumulated()));
@@ -1363,14 +1347,13 @@ void spot_on_lite_daemon_child::process_configuration_file(void)
       m_message_types[key] = settings.value(key).toByteArray();
 }
 
-void spot_on_lite_daemon_child::process_local_content(void)
+void spot_on_lite_daemon_child::process_local_content(const QByteArray &data)
 {
-  {
-    QReadLocker lock(&m_local_content_mutex);
+  if(data.isEmpty())
+    return;
 
-    if(m_local_content.isEmpty())
-      return;
-  }
+  if(m_end_of_message_marker.isEmpty())
+    emit write_signal(data);
 
   QHash<QByteArray, QString> identities;
 
@@ -1391,48 +1374,26 @@ void spot_on_lite_daemon_child::process_local_content(void)
       else
 	break;
     }
-  while(!m_process_local_content_future.isCanceled());
-
-  {
-    QWriteLocker lock(&m_local_content_mutex);
-
-    if(m_end_of_message_marker.isEmpty())
-      {
-	emit write_signal(m_local_content);
-	m_local_content.clear();
-	m_local_content_last_parsed = QDateTime::currentMSecsSinceEpoch();
-	lock.unlock();
-	save_statistic
-	  ("bytes_accumulated", QString::number(bytes_accumulated()));
-	return;
-      }
-  }
+  while(m_abort.fetchAndAddOrdered(0) == 0);
 
   QVector<QByteArray> vector;
   auto type_identity(m_message_types.value("type_identity"));
+  int from = 0;
   int index = 0;
 
-  {
-    QWriteLocker lock(&m_local_content_mutex);
+  while((index = data.indexOf(m_end_of_message_marker, from)) >= 0)
+    {
+      from += index + 1;
 
-    while((index = m_local_content.indexOf(m_end_of_message_marker)) >= 0)
-      {
-	m_local_content_last_parsed = QDateTime::currentMSecsSinceEpoch();
+      if(m_abort.fetchAndAddOrdered(0) == 1)
+	goto done_label;
 
-	if(m_process_local_content_future.isCanceled())
-	  goto done_label;
+      auto bytes(data.mid(from, index + m_end_of_message_marker.length()));
 
-	auto bytes
-	  (m_local_content.mid(0, index + m_end_of_message_marker.length()));
-
-	vector.append(bytes);
-	m_local_content.remove(0, bytes.length());
-      }
+      vector.append(bytes);
   }
 
-  save_statistic("bytes_accumulated", QString::number(bytes_accumulated()));
-
-  if(m_process_local_content_future.isCanceled() || vector.isEmpty())
+  if(m_abort.fetchAndAddOrdered(0) == 1 || vector.isEmpty())
     goto done_label;
 
   for(const auto &bytes : vector)
@@ -1489,7 +1450,7 @@ void spot_on_lite_daemon_child::process_local_content(void)
 
 	  QHashIterator<QByteArray, QString> it(identities);
 
-	  while(it.hasNext() && !m_process_local_content_future.isCanceled())
+	  while(it.hasNext() && m_abort.fetchAndAddOrdered(0) == 0)
 	    {
 	      it.next();
 
@@ -1509,25 +1470,7 @@ void spot_on_lite_daemon_child::process_local_content(void)
     }
 
  done_label:
-
-  if(m_process_local_content_future.isCanceled())
-    {
-      {
-	QWriteLocker lock(&m_local_content_mutex);
-
-	m_local_content.clear();
-      }
-
-      save_statistic
-	("bytes_accumulated", QString::number(bytes_accumulated()));
-    }
-  else
-    {
-      QReadLocker lock(&m_local_content_mutex);
-
-      if(!m_local_content.isEmpty())
-	emit read_signal();
-    }
+  return;
 }
 
 void spot_on_lite_daemon_child::process_read_data(const QByteArray &data)
@@ -1645,13 +1588,8 @@ void spot_on_lite_daemon_child::process_remote_content(void)
 
 void spot_on_lite_daemon_child::purge_containers(void)
 {
-  {
-    QWriteLocker lock(&m_local_content_mutex);
-
-    m_local_content.clear();
-    m_local_content_last_parsed = 0;
-  }
-
+  m_local_content.clear();
+  m_local_content_last_parsed = QDateTime::currentMSecsSinceEpoch();
   m_remote_content.clear();
   m_remote_content_last_parsed = 0;
   purge_remote_identities();
@@ -2089,16 +2027,12 @@ void spot_on_lite_daemon_child::slot_disconnected(void)
 
 void spot_on_lite_daemon_child::slot_general_timer_timeout(void)
 {
-  {
-    QWriteLocker lock(&m_local_content_mutex);
-
-    if(QDateTime::currentMSecsSinceEpoch() - m_local_content_last_parsed >
-       END_OF_MESSAGE_MARKER_WINDOW)
-      {
-	m_local_content.clear();
-	m_local_content_last_parsed = QDateTime::currentMSecsSinceEpoch();
-      }
-  }
+  if(QDateTime::currentMSecsSinceEpoch() - m_local_content_last_parsed >
+     END_OF_MESSAGE_MARKER_WINDOW)
+    {
+      m_local_content.clear();
+      m_local_content_last_parsed = QDateTime::currentMSecsSinceEpoch();
+    }
 
   if(QDateTime::currentMSecsSinceEpoch() - m_remote_content_last_parsed >
      END_OF_MESSAGE_MARKER_WINDOW)
@@ -2172,11 +2106,7 @@ void spot_on_lite_daemon_child::slot_keep_alive_timer_timeout(void)
 
 void spot_on_lite_daemon_child::slot_local_socket_connected(void)
 {
-  {
-    QWriteLocker lock(&m_local_content_mutex);
-
-    m_local_content_last_parsed = QDateTime::currentMSecsSinceEpoch();
-  }
+  m_local_content_last_parsed = QDateTime::currentMSecsSinceEpoch();
 
   auto optlen = static_cast<socklen_t> (sizeof(m_local_so_rcvbuf_so_sndbuf));
   auto sd = static_cast<int> (m_local_socket->socketDescriptor());
@@ -2207,19 +2137,12 @@ void spot_on_lite_daemon_child::slot_local_socket_ready_read(void)
 	{
 	  m_bytes_read += static_cast<quint64> (data.length());
 
-	  {
-	    QWriteLocker lock(&m_local_content_mutex);
+	  if(m_local_content.length() >= m_maximum_accumulated_bytes)
+	    m_local_content.clear();
 
-	    if(m_local_content.length() >= m_maximum_accumulated_bytes)
-	      m_local_content.clear();
-
-	    m_local_content.append
-	      (data.mid(0, qAbs(m_maximum_accumulated_bytes -
-				m_local_content.length())));
-	  }
-
-	  save_statistic
-	    ("bytes_accumulated", QString::number(bytes_accumulated()));
+	  m_local_content.append
+	    (data.mid(0, qAbs(m_local_content.length() -
+			      m_maximum_accumulated_bytes)));
 	  save_statistic
 	    ("bytes_read",
 	     QString::number(m_bytes_read.fetchAndAddOrdered(0ULL)));
@@ -2228,16 +2151,29 @@ void spot_on_lite_daemon_child::slot_local_socket_ready_read(void)
 
   save_statistic("bytes_accumulated", QString::number(bytes_accumulated()));
 
-  {
-    QReadLocker lock(&m_local_content_mutex);
+  if(m_local_content.isEmpty())
+    return;
 
-    if(m_local_content.isEmpty())
-      return;
-  }
+  if(m_end_of_message_marker.isEmpty())
+    {
+      emit write_signal(m_local_content);
+      m_local_content.clear();
+      m_local_content_last_parsed = QDateTime::currentMSecsSinceEpoch();
+    }
+  else
+    {
+      int index = m_local_content.lastIndexOf(m_end_of_message_marker);
 
-  if(m_process_local_content_future.isFinished())
-    m_process_local_content_future = QtConcurrent::run
-      (this, &spot_on_lite_daemon_child::process_local_content);
+      if(index >= 0)
+	{
+	  QtConcurrent::run
+	    (this,
+	     &spot_on_lite_daemon_child::process_local_content,
+	     m_local_content.mid(0, index + m_end_of_message_marker.length()));
+	  m_local_content.remove(0, index + m_end_of_message_marker.length());
+	  m_local_content_last_parsed = QDateTime::currentMSecsSinceEpoch();
+	}
+    }
 }
 
 void spot_on_lite_daemon_child::slot_ready_read(void)
@@ -2328,6 +2264,7 @@ void spot_on_lite_daemon_child::slot_write_data(const QByteArray &data)
 
 void spot_on_lite_daemon_child::stop_threads_and_timers(void)
 {
+  m_abort.fetchAndStoreOrdered(1);
   m_attempt_local_connection_timer.stop();
   m_attempt_remote_connection_timer.stop();
   m_capabilities_timer.stop();
@@ -2335,14 +2272,12 @@ void spot_on_lite_daemon_child::stop_threads_and_timers(void)
   m_expired_identities_timer.stop();
   m_general_timer.stop();
   m_keep_alive_timer.stop();
-  m_process_local_content_future.cancel();
 
   /*
   ** Wait for threads to complete.
   */
 
   m_expired_identities_future.waitForFinished();
-  m_process_local_content_future.waitForFinished();
 }
 
 void spot_on_lite_daemon_child::write(const QByteArray &data)

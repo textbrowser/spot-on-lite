@@ -87,6 +87,7 @@ class spot_on_lite_daemon_child: public QObject
 
  private:
   QAbstractSocket::SocketType m_protocol;
+  QAtomicInteger<int> m_abort;
   QAtomicInteger<quint64> m_bytes_read;
   QAtomicInteger<quint64> m_bytes_written;
   QByteArray m_end_of_message_marker;
@@ -98,7 +99,6 @@ class spot_on_lite_daemon_child: public QObject
 #endif
 #endif
   QFuture<void> m_expired_identities_future;
-  QFuture<void> m_process_local_content_future;
 #ifdef SPOTON_LITE_DAEMON_ENABLE_IDENTITIES_CONTAINER
   QHash<QByteArray, QDateTime> m_remote_identities;
 #endif
@@ -140,7 +140,6 @@ class spot_on_lite_daemon_child: public QObject
   int m_silence;
   int m_so_linger;
   int m_ssl_key_size;
-  mutable QReadWriteLock m_local_content_mutex;
   qint64 m_pid;
   qint64 m_local_content_last_parsed;
   qint64 m_remote_content_last_parsed;
@@ -172,7 +171,7 @@ class spot_on_lite_daemon_child: public QObject
   void prepare_local_socket(void);
   void prepare_ssl_tls_configuration(const QList<QByteArray> &list);
   void process_configuration_file(void);
-  void process_local_content(void);
+  void process_local_content(const QByteArray &data);
   void process_read_data(const QByteArray &data);
   void process_remote_content(void);
   void purge_containers(void);
@@ -212,7 +211,6 @@ class spot_on_lite_daemon_child: public QObject
   void slot_write_data(const QByteArray &data);
 
  signals:
-  void read_signal(void);
   void write_signal(const QByteArray &data);
 };
 
