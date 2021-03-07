@@ -1284,6 +1284,7 @@ void spot_on_lite_daemon_child::prepare_local_socket(void)
     QWriteLocker lock(&m_local_content_mutex);
 
     m_local_content.clear();
+    m_local_content_last_parsed = QDateTime::currentMSecsSinceEpoch();
   }
 
   m_local_socket->abort();
@@ -1372,6 +1373,21 @@ void spot_on_lite_daemon_child::process_local_content(void)
       return;
   }
 
+  {
+    QWriteLocker lock(&m_local_content_mutex);
+
+    if(m_end_of_message_marker.isEmpty())
+      {
+	emit write_signal(m_local_content);
+	m_local_content.clear();
+	m_local_content_last_parsed = QDateTime::currentMSecsSinceEpoch();
+	lock.unlock();
+	save_statistic
+	  ("bytes_accumulated", QString::number(bytes_accumulated()));
+	return;
+      }
+  }
+
   QHash<QByteArray, QString> identities;
 
   do
@@ -1392,21 +1408,6 @@ void spot_on_lite_daemon_child::process_local_content(void)
 	break;
     }
   while(!m_process_local_content_future.isCanceled());
-
-  {
-    QWriteLocker lock(&m_local_content_mutex);
-
-    if(m_end_of_message_marker.isEmpty())
-      {
-	emit write_signal(m_local_content);
-	m_local_content.clear();
-	m_local_content_last_parsed = QDateTime::currentMSecsSinceEpoch();
-	lock.unlock();
-	save_statistic
-	  ("bytes_accumulated", QString::number(bytes_accumulated()));
-	return;
-      }
-  }
 
   QVector<QByteArray> vector;
   auto type_identity(m_message_types.value("type_identity"));
@@ -1516,6 +1517,7 @@ void spot_on_lite_daemon_child::process_local_content(void)
 	QWriteLocker lock(&m_local_content_mutex);
 
 	m_local_content.clear();
+	m_local_content_last_parsed = QDateTime::currentMSecsSinceEpoch();
       }
 
       save_statistic
@@ -1570,7 +1572,10 @@ void spot_on_lite_daemon_child::process_read_data(const QByteArray &data)
   m_keep_alive_timer.start();
 
   if(m_remote_content.length() >= m_maximum_accumulated_bytes)
-    m_remote_content.clear();
+    {
+      m_remote_content.clear();
+      m_remote_content_last_parsed = QDateTime::currentMSecsSinceEpoch();
+    }
 
   m_remote_content.
     append(data.mid(0, qAbs(m_maximum_accumulated_bytes -
@@ -1649,11 +1654,11 @@ void spot_on_lite_daemon_child::purge_containers(void)
     QWriteLocker lock(&m_local_content_mutex);
 
     m_local_content.clear();
-    m_local_content_last_parsed = 0;
+    m_local_content_last_parsed = QDateTime::currentMSecsSinceEpoch();
   }
 
   m_remote_content.clear();
-  m_remote_content_last_parsed = 0;
+  m_remote_content_last_parsed = QDateTime::currentMSecsSinceEpoch();
   purge_remote_identities();
   save_statistic("bytes_accumulated", QString::number(bytes_accumulated()));
 }
@@ -2211,7 +2216,11 @@ void spot_on_lite_daemon_child::slot_local_socket_ready_read(void)
 	    QWriteLocker lock(&m_local_content_mutex);
 
 	    if(m_local_content.length() >= m_maximum_accumulated_bytes)
-	      m_local_content.clear();
+	      {
+		m_local_content.clear();
+		m_local_content_last_parsed =
+		  QDateTime::currentMSecsSinceEpoch();
+	      }
 
 	    m_local_content.append
 	      (data.mid(0, qAbs(m_maximum_accumulated_bytes -
