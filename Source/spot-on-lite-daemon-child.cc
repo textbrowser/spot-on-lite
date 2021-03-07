@@ -1383,13 +1383,12 @@ void spot_on_lite_daemon_child::process_local_content(const QByteArray &data)
 
   while((index = data.indexOf(m_end_of_message_marker, from)) >= 0)
     {
-      from += index + 1;
-
       if(m_abort.fetchAndAddOrdered(0) == 1)
 	goto done_label;
 
       auto bytes(data.mid(from, index + m_end_of_message_marker.length()));
 
+      from += index + 1;
       vector.append(bytes);
   }
 
