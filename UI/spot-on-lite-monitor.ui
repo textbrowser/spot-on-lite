@@ -18,85 +18,93 @@
     <normaloff>:/monitor.png</normaloff>:/monitor.png</iconset>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QVBoxLayout" name="verticalLayout">
+   <layout class="QVBoxLayout" name="verticalLayout_3">
     <item>
      <layout class="QHBoxLayout" name="horizontalLayout">
       <item>
-       <widget class="QLabel" name="label">
-        <property name="maximumSize">
-         <size>
-          <width>128</width>
-          <height>128</height>
-         </size>
-        </property>
-        <property name="text">
-         <string/>
-        </property>
-        <property name="pixmap">
-         <pixmap resource="../Icons/icons.qrc">:/monitor.png</pixmap>
-        </property>
-        <property name="scaledContents">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <layout class="QGridLayout" name="gridLayout">
-        <item row="0" column="0">
-         <widget class="QLineEdit" name="configuration_file">
-          <property name="toolTip">
-           <string>Press the Enter key to save the path.</string>
-          </property>
-          <property name="placeholderText">
-           <string>Configuration File</string>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="1">
-         <widget class="QPushButton" name="configuration_file_select">
-          <property name="text">
-           <string>Select...</string>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="2">
-         <widget class="QToolButton" name="off_on">
-          <property name="minimumSize">
+       <layout class="QVBoxLayout" name="verticalLayout_2">
+        <item>
+         <widget class="QLabel" name="label">
+          <property name="maximumSize">
            <size>
-            <width>100</width>
-            <height>0</height>
+            <width>128</width>
+            <height>128</height>
            </size>
           </property>
-          <property name="toolTip">
-           <string>Activate / Deactivate Daemon</string>
-          </property>
           <property name="text">
-           <string>Offline</string>
+           <string/>
           </property>
-          <property name="checkable">
+          <property name="pixmap">
+           <pixmap resource="../Icons/icons.qrc">:/monitor.png</pixmap>
+          </property>
+          <property name="scaledContents">
            <bool>true</bool>
           </property>
-          <property name="checked">
-           <bool>false</bool>
-          </property>
          </widget>
         </item>
-        <item row="1" column="0">
-         <widget class="QLineEdit" name="launch_executable">
-          <property name="toolTip">
-           <string>Press the Enter key to save the path.</string>
-          </property>
-          <property name="placeholderText">
-           <string>Launch Executable</string>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="1">
-         <widget class="QPushButton" name="launch_executable_file_select">
-          <property name="text">
-           <string>Select...</string>
-          </property>
-         </widget>
+       </layout>
+      </item>
+      <item>
+       <layout class="QVBoxLayout" name="verticalLayout">
+        <item>
+         <layout class="QGridLayout" name="gridLayout">
+          <item row="1" column="0">
+           <widget class="QLineEdit" name="launch_executable">
+            <property name="toolTip">
+             <string>Press the Enter key to save the path.</string>
+            </property>
+            <property name="placeholderText">
+             <string>Launch Executable</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QPushButton" name="configuration_file_select">
+            <property name="text">
+             <string>Select...</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="2">
+           <widget class="QToolButton" name="off_on">
+            <property name="minimumSize">
+             <size>
+              <width>100</width>
+              <height>0</height>
+             </size>
+            </property>
+            <property name="toolTip">
+             <string>Activate / Deactivate Daemon</string>
+            </property>
+            <property name="text">
+             <string>Offline</string>
+            </property>
+            <property name="checkable">
+             <bool>true</bool>
+            </property>
+            <property name="checked">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QPushButton" name="launch_executable_file_select">
+            <property name="text">
+             <string>Select...</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="0">
+           <widget class="QLineEdit" name="configuration_file">
+            <property name="toolTip">
+             <string>Press the Enter key to save the path.</string>
+            </property>
+            <property name="placeholderText">
+             <string>Configuration File</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
         </item>
        </layout>
       </item>
