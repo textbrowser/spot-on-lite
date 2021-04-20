@@ -30,7 +30,6 @@ QMAKE_CXXFLAGS_RELEASE += -O3 \
                           -Wall \
                           -Wcast-align \
                           -Wcast-qual \
-                          -Wconversion \
                           -Wdouble-promotion \
                           -Wextra \
                           -Wfloat-equal \
@@ -40,7 +39,6 @@ QMAKE_CXXFLAGS_RELEASE += -O3 \
                           -Woverloaded-virtual \
                           -Wpointer-arith \
                           -Wundef \
-                          -Wsign-conversion \
                           -Wstack-protector \
                           -Wstrict-overflow=5 \
                           -Wundef \
@@ -56,7 +54,6 @@ QMAKE_CXXFLAGS_RELEASE += -O3 \
                           -Wall \
                           -Wcast-align \
                           -Wcast-qual \
-                          -Wconversion \
                           -Wdouble-promotion \
                           -Wextra \
                           -Wformat-overflow=2 \
@@ -65,7 +62,6 @@ QMAKE_CXXFLAGS_RELEASE += -O3 \
                           -Wno-unused-variable \
                           -Woverloaded-virtual \
                           -Wpointer-arith \
-                          -Wsign-conversion \
                           -Wstack-protector \
                           -Wundef \
                           -Wzero-as-null-pointer-constant \
@@ -78,7 +74,6 @@ QMAKE_CXXFLAGS_RELEASE += -O3 \
 QMAKE_CXXFLAGS_RELEASE += -O3 \
                           -Wall \
                           -Wcast-qual \
-                          -Wconversion \
                           -Wdouble-promotion \
                           -Wextra \
                           -Wformat-overflow=2 \
@@ -87,7 +82,6 @@ QMAKE_CXXFLAGS_RELEASE += -O3 \
                           -Wno-unused-variable \
                           -Woverloaded-virtual \
                           -Wpointer-arith \
-                          -Wsign-conversion \
                           -Wstack-protector \
                           -Wundef \
                           -Wzero-as-null-pointer-constant \
@@ -119,7 +113,6 @@ QMAKE_CXXFLAGS_RELEASE += -O3 \
 QMAKE_CXXFLAGS_RELEASE += -O3 \
                           -Wall \
                           -Wcast-qual \
-                          -Wconversion \
                           -Wdouble-promotion \
                           -Wextra \
                           -Wformat-overflow=2 \
@@ -128,7 +121,6 @@ QMAKE_CXXFLAGS_RELEASE += -O3 \
                           -Wno-unused-variable \
                           -Woverloaded-virtual \
                           -Wpointer-arith \
-                          -Wsign-conversion \
                           -Wstack-protector \
                           -Wundef \
                           -Wzero-as-null-pointer-constant \
