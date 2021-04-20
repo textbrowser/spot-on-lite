@@ -297,6 +297,30 @@ void spot_on_lite_monitor::read_statistics_database(void)
 		  if(index >= 0)
 		    deleted_processes.removeAt(index);
 
+		  tool_tip = tr
+		    ("<html>"
+		     "<b>Name:</b> %1<br>"
+		     "<b>PID:</b> %2<br>"
+		     "<b>Status:</b> %3<br>"
+		     "<b>IP Information:</b> %4<br>"
+		     "<b>Memory:</b> %5<br>"
+		     "<b>Bytes Accumulated:</b> %6<br>"
+		     "<b>Bytes Read:</b> %7<br>"
+		     "<b>Bytes Written:</b> %8<br>"
+		     "<b>Type:</b> %9<br>"
+		     "<b>Arguments:</b> %10"
+		     "</html>").
+		    arg(values.value(NAME)).
+		    arg(values.value(PID)).
+		    arg(values.value(STATUS)).
+		    arg(values.value(IP_INFORMATION)).
+		    arg(values.value(MEMORY)).
+		    arg(values.value(BYTES_ACCUMULATED)).
+		    arg(values.value(BYTES_READ)).
+		    arg(values.value(BYTES_WRITTEN)).
+		    arg(values.value(TYPE)).
+		    arg(values.value(ARGUMENTS));
+
 		  if(!processes.contains(pid))
 		    {
 		      if(!values.value(ARGUMENTS).isEmpty() &&
