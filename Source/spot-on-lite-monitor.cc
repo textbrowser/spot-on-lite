@@ -137,13 +137,13 @@ spot_on_lite_monitor::spot_on_lite_monitor(void):QMainWindow()
 	  this,
 	  SLOT(slot_start_or_stop(void)));
   connect(this,
-	  SIGNAL(added(const QMap<Columns, QString> &)),
+	  SIGNAL(added(const QMap<Columns, QString> &, const QString &)),
 	  this,
-	  SLOT(slot_added(const QMap<Columns, QString> &)));
+	  SLOT(slot_added(const QMap<Columns, QString> &, const QString &)));
   connect(this,
-	  SIGNAL(changed(const QMap<Columns, QString> &)),
+	  SIGNAL(changed(const QMap<Columns, QString> &, const QString &)),
 	  this,
-	  SLOT(slot_changed(const QMap<Columns, QString> &)));
+	  SLOT(slot_changed(const QMap<Columns, QString> &, const QString &)));
   connect(this,
 	  SIGNAL(deleted(const qint64)),
 	  this,
@@ -252,6 +252,7 @@ void spot_on_lite_monitor::read_statistics_database(void)
 	if(db.open())
 	  {
 	    QSqlQuery query(db);
+	    QString tool_tip("");
 	    auto deleted_processes(processes.keys());
 
 	    query.setForwardOnly(true);
@@ -269,7 +270,7 @@ void spot_on_lite_monitor::read_statistics_database(void)
 	      while(query.next())
 		{
 		  QMap<Columns, QString> values;
-		  QString status("Active");
+		  QString status(tr("Active"));
 
 		  values[ARGUMENTS] = query.value(0).toString();
 		  values[BYTES_ACCUMULATED] = query.value(1).toString();
@@ -285,7 +286,7 @@ void spot_on_lite_monitor::read_statistics_database(void)
 
 #ifdef Q_OS_UNIX
 		  if(kill(static_cast<pid_t> (pid), 0) != 0)
-		    status = "Dead";
+		    status = tr("Dead");
 #else
 #endif
 
@@ -303,12 +304,12 @@ void spot_on_lite_monitor::read_statistics_database(void)
 			 !values.value(TYPE).isEmpty())
 			{
 			  processes[pid] = values;
-			  emit added(values);
+			  emit added(values, tool_tip);
 			}
 		    }
 		  else if(processes.value(pid) != values)
 		    {
-		      emit changed(values);
+		      emit changed(values, tool_tip);
 		      processes[pid] = values;
 		    }
 		}
@@ -324,7 +325,8 @@ void spot_on_lite_monitor::read_statistics_database(void)
     }
 }
 
-void spot_on_lite_monitor::slot_added(const QMap<Columns, QString> &values)
+void spot_on_lite_monitor::slot_added
+(const QMap<Columns, QString> &values, const QString &tool_tip)
 {
   m_ui.processes->setSortingEnabled(false);
   m_ui.processes->setRowCount(m_ui.processes->rowCount() + 1);
@@ -340,16 +342,18 @@ void spot_on_lite_monitor::slot_added(const QMap<Columns, QString> &values)
       auto item = new QTableWidgetItem(it.value());
 
       item->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
+      item->setToolTip(tool_tip);
       m_ui.processes->setItem(row, it.key(), item);
 
       if(!m_pid_to_index.contains(pid))
 	m_pid_to_index[pid] = item;
     }
 
-  if(m_ui.processes->item(row, STATUS)->text() == "Active")
+  if(m_ui.processes->item(row, STATUS) &&
+     m_ui.processes->item(row, STATUS)->text() == tr("Active"))
     m_ui.processes->item(row, STATUS)->setBackground
       (QBrush(QColor(144, 238, 144)));
-  else
+  else if(m_ui.processes->item(row, STATUS))
     m_ui.processes->item(row, STATUS)->setBackground
       (QBrush(QColor(240, 128, 128)));
 
@@ -357,7 +361,7 @@ void spot_on_lite_monitor::slot_added(const QMap<Columns, QString> &values)
   statusBar()->showMessage
     (tr("%1 Process(es)").arg(m_ui.processes->rowCount()));
 
-  if(values.value(STATUS) == "Active" && values.value(TYPE) == "daemon")
+  if(values.value(STATUS) == tr("Active") && values.value(TYPE) == "daemon")
     {
       m_daemon_pid = static_cast<pid_t> (values.value(PID).toLongLong());
       m_ui.off_on->setChecked(true);
@@ -367,7 +371,8 @@ void spot_on_lite_monitor::slot_added(const QMap<Columns, QString> &values)
     }
 }
 
-void spot_on_lite_monitor::slot_changed(const QMap<Columns, QString> &values)
+void spot_on_lite_monitor::slot_changed
+(const QMap<Columns, QString> &values, const QString &tool_tip)
 {
   auto item = m_pid_to_index.value(values.value(PID).toLongLong());
 
@@ -380,20 +385,27 @@ void spot_on_lite_monitor::slot_changed(const QMap<Columns, QString> &values)
     return;
 
   m_ui.processes->setSortingEnabled(false);
-  m_ui.processes->item(row, BYTES_ACCUMULATED)->setText
-    (values.value(BYTES_ACCUMULATED));
-  m_ui.processes->item(row, BYTES_READ)->setText(values.value(BYTES_READ));
-  m_ui.processes->item(row, BYTES_WRITTEN)->setText
-    (values.value(BYTES_WRITTEN));
-  m_ui.processes->item(row, IP_INFORMATION)->setText
-    (values.value(IP_INFORMATION));
-  m_ui.processes->item(row, MEMORY)->setText(values.value(MEMORY));
-  m_ui.processes->item(row, STATUS)->setText(values.value(STATUS));
 
-  if(m_ui.processes->item(row, STATUS)->text() == "Active")
+  QMapIterator<Columns, QString> it(values);
+
+  while(it.hasNext())
+    {
+      it.next();
+
+      auto item = m_ui.processes->item(row, it.key());
+
+      if(item)
+	{
+	  item->setText(it.value());
+	  item->setToolTip(tool_tip);
+	}
+    }
+
+  if(m_ui.processes->item(row, STATUS) &&
+     m_ui.processes->item(row, STATUS)->text() == tr("Active"))
     m_ui.processes->item(row, STATUS)->setBackground
       (QBrush(QColor(144, 238, 144)));
-  else
+  else if(m_ui.processes->item(row, STATUS))
     m_ui.processes->item(row, STATUS)->setBackground
       (QBrush(QColor(240, 128, 128)));
 

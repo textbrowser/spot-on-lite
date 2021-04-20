@@ -92,8 +92,10 @@ class spot_on_lite_monitor: public QMainWindow
   void read_statistics_database(void);
 
  private slots:
-  void slot_added(const QMap<Columns, QString> &values);
-  void slot_changed(const QMap<Columns, QString> &values);
+  void slot_added(const QMap<Columns, QString> &values,
+		  const QString &tool_tip);
+  void slot_changed(const QMap<Columns, QString> &values,
+		    const QString &tool_tip);
   void slot_deleted(const qint64 pid);
   void slot_path_timeout(void);
   void slot_quit(void);
@@ -102,8 +104,8 @@ class spot_on_lite_monitor: public QMainWindow
   void slot_start_or_stop(void);
 
  signals:
-  void added(const QMap<Columns, QString> &values);
-  void changed(const QMap<Columns, QString> &values);
+  void added(const QMap<Columns, QString> &values, const QString &tool_tip);
+  void changed(const QMap<Columns, QString> &values, const QString &tool_tip);
   void deleted(const qint64 pid);
 };
 
