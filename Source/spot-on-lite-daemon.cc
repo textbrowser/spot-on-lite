@@ -224,7 +224,7 @@ void spot_on_lite_daemon::log(const QString &error) const
 
   if(file.open(QIODevice::Append | QIODevice::WriteOnly))
     {
-      QDateTime dateTime(QDateTime::currentDateTime());
+      auto dateTime(QDateTime::currentDateTime());
 
       file.write(dateTime.toString().toStdString().data());
       file.write("\n");
@@ -306,15 +306,15 @@ void spot_on_lite_daemon::prepare_peers(void)
       auto list
 	(m_peers_properties.at(i).split(",", QString::KeepEmptyParts));
 #endif
+      auto command(m_child_process_file_name.toStdString());
       auto so_linger = list.value(6).toInt();
       pid_t pid = 0;
-      std::string command(m_child_process_file_name.toStdString());
 #ifdef Q_OS_MAC
-      std::string ld_library_path
+      auto ld_library_path
 	(m_child_process_ld_library_path.remove("DYLD_LIBRARY_PATH=").
 	 toStdString());
 #else
-      std::string ld_library_path
+      auto ld_library_path
 	(m_child_process_ld_library_path.remove("LD_LIBRARY_PATH").
 	 toStdString());
 #endif

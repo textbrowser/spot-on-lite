@@ -168,7 +168,7 @@ QByteArray spot_on_lite_daemon_sha::sha_512(const QByteArray &data) const
   bytes.append("))");
   ecl_import_current_thread(ECL_NIL, ECL_NIL);
 
-  cl_object c = c_string_to_object(bytes.data()); // constData()?
+  auto c = ecl_read_from_cstring(bytes.data()); // constData()?
 
   if(c)
     c = cl_safe_eval(c, Cnil, Cnil);
@@ -181,7 +181,7 @@ QByteArray spot_on_lite_daemon_sha::sha_512(const QByteArray &data) const
   for(cl_index i = 0; i < 8; i++)
     {
       QByteArray h(8, 0);
-      cl_object e = ecl_aref(c, i);
+      auto e = ecl_aref(c, i);
 
       if(e)
 	qToBigEndian(static_cast<quint64> (ecl_to_uint64_t(e)),
@@ -303,7 +303,7 @@ QByteArray spot_on_lite_daemon_sha::sha_512(const QByteArray &data) const
 	(reinterpret_cast<const uchar *> (hash.mid(128 * i + 120, 8).
 					  constData()));
 
-      QVector<quint64> W(M);
+      auto W(M);
 
       for(int t = 16; t <= 79; t++)
 	W << (s1_512(W.at(t - 2)) +
