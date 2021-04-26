@@ -400,7 +400,7 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
 		      << "not a directory. Ignoring entry."
 		      << std::endl;
 	  }
-	else if(!file_info.isWritable())
+	else if(!file_info.isReadable() || !file_info.isWritable())
 	  {
 	    if(ok)
 	      *ok = false;
@@ -410,7 +410,7 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
 		      << "The parent directory \""
 		      << file_info.absoluteFilePath().toStdString()
 		      << "\" of the certificates file must be "
-		      << "writable. Ignoring entry."
+		      << "readable and writable. Ignoring entry."
 		      << std::endl;
 	  }
 	else
@@ -459,7 +459,7 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
 		      << "not a directory. Ignoring entry."
 		      << std::endl;
 	  }
-	else if(!file_info.isWritable())
+	else if(!file_info.isReadable() && !file_info.isWritable())
 	  {
 	    if(ok)
 	      *ok = false;
@@ -469,7 +469,7 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
 		      << "The parent directory \""
 		      << file_info.absoluteFilePath().toStdString()
 		      << "\" of the congestion control file must be "
-		      << "writable. Ignoring entry."
+		      << "readable and writable. Ignoring entry."
 		      << std::endl;
 	  }
 	else
@@ -900,7 +900,7 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
 		      << "not a directory. Ignoring entry."
 		      << std::endl;
 	  }
-	else if(!file_info.isWritable())
+	else if(!file_info.isReadable() || !file_info.isWritable())
 	  {
 	    if(ok)
 	      *ok = false;
@@ -910,7 +910,7 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
 		      << "The parent directory \""
 		      << file_info.absoluteFilePath().toStdString()
 		      << "\" of the remote identities file must be "
-		      << "writable. Ignoring entry."
+		      << "readable and writable. Ignoring entry."
 		      << std::endl;
 	  }
 	else
