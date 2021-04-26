@@ -56,6 +56,14 @@ extern "C"
 #include "spot-on-lite-daemon-udp-listener.h"
 #include "spot-on-lite-daemon.h"
 
+extern "C"
+{
+#ifdef Q_OS_WINDOWS
+#else
+#include <fcntl.h>
+#endif
+}
+
 int spot_on_lite_daemon::s_signal_fd[2];
 
 spot_on_lite_daemon::spot_on_lite_daemon
@@ -383,6 +391,13 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
   foreach(const auto &key, settings.allKeys())
     if(key == "certificates_file")
       {
+#ifdef Q_OS_WINDOWS
+#else
+	close(open(settings.value(key).toString().toStdString().data(),
+		   O_CREAT,
+		   S_IRUSR | S_IWUSR));
+#endif
+
 	QFileInfo file_info(settings.value(key).toString());
 
 	if(file_info.isReadable() && file_info.isWritable())
@@ -426,6 +441,13 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
 	settings.value(key).toString().trimmed();
     else if(key == "congestion_control_file")
       {
+#ifdef Q_OS_WINDOWS
+#else
+	close(open(settings.value(key).toString().toStdString().data(),
+		   O_CREAT,
+		   S_IRUSR | S_IWUSR));
+#endif
+
 	QFileInfo file_info(settings.value(key).toString());
 
 	if(file_info.isReadable() && file_info.isWritable())
@@ -527,6 +549,13 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
       }
     else if(key == "log_file")
       {
+#ifdef Q_OS_WINDOWS
+#else
+	close(open(settings.value(key).toString().toStdString().data(),
+		   O_CREAT,
+		   S_IRUSR | S_IWUSR));
+#endif
+
 	QFileInfo file_info(settings.value(key).toString());
 
 	if(!file_info.isWritable())
@@ -835,6 +864,13 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
       }
     else if(key == "remote_identities_file")
       {
+#ifdef Q_OS_WINDOWS
+#else
+	close(open(settings.value(key).toString().toStdString().data(),
+		   O_CREAT,
+		   S_IRUSR | S_IWUSR));
+#endif
+
 	QFileInfo file_info(settings.value(key).toString());
 
 	if(file_info.isReadable() && file_info.isWritable())
