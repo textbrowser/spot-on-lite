@@ -385,36 +385,20 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
       {
 	QFileInfo file_info(settings.value(key).toString());
 
-	file_info = QFileInfo(file_info.absolutePath());
-
-	if(!file_info.isDir())
-	  {
-	    if(ok)
-	      *ok = false;
-
-	    std::cerr << "spot_on_lite_daemon::"
-		      << "process_configuration_file(): "
-		      << "The parent directory \""
-		      << file_info.absoluteFilePath().toStdString()
-		      << "\" of the certificates file is "
-		      << "not a directory. Ignoring entry."
-		      << std::endl;
-	  }
-	else if(!file_info.isReadable() || !file_info.isWritable())
-	  {
-	    if(ok)
-	      *ok = false;
-
-	    std::cerr << "spot_on_lite_daemon::"
-		      << "process_configuration_file(): "
-		      << "The parent directory \""
-		      << file_info.absoluteFilePath().toStdString()
-		      << "\" of the certificates file must be "
-		      << "readable and writable. Ignoring entry."
-		      << std::endl;
-	  }
-	else
+	if(file_info.isReadable() && file_info.isWritable())
 	  m_certificates_file_name = settings.value(key).toString();
+	else
+	  {
+	    if(ok)
+	      *ok = false;
+
+	    std::cerr << "spot_on_lite_daemon::"
+		      << "process_configuration_file(): "
+		      << "The certificates file \""
+		      << file_info.absoluteFilePath().toStdString()
+		      << "\" must be readable and writable. Ignoring entry."
+		      << std::endl;
+	  }
       }
     else if(key == "child_process_file")
       {
@@ -444,40 +428,24 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
       {
 	QFileInfo file_info(settings.value(key).toString());
 
-	file_info = QFileInfo(file_info.absolutePath());
-
-	if(!file_info.isDir())
-	  {
-	    if(ok)
-	      *ok = false;
-
-	    std::cerr << "spot_on_lite_daemon::"
-		      << "process_configuration_file(): "
-		      << "The parent directory \""
-		      << file_info.absoluteFilePath().toStdString()
-		      << "\" of the congestion control file is "
-		      << "not a directory. Ignoring entry."
-		      << std::endl;
-	  }
-	else if(!file_info.isReadable() && !file_info.isWritable())
-	  {
-	    if(ok)
-	      *ok = false;
-
-	    std::cerr << "spot_on_lite_daemon::"
-		      << "process_configuration_file(): "
-		      << "The parent directory \""
-		      << file_info.absoluteFilePath().toStdString()
-		      << "\" of the congestion control file must be "
-		      << "readable and writable. Ignoring entry."
-		      << std::endl;
-	  }
-	else
+	if(file_info.isReadable() && file_info.isWritable())
 	  {
 	    m_congestion_control_file_name = settings.value(key).toString();
 
 	    if(!m_congestion_control_file_name.isEmpty())
 	      QFile::remove(m_congestion_control_file_name);
+	  }
+	else
+	  {
+	    if(ok)
+	      *ok = false;
+
+	    std::cerr << "spot_on_lite_daemon::"
+		      << "process_configuration_file(): "
+		      << "The congestion control file \""
+		      << file_info.absoluteFilePath().toStdString()
+		      << "\" must be readable and writable. Ignoring entry."
+		      << std::endl;
 	  }
       }
     else if(key == "congestion_control_lifetime")
@@ -561,32 +529,16 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
       {
 	QFileInfo file_info(settings.value(key).toString());
 
-	file_info = QFileInfo(file_info.absolutePath());
-
-	if(!file_info.isDir())
+	if(!file_info.isWritable())
 	  {
 	    if(ok)
 	      *ok = false;
 
 	    std::cerr << "spot_on_lite_daemon::"
 		      << "process_configuration_file(): "
-		      << "The parent directory \""
+		      << "The log file \""
 		      << file_info.absoluteFilePath().toStdString()
-		      << "\" of the log file is not a directory. "
-		      << "Ignoring entry."
-		      << std::endl;
-	  }
-	else if(!file_info.isWritable())
-	  {
-	    if(ok)
-	      *ok = false;
-
-	    std::cerr << "spot_on_lite_daemon::"
-		      << "process_configuration_file(): "
-		      << "The parent directory \""
-		      << file_info.absoluteFilePath().toStdString()
-		      << "\" of the log file is not writable. "
-		      << "Ignoring entry."
+		      << "\" is not writable. Ignoring entry."
 		      << std::endl;
 	  }
 	else
@@ -885,40 +837,25 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
       {
 	QFileInfo file_info(settings.value(key).toString());
 
-	file_info = QFileInfo(file_info.absolutePath());
-
-	if(!file_info.isDir())
-	  {
-	    if(ok)
-	      *ok = false;
-
-	    std::cerr << "spot_on_lite_daemon::"
-		      << "process_configuration_file(): "
-		      << "The parent directory \""
-		      << file_info.absoluteFilePath().toStdString()
-		      << "\" of the remote identities file is "
-		      << "not a directory. Ignoring entry."
-		      << std::endl;
-	  }
-	else if(!file_info.isReadable() || !file_info.isWritable())
-	  {
-	    if(ok)
-	      *ok = false;
-
-	    std::cerr << "spot_on_lite_daemon::"
-		      << "process_configuration_file(): "
-		      << "The parent directory \""
-		      << file_info.absoluteFilePath().toStdString()
-		      << "\" of the remote identities file must be "
-		      << "readable and writable. Ignoring entry."
-		      << std::endl;
-	  }
-	else
+	if(file_info.isReadable() && file_info.isWritable())
 	  {
 	    m_remote_identities_file_name = settings.value(key).toString();
 
 	    if(!m_remote_identities_file_name.isEmpty())
 	      QFile::remove(m_remote_identities_file_name);
+	  }
+	else
+	  {
+	    if(ok)
+	      *ok = false;
+
+	    std::cerr << "spot_on_lite_daemon::"
+		      << "process_configuration_file(): "
+		      << "The remote identities file \""
+		      << file_info.absoluteFilePath().toStdString()
+		      << "\" file must be "
+		      << "readable and writable. Ignoring entry."
+		      << std::endl;
 	  }
       }
 }
