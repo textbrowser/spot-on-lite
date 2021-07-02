@@ -68,7 +68,7 @@ class spot_on_lite_daemon: public QObject
   QHash<QLocalSocket *, char> m_local_sockets;
   QHash<int, pid_t> m_peer_pids;
   QList<QObject *> m_listeners;
-  QPointer<QLocalServer> m_local_server;
+  QLocalServer m_local_server;
   QSocketNotifier *m_signal_socket_notifier;
   QString m_certificates_file_name;
   QString m_child_process_file_name;

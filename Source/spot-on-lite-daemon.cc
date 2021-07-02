@@ -94,6 +94,10 @@ spot_on_lite_daemon::spot_on_lite_daemon
 	  SIGNAL(timeout(void)),
 	  this,
 	  SLOT(slot_general_timeout(void)));
+  connect(&m_local_server,
+	  SIGNAL(newConnection(void)),
+	  this,
+	  SLOT(slot_new_local_connection(void)));
   connect(&m_peer_process_timer,
 	  SIGNAL(timeout(void)),
 	  this,
@@ -152,13 +156,10 @@ spot_on_lite_daemon::~spot_on_lite_daemon()
   if(!m_statistics_file_name.isEmpty())
     QFile::remove(m_statistics_file_name);
 
+  QLocalServer::removeServer(m_local_server.fullServerName());
   m_congestion_control_future.cancel();
   m_congestion_control_future.waitForFinished();
   m_congestion_control_timer.stop();
-
-  if(m_local_server)
-    QLocalServer::removeServer(m_local_server->fullServerName());
-
   m_peer_process_timer.stop();
   m_start_timer.stop();
 }
@@ -190,10 +191,7 @@ QString spot_on_lite_daemon::congestion_control_file_name(void) const
 
 QString spot_on_lite_daemon::local_server_file_name(void) const
 {
-  if(m_local_server)
-    return m_local_server->fullServerName();
-  else
-    return "";
+  return m_local_server.fullServerName();
 }
 
 QString spot_on_lite_daemon::log_file_name(void) const
@@ -225,7 +223,7 @@ void spot_on_lite_daemon::log(const QString &error) const
 {
   auto e(error.trimmed());
 
-  if(e.isEmpty())
+  if(e.isEmpty() || m_log_file_name.isEmpty())
     return;
 
   QFile file(m_log_file_name);
@@ -270,32 +268,21 @@ void spot_on_lite_daemon::prepare_local_socket_server(void)
 		      arg(m_local_socket_server_directory_name).
 		      arg(QCoreApplication::applicationPid()));
 
-  if(file_info.exists() && file_info.isReadable() && file_info.isWritable() &&
-     m_local_server && m_local_server->isListening())
+  if(file_info.exists() &&
+     file_info.isReadable() &&
+     file_info.isWritable() &&
+     m_local_server.isListening())
     return;
 
-  if(m_local_server)
-    {
-      m_local_server->close();
-      m_local_server->deleteLater();
-    }
-
-  m_local_server = new QLocalServer(this);
-  m_local_server->listen
+  m_local_server.close();
+  m_local_server.listen
     (QString("%1/Spot-On-Lite-Daemon-Local-Server.%2").
      arg(m_local_socket_server_directory_name).
      arg(QCoreApplication::applicationPid()));
   m_local_sockets.clear();
-  connect(m_local_server,
-	  SIGNAL(newConnection(void)),
-	  this,
-	  SLOT(slot_new_local_connection(void)));
 
-  if(!m_local_server->isListening())
-    {
-      m_local_server->deleteLater();
-      m_local_sockets.clear();
-    }
+  if(!m_local_server.isListening())
+    m_local_sockets.clear();
 }
 
 void spot_on_lite_daemon::prepare_peers(void)
@@ -946,10 +933,7 @@ void spot_on_lite_daemon::slot_local_socket_disconnected(void)
 
 void spot_on_lite_daemon::slot_new_local_connection(void)
 {
-  if(!m_local_server)
-    return;
-
-  auto socket = m_local_server->nextPendingConnection();
+  auto socket = m_local_server.nextPendingConnection();
 
   if(!socket)
     return;
@@ -1067,15 +1051,8 @@ void spot_on_lite_daemon::start(void)
 {
   kill(0, SIGUSR2); // Terminate existing children.
   m_listeners_properties.clear();
-
-  if(m_local_server)
-    {
-      m_local_server->close();
-      m_local_server->removeServer(m_local_server->fullServerName());
-      m_local_server->deleteLater();
-      m_local_server = nullptr;
-    }
-
+  m_local_server.close();
+  m_local_server.removeServer(m_local_server.fullServerName());
   m_local_sockets.clear();
   m_peer_pids.clear();
   m_peer_process_timer.start(2500);

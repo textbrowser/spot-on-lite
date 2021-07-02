@@ -1233,6 +1233,9 @@ void spot_on_lite_daemon_child::log(const QString &error) const
   else
     qDebug() << e;
 
+  if(m_log_file_name.isEmpty())
+    return;
+
   QFile file(m_log_file_name);
 
   if(file.open(QIODevice::Append | QIODevice::WriteOnly))
