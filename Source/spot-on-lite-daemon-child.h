@@ -42,6 +42,7 @@ extern "C"
 #endif
 #include <QFuture>
 #include <QHostAddress>
+#include <QLocalSocket>
 #include <QPointer>
 #include <QReadWriteLock>
 #include <QSslCipher>
@@ -107,7 +108,7 @@ class spot_on_lite_daemon_child: public QObject
 #endif
   QHash<QString, QByteArray> m_message_types;
   QHostAddress m_peer_address;
-  QPointer<QLocalSocket> m_local_socket;
+  QLocalSocket m_local_socket;
   QPointer<QAbstractSocket> m_remote_socket;
 #ifdef SPOTON_LITE_DAEMON_DTLS_SUPPORTED
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 12, 0))

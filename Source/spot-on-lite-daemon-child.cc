@@ -133,7 +133,6 @@ spot_on_lite_daemon_child::spot_on_lite_daemon_child
   m_local_content_last_parsed = QDateTime::currentMSecsSinceEpoch();
   m_local_server_file_name = local_server_file_name;
   m_local_so_rcvbuf_so_sndbuf = qMax(4096, local_so_rcvbuf_so_sndbuf);
-  m_local_socket = new QLocalSocket(this);
   m_log_file_name = log_file_name;
   m_maximum_accumulated_bytes = maximum_accumulated_bytes;
 
@@ -221,7 +220,7 @@ spot_on_lite_daemon_child::spot_on_lite_daemon_child
 
   m_expired_identities_timer.start(15000);
   m_keep_alive_timer.start(m_silence);
-  m_local_socket->setReadBufferSize(m_maximum_accumulated_bytes);
+  m_local_socket.setReadBufferSize(m_maximum_accumulated_bytes);
   connect(&m_attempt_local_connection_timer,
 	  SIGNAL(timeout(void)),
 	  this,
@@ -242,19 +241,19 @@ spot_on_lite_daemon_child::spot_on_lite_daemon_child
 	  SIGNAL(timeout(void)),
 	  this,
 	  SLOT(slot_keep_alive_timer_timeout(void)));
-  connect(m_local_socket,
+  connect(&m_local_socket,
 	  SIGNAL(connected(void)),
 	  &m_attempt_local_connection_timer,
 	  SLOT(stop(void)));
-  connect(m_local_socket,
+  connect(&m_local_socket,
 	  SIGNAL(connected(void)),
 	  this,
 	  SLOT(slot_local_socket_connected(void)));
-  connect(m_local_socket,
+  connect(&m_local_socket,
 	  SIGNAL(disconnected(void)),
 	  this,
 	  SLOT(slot_local_socket_disconnected(void)));
-  connect(m_local_socket,
+  connect(&m_local_socket,
 	  SIGNAL(readyRead(void)),
 	  this,
 	  SLOT(slot_local_socket_ready_read(void)));
@@ -1290,8 +1289,8 @@ void spot_on_lite_daemon_child::prepare_local_socket(void)
     m_local_content_last_parsed = QDateTime::currentMSecsSinceEpoch();
   }
 
-  m_local_socket->abort();
-  m_local_socket->connectToServer(m_local_server_file_name);
+  m_local_socket.abort();
+  m_local_socket.connectToServer(m_local_server_file_name);
   save_statistic("bytes_accumulated", QString::number(bytes_accumulated()));
 }
 
@@ -1548,15 +1547,15 @@ void spot_on_lite_daemon_child::process_read_data(const QByteArray &data)
     {
       m_keep_alive_timer.start();
 
-      if(m_local_socket->state() == QLocalSocket::ConnectedState &&
+      if(m_local_socket.state() == QLocalSocket::ConnectedState &&
 	 record_congestion(data))
 	{
 	  auto maximum = m_local_so_rcvbuf_so_sndbuf -
-	    static_cast<int> (m_local_socket->bytesToWrite());
+	    static_cast<int> (m_local_socket.bytesToWrite());
 
 	  if(maximum > 0)
 	    {
-	      qint64 rc = m_local_socket->write(data.mid(0, maximum));
+	      qint64 rc = m_local_socket.write(data.mid(0, maximum));
 
 	      if(rc > 0)
 		{
@@ -1590,7 +1589,7 @@ void spot_on_lite_daemon_child::process_read_data(const QByteArray &data)
 void spot_on_lite_daemon_child::process_remote_content(void)
 {
   if(m_end_of_message_marker.isEmpty() ||
-     m_local_socket->state() != QLocalSocket::ConnectedState)
+     m_local_socket.state() != QLocalSocket::ConnectedState)
     return;
 
   QByteArray data;
@@ -1631,11 +1630,11 @@ void spot_on_lite_daemon_child::process_remote_content(void)
       if(record_congestion(data))
 	{
 	  auto maximum = m_local_so_rcvbuf_so_sndbuf -
-	    static_cast<int> (m_local_socket->bytesToWrite());
+	    static_cast<int> (m_local_socket.bytesToWrite());
 
 	  if(maximum > 0)
 	    {
-	      auto rc = m_local_socket->write(data.mid(0, maximum));
+	      auto rc = m_local_socket.write(data.mid(0, maximum));
 
 	      if(rc > 0)
 		m_bytes_written += static_cast<quint64> (rc);
@@ -1901,7 +1900,7 @@ set_ssl_ciphers(const QList<QSslCipher> &ciphers,
 
 void spot_on_lite_daemon_child::share_identity(const QByteArray &data)
 {
-  auto rc = m_local_socket->write(data);
+  auto rc = m_local_socket.write(data);
 
   if(rc > 0)
     {
@@ -2074,13 +2073,13 @@ void spot_on_lite_daemon_child::slot_disconnected(void)
 	m_attempt_remote_connection_timer.start();
 
       m_capabilities_timer.stop();
-      m_local_socket->abort();
+      m_local_socket.abort();
       m_remote_socket->abort();
       purge_containers();
     }
   else
     {
-      m_local_socket->abort();
+      m_local_socket.abort();
       m_remote_socket->abort();
       purge_statistics();
       stop_threads_and_timers();
@@ -2153,7 +2152,7 @@ void spot_on_lite_daemon_child::slot_keep_alive_timer_timeout(void)
 
   if(m_client_role)
     {
-      m_local_socket->abort();
+      m_local_socket.abort();
       m_remote_socket->abort();
 
       if(!m_attempt_remote_connection_timer.isActive())
@@ -2163,7 +2162,7 @@ void spot_on_lite_daemon_child::slot_keep_alive_timer_timeout(void)
     }
   else
     {
-      m_local_socket->abort();
+      m_local_socket.abort();
       m_remote_socket->abort();
       purge_statistics();
       stop_threads_and_timers();
@@ -2184,7 +2183,7 @@ void spot_on_lite_daemon_child::slot_local_socket_connected(void)
   }
 
   auto optlen = static_cast<socklen_t> (sizeof(m_local_so_rcvbuf_so_sndbuf));
-  auto sd = static_cast<int> (m_local_socket->socketDescriptor());
+  auto sd = static_cast<int> (m_local_socket.socketDescriptor());
 
   setsockopt(sd, SOL_SOCKET, SO_RCVBUF, &m_local_so_rcvbuf_so_sndbuf, optlen);
   setsockopt(sd, SOL_SOCKET, SO_SNDBUF, &m_local_so_rcvbuf_so_sndbuf, optlen);
@@ -2204,9 +2203,9 @@ void spot_on_lite_daemon_child::slot_local_socket_disconnected(void)
 
 void spot_on_lite_daemon_child::slot_local_socket_ready_read(void)
 {
-  while(m_local_socket->bytesAvailable() > 0)
+  while(m_local_socket.bytesAvailable() > 0)
     {
-      auto data(m_local_socket->readAll());
+      auto data(m_local_socket.readAll());
 
       if(!data.isEmpty())
 	{
