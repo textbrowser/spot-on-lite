@@ -243,7 +243,10 @@ void spot_on_lite_daemon::log(const QString &error) const
 void spot_on_lite_daemon::prepare_listeners(void)
 {
   while(!m_listeners.isEmpty())
-    m_listeners.takeFirst()->deleteLater();
+    if(m_listeners.first())
+      m_listeners.takeFirst()->deleteLater();
+    else
+      m_listeners.removeFirst();
 
   for(int i = 0; i < m_listeners_properties.size(); i++)
     if(m_listeners_properties.at(i).contains("tcp"))
@@ -607,7 +610,7 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
 	** 10 - Protocol
 	*/
 
-	int expected = 11;
+	const int expected = 11;
 
 	if(list.size() != expected)
 	  {
@@ -626,7 +629,7 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
 	  }
 
 	for(int i = 0; i < list.size(); i++)
-	  if(i != 7) // EOM-Marker
+	  if(i != 7) // EOM Marker
 	    list.replace(i, list.at(i).trimmed());
 
 	auto entry_ok = true;
