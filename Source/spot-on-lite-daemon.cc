@@ -61,6 +61,7 @@ extern "C"
 #ifdef Q_OS_WINDOWS
 #else
 #include <fcntl.h>
+#include <sys/stat.h>
 #endif
 }
 
