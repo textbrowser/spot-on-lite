@@ -1030,7 +1030,7 @@ void spot_on_lite_daemon_child::generate_certificate
       goto done_label;
     }
 
-#if OPENSSL_VERSION_NUMBER < 0x10101000L
+#if OPENSSL_VERSION_NUMBER < 0x10101000L || defined(Q_OS_OPENBSD)
   if(X509_sign(x509, pk, EVP_sha512()) == 0)
 #else
   if(X509_sign(x509, pk, EVP_sha3_512()) == 0)
