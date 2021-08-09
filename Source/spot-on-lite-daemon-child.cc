@@ -155,7 +155,7 @@ spot_on_lite_daemon_child::spot_on_lite_daemon_child
 
   m_remote_socket->setReadBufferSize(m_maximum_accumulated_bytes);
   m_server_identity = server_identity;
-  m_silence = 1000 * qBound(15, silence, 3600);
+  m_silence = silence == 0 ? silence : 1000 * qBound(15, silence, 3600);
   m_so_linger = qBound(-1, so_linger, std::numeric_limits<int>::max());
   m_spot_on_lite = m_client_role;
   m_ssl_control_string = ssl_control_string.trimmed();
@@ -207,7 +207,7 @@ spot_on_lite_daemon_child::spot_on_lite_daemon_child
 	}
 
       m_attempt_local_connection_timer.start();
-      m_capabilities_timer.start(m_silence / 2);
+      m_capabilities_timer.start(qMax(7500, m_silence / 2));
       m_remote_socket->setSocketOption(QAbstractSocket::LowDelayOption, 1);
       save_statistic("ip_information",
 		     m_remote_socket->peerAddress().toString() +
@@ -219,7 +219,10 @@ spot_on_lite_daemon_child::spot_on_lite_daemon_child
     }
 
   m_expired_identities_timer.start(15000);
-  m_keep_alive_timer.start(m_silence);
+
+  if(m_silence > 0)
+    m_keep_alive_timer.start(m_silence);
+
   m_local_socket.setReadBufferSize(m_maximum_accumulated_bytes);
   connect(&m_attempt_local_connection_timer,
 	  SIGNAL(timeout(void)),
@@ -1545,7 +1548,8 @@ void spot_on_lite_daemon_child::process_read_data(const QByteArray &data)
 
   if(m_client_role || m_end_of_message_marker.isEmpty())
     {
-      m_keep_alive_timer.start();
+      if(m_silence > 0)
+	m_keep_alive_timer.start();
 
       if(m_local_socket.state() == QLocalSocket::ConnectedState &&
 	 record_congestion(data))
@@ -1571,7 +1575,8 @@ void spot_on_lite_daemon_child::process_read_data(const QByteArray &data)
 	return;
     }
 
-  m_keep_alive_timer.start();
+  if(m_silence > 0)
+    m_keep_alive_timer.start();
 
   if(m_remote_content.length() >= m_maximum_accumulated_bytes)
     {
@@ -2035,7 +2040,7 @@ void spot_on_lite_daemon_child::slot_connected(void)
 {
   m_attempt_local_connection_timer.start();
   m_attempt_remote_connection_timer.stop();
-  m_capabilities_timer.start(m_silence / 2);
+  m_capabilities_timer.start(qMax(7500, m_silence / 2));
   m_remote_content_last_parsed = QDateTime::currentMSecsSinceEpoch();
   m_remote_socket->setSocketOption(QAbstractSocket::LowDelayOption, 1);
   save_statistic("ip_information",
