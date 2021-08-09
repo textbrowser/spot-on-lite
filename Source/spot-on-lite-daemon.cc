@@ -718,20 +718,21 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
 	auto silence = list.at(5).toInt(&o);
 
 	if(!o || silence < 15 || silence > 3600)
-	  {
-	    entry_ok = false;
+	  if(silence != 0)
+	    {
+	      entry_ok = false;
 
-	    if(ok)
-	      *ok = false;
+	      if(ok)
+		*ok = false;
 
-	    std::cerr << "spot_on_lite_daemon::"
-		      << "process_configuration_file(): The "
-		      << "listener/peer \""
-		      << key.toStdString()
-		      << "\" silence value is invalid. Expecting a value "
-		      << "in the range [15, 3600]. Ignoring entry."
-		      << std::endl;
-	  }
+	      std::cerr << "spot_on_lite_daemon::"
+			<< "process_configuration_file(): The "
+			<< "listener/peer \""
+			<< key.toStdString()
+			<< "\" silence value is invalid. Expecting a value "
+			<< "of 0 or in the range [15, 3600]. Ignoring entry."
+			<< std::endl;
+	    }
 
 	auto so_linger = list.at(6).toInt(&o);
 
