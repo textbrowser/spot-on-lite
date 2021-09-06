@@ -63,8 +63,7 @@ extern "C"
 #include "spot-on-lite-common.h"
 #include "spot-on-lite-daemon-child.h"
 
-QReadWriteLock spot_on_lite_daemon_child::s_db_id_mutex;
-quint64 spot_on_lite_daemon_child::s_db_id = 0;
+QAtomicInteger<quint64> spot_on_lite_daemon_child::s_db_id = 0;
 
 static QString socket_type_to_string
 (const QAbstractSocket::SocketType socket_type)
@@ -772,10 +771,7 @@ int spot_on_lite_daemon_child::bytes_in_send_queue(void) const
 
 quint64 spot_on_lite_daemon_child::db_id(void)
 {
-  QWriteLocker lock(&s_db_id_mutex);
-
-  s_db_id += 1;
-  return s_db_id;
+  return s_db_id.fetchAndAddOrdered(1);
 }
 
 void spot_on_lite_daemon_child::create_remote_identities_database(void)

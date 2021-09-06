@@ -147,8 +147,7 @@ class spot_on_lite_daemon_child: public QObject
   qint64 m_remote_content_last_parsed;
   quint16 m_peer_port;
   spot_on_lite_daemon_sha m_sha_512;
-  static QReadWriteLock s_db_id_mutex;
-  static quint64 s_db_id;
+  static QAtomicInteger<quint64> s_db_id;
   unsigned int m_identity_lifetime;
   QHash<QByteArray, QString> remote_identities(bool *ok);
   QList<QByteArray> local_certificate_configuration(void);
