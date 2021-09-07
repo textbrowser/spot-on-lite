@@ -28,6 +28,7 @@ QMAKE_CXXFLAGS_RELEASE += -O3 \
 DEFINES += SPOTON_LITE_DAEMON_DTLS_SUPPORTED
 QMAKE_CXXFLAGS_RELEASE += -O3 \
                           -Wall \
+			  -Warray-bounds=2 \
                           -Wcast-qual \
                           -Wdouble-promotion \
                           -Wextra \
