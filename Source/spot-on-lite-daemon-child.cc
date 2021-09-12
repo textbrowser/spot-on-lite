@@ -164,7 +164,8 @@ spot_on_lite_daemon_child::spot_on_lite_daemon_child
     "spot-on-lite-daemon-statistics.sqlite";
   save_statistic("pid", QString::number(QCoreApplication::applicationPid()));
 
-  if(!(m_ssl_key_size == 2048 ||
+  if(!(m_ssl_key_size == 521 ||
+       m_ssl_key_size == 2048 ||
        m_ssl_key_size == 3072 ||
        m_ssl_key_size == 4096 ||
        m_ssl_key_size == 7680))
