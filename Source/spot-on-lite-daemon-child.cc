@@ -164,7 +164,9 @@ spot_on_lite_daemon_child::spot_on_lite_daemon_child
     "spot-on-lite-daemon-statistics.sqlite";
   save_statistic("pid", QString::number(QCoreApplication::applicationPid()));
 
-  if(!(m_ssl_key_size == 521 ||
+  if(!(m_ssl_key_size == 256 ||
+       m_ssl_key_size == 384 ||
+       m_ssl_key_size == 521 ||
        m_ssl_key_size == 2048 ||
        m_ssl_key_size == 3072 ||
        m_ssl_key_size == 4096 ||
@@ -1301,7 +1303,12 @@ void spot_on_lite_daemon_child::prepare_ssl_tls_configuration
 
   if(!m_ssl_configuration.localCertificate().isNull())
     {
-      m_ssl_configuration.setPrivateKey(QSslKey(list.value(1), QSsl::Rsa));
+      QSslKey key(list.value(1), QSsl::Ec);
+
+      if(key.isNull())
+	key = QSslKey(list.value(1), QSsl::Rsa);
+
+      m_ssl_configuration.setPrivateKey(key);
 
       if(!m_ssl_configuration.privateKey().isNull())
 	{

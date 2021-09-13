@@ -692,7 +692,10 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
 	  {
 	    auto keySize = list.at(4).toInt(&o);
 
-	    if(!(keySize == 2048 ||
+	    if(!(keySize == 256 ||
+		 keySize == 384 ||
+		 keySize == 521 ||
+		 keySize == 2048 ||
 		 keySize == 3072 ||
 		 keySize == 4096 ||
 		 keySize == 7680) ||
@@ -709,7 +712,8 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
 			  << key.toStdString()
 			  << "\" SSL/TLS key size is invalid. "
 			  << "Expecting a value "
-			  << "in the set {2048, 3072, 4096, 7680}. "
+			  << "in the set "
+			  << "{256, 384, 521, 2048, 3072, 4096, 7680}. "
 			  << "Ignoring entry."
 			  << std::endl;
 	      }
