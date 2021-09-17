@@ -1115,6 +1115,7 @@ void spot_on_lite_daemon_child::generate_ssl_tls(void)
   BIO *public_memory = nullptr;
   BUF_MEM *bptr;
   EC_KEY *ecc = nullptr;
+  EVP_PKEY *pk = nullptr;
   QByteArray certificate;
   QByteArray private_key;
   QByteArray public_key;
@@ -1123,6 +1124,7 @@ void spot_on_lite_daemon_child::generate_ssl_tls(void)
   auto days = FIVE_YEARS;
   char *private_buffer = nullptr;
   char *public_buffer = nullptr;
+  int ecc_group = 0;
 
   if(m_ssl_key_size <= 0)
     {
@@ -1142,7 +1144,119 @@ void spot_on_lite_daemon_child::generate_ssl_tls(void)
 
  ecc_label:
 
-  generate_certificate(ecc, certificate, days, error);
+  switch(m_ssl_key_size)
+    {
+    case 256:
+      {
+	ecc_group = OBJ_txt2nid("prime256v1");
+	break;
+      }
+    case 384:
+      {
+	ecc_group = OBJ_txt2nid("secp384r1");
+	break;
+      }
+    default:
+      {
+	ecc_group = OBJ_txt2nid("secp521r1");
+	break;
+      }
+    }
+
+  if(ecc_group == NID_undef)
+    {
+      error = "OBJ_txt2nid() failure";
+      goto done_label;
+    }
+
+  if(!(ecc = EC_KEY_new_by_curve_name(ecc_group)))
+    {
+      error = "EC_KEY_new_by_curve_name() returned zero";
+      goto done_label;
+    }
+
+  if(!(private_memory = BIO_new(BIO_s_mem())))
+    {
+      error = "BIO_new() returned zero";
+      goto done_label;
+    }
+
+  if(!(public_memory = BIO_new(BIO_s_mem())))
+    {
+      error = "BIO_new() returned zero";
+      goto done_label;
+    }
+
+  EC_KEY_set_asn1_flag(ecc, OPENSSL_EC_NAMED_CURVE);
+
+  if(EC_KEY_generate_key(ecc) == 0)
+    {
+      error = "EC_KEY_generate_key() failure";
+      goto done_label;
+    }
+
+  if(!(pk = EVP_PKEY_new()))
+    {
+      error = "EVP_PKEY_new() returned zero";
+      goto done_label;
+    }
+
+  if(EVP_PKEY_assign_EC_KEY(pk, ecc) == 0)
+    {
+      error = "EVP_PKEY_assign_EC_KEY() failure";
+      goto done_label;
+    }
+
+  if(!(ecc = EVP_PKEY_get1_EC_KEY(pk)))
+    {
+      error = "EVP_PKEY_get1_EC_KEY() failure";
+      goto done_label;
+    }
+
+  if(!PEM_write_bio_PrivateKey(private_memory, pk, 0, 0, 0, 0, 0))
+    {
+      error = "PEM_write_bio_PrivateKey() failure";
+      goto done_label;
+    }
+
+  if(!PEM_write_bio_PUBKEY(public_memory, pk))
+    {
+      error = "PEM_write_bio_PUBKEY() failure";
+      goto done_label;
+    }
+
+  BIO_get_mem_ptr(private_memory, &bptr);
+
+  if(bptr->length + 1 <= 0 ||
+     std::numeric_limits<size_t>::max() - bptr->length < 1 ||
+     !(private_buffer = static_cast<char *> (calloc(bptr->length + 1,
+						    sizeof(char)))))
+    {
+      error = "calloc() failure or bptr->length + 1 is irregular";
+      goto done_label;
+    }
+
+  memcpy(private_buffer, bptr->data, bptr->length);
+  private_buffer[bptr->length] = 0;
+  private_key = private_buffer;
+  BIO_get_mem_ptr(public_memory, &bptr);
+
+  if(bptr->length + 1 <= 0 ||
+     std::numeric_limits<size_t>::max() - bptr->length < 1 ||
+     !(public_buffer = static_cast<char *> (calloc(bptr->length + 1,
+						   sizeof(char)))))
+    {
+      error = "calloc() failure or bptr->length + 1 is irregular";
+      goto done_label;
+    }
+
+  memcpy(public_buffer, bptr->data, bptr->length);
+  public_buffer[bptr->length] = 0;
+  public_key = public_buffer;
+
+  if(error.isEmpty())
+    generate_certificate(ecc, certificate, days, error);
+
   goto done_label;
 
  rsa_label:
@@ -1251,6 +1365,7 @@ void spot_on_lite_daemon_child::generate_ssl_tls(void)
   BIO_free(private_memory);
   BIO_free(public_memory);
   BN_free(f4);
+  EVP_PKEY_free(pk);
   RSA_free(rsa);
   free(private_buffer);
   free(public_buffer);
