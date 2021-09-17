@@ -282,18 +282,18 @@ spot_on_lite_daemon_child::spot_on_lite_daemon_child
   if(!m_ssl_control_string.isEmpty() && m_ssl_key_size > 0)
     {
 #if OPENSSL_VERSION_NUMBER < 0x10100000L || defined(Q_OS_OPENBSD)
-      SSL_library_init(); // Always returns 1.
+      auto rc = SSL_library_init(); // Always returns 1.
 #else
-      OPENSSL_init_ssl(0, nullptr);
+      auto rc = OPENSSL_init_ssl(0, nullptr);
 #endif
 
-      if(m_protocol == QAbstractSocket::TcpSocket)
+      if(m_protocol == QAbstractSocket::TcpSocket && rc == 1)
 	connect(qobject_cast<QSslSocket *> (m_remote_socket),
 		SIGNAL(sslErrors(const QList<QSslError> &)),
 		this,
 		SLOT(slot_ssl_errors(const QList<QSslError> &)));
 
-      if(m_client_role)
+      if(m_client_role && rc == 1)
 	{
 	  generate_ssl_tls();
 
@@ -344,7 +344,7 @@ spot_on_lite_daemon_child::spot_on_lite_daemon_child
 #endif
 	    }
 	}
-      else
+      else if(rc == 1)
 	{
 	  auto list(local_certificate_configuration());
 
@@ -391,11 +391,7 @@ spot_on_lite_daemon_child::spot_on_lite_daemon_child
 		      }
 		  }
 	    }
-#else
-	  Q_UNUSED(initial_data);
 #endif
-#else
-	  Q_UNUSED(initial_data);
 #endif
 	}
     }
@@ -935,6 +931,13 @@ void spot_on_lite_daemon_child::generate_certificate
       goto done_label;
     }
 
+  if(ecc)
+    if(EVP_PKEY_assign_EC_KEY(pk, ecc) == 0)
+      {
+	error = "EVP_PKEY_assign_EC_KEY() returned zero";
+	goto done_label;
+      }
+
   if(rsa)
     if(EVP_PKEY_assign_RSA(pk, rsa) == 0)
       {
@@ -1091,8 +1094,11 @@ void spot_on_lite_daemon_child::generate_certificate
   if(!error.isEmpty())
     memzero(certificate);
 
+  if(ecc)
+    EC_KEY_up_ref(ecc); // Reference counter.
+
   if(rsa)
-    RSA_up_ref(rsa); // Reference counter. Please also see EVP_PKEY_free().
+    RSA_up_ref(rsa); // Reference counter.
 
   EVP_PKEY_free(pk);
   X509_NAME_ENTRY_free(common_name_entry);
