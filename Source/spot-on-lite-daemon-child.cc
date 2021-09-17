@@ -1108,6 +1108,7 @@ void spot_on_lite_daemon_child::generate_ssl_tls(void)
   BIO *private_memory = nullptr;
   BIO *public_memory = nullptr;
   BUF_MEM *bptr;
+  EC_KEY *ecc = nullptr;
   QByteArray certificate;
   QByteArray private_key;
   QByteArray public_key;
@@ -1135,6 +1136,7 @@ void spot_on_lite_daemon_child::generate_ssl_tls(void)
 
  ecc_label:
 
+  generate_certificate(ecc, certificate, days, error);
   goto done_label;
 
  rsa_label:
