@@ -1128,6 +1128,17 @@ void spot_on_lite_daemon_child::generate_ssl_tls(void)
       goto done_label;
     }
 
+  if(m_ssl_key_size < 1024)
+    goto ecc_label;
+  else
+    goto rsa_label;
+
+ ecc_label:
+
+  goto done_label;
+
+ rsa_label:
+
   if(!(f4 = BN_new()))
     {
       error = "BN_new() returned zero";
