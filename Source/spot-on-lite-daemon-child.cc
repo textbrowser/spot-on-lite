@@ -286,6 +286,7 @@ spot_on_lite_daemon_child::spot_on_lite_daemon_child
 #else
       OPENSSL_init_ssl(0, nullptr);
 #endif
+
       if(m_protocol == QAbstractSocket::TcpSocket)
 	connect(qobject_cast<QSslSocket *> (m_remote_socket),
 		SIGNAL(sslErrors(const QList<QSslError> &)),
@@ -332,10 +333,10 @@ spot_on_lite_daemon_child::spot_on_lite_daemon_child
 			** Fatal error!
 			*/
 
-			m_dtls->abortHandshake
-			  (qobject_cast<QUdpSocket *> (m_remote_socket));
 			QTimer::singleShot
 			  (2500, this, SLOT(slot_disconnected(void)));
+			m_dtls->abortHandshake
+			  (qobject_cast<QUdpSocket *> (m_remote_socket));
 			return;
 		      }
 		  }
@@ -885,14 +886,13 @@ void spot_on_lite_daemon_child::data_received
 }
 
 void spot_on_lite_daemon_child::generate_certificate
-(RSA *rsa,
- QByteArray &certificate,
- const long int days,
- QString &error)
+(void *key, QByteArray &certificate, const long int days, QString &error)
 {
   BIO *memory = nullptr;
   BUF_MEM *bptr;
+  EC_KEY *ecc = nullptr;
   EVP_PKEY *pk = nullptr;
+  RSA *rsa = nullptr;
   X509 *x509 = nullptr;
   X509_NAME *name = nullptr;
   X509_NAME *subject = nullptr;
@@ -906,7 +906,18 @@ void spot_on_lite_daemon_child::generate_certificate
   if(!error.isEmpty())
     goto done_label;
 
-  if(!rsa)
+  if(m_ssl_control_string < 1024)
+    ecc = (EC_KEY *) key;
+  else
+    rsa = (RSA *) key;
+
+  if(m_ssl_key_size < 1024 && !ecc)
+    {
+      error = "ecc container is zero";
+      goto done_label;
+    }
+
+  if(m_ssl_key_size > 1024 && !rsa)
     {
       error = "rsa container is zero";
       goto done_label;
@@ -924,11 +935,12 @@ void spot_on_lite_daemon_child::generate_certificate
       goto done_label;
     }
 
-  if(EVP_PKEY_assign_RSA(pk, rsa) == 0)
-    {
-      error = "EVP_PKEY_assign_RSA() returned zero";
-      goto done_label;
-    }
+  if(rsa)
+    if(EVP_PKEY_assign_RSA(pk, rsa) == 0)
+      {
+	error = "EVP_PKEY_assign_RSA() returned zero";
+	goto done_label;
+      }
 
   /*
   ** Set some attributes.

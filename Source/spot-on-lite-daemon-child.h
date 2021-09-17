@@ -157,7 +157,7 @@ class spot_on_lite_daemon_child: public QObject
   int bytes_in_send_queue(void) const;
   quint64 db_id(void);
   void create_remote_identities_database(void);
-  void generate_certificate(RSA *rsa,
+  void generate_certificate(void *key,
 			    QByteArray &certificate,
 			    const long int days,
 			    QString &error);
