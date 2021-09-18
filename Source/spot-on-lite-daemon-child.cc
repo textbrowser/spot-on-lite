@@ -902,7 +902,7 @@ void spot_on_lite_daemon_child::generate_certificate
   if(!error.isEmpty())
     goto done_label;
 
-  if(m_ssl_control_string < 1024)
+  if(m_ssl_key_size < 1024)
     ecc = (EC_KEY *) key;
   else
     rsa = (RSA *) key;
