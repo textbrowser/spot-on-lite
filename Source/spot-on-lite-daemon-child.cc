@@ -1365,6 +1365,7 @@ void spot_on_lite_daemon_child::generate_ssl_tls(void)
   BIO_free(private_memory);
   BIO_free(public_memory);
   BN_free(f4);
+  EC_KEY_free(ecc);
   EVP_PKEY_free(pk);
   RSA_free(rsa);
   free(private_buffer);
