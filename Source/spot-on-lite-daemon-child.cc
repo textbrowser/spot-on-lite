@@ -897,6 +897,7 @@ void spot_on_lite_daemon_child::generate_certificate
     ("Spot-On-Lite Self-Signed Certificate");
   char *buffer = nullptr;
   int length = 0;
+  int rc = 0;
   unsigned char *common_name = nullptr;
 
   if(!error.isEmpty())
@@ -1047,11 +1048,16 @@ void spot_on_lite_daemon_child::generate_certificate
       goto done_label;
     }
 
+  if(m_ssl_key_size < 1024)
+    rc = X509_sign(x509, pk, EVP_sha512());
+  else
 #if OPENSSL_VERSION_NUMBER < 0x10101000L || defined(Q_OS_OPENBSD)
-  if(X509_sign(x509, pk, EVP_sha512()) == 0)
+    rc = X509_sign(x509, pk, EVP_sha512());
 #else
-  if(X509_sign(x509, pk, EVP_sha512()) == 0)
+    rc = X509_sign(x509, pk, EVP_sha3_512());
 #endif
+
+  if(rc == 0)
     {
       error = "X509_sign() returned zero";
       goto done_label;
