@@ -1716,7 +1716,7 @@ void spot_on_lite_daemon_child::process_read_data(const QByteArray &data)
 
 	  if(maximum > 0)
 	    {
-	      qint64 rc = m_local_socket.write(data.mid(0, maximum));
+	      auto rc = m_local_socket.write(data.mid(0, maximum));
 
 	      if(rc > 0)
 		{
@@ -1741,9 +1741,9 @@ void spot_on_lite_daemon_child::process_read_data(const QByteArray &data)
       m_remote_content_last_parsed = QDateTime::currentMSecsSinceEpoch();
     }
 
-  m_remote_content.
-    append(data.mid(0, qAbs(m_maximum_accumulated_bytes -
-			    m_remote_content.length())));
+  m_remote_content.append
+    (data.mid(0,
+	      qAbs(m_maximum_accumulated_bytes - m_remote_content.length())));
   process_remote_content();
   save_statistic("bytes_accumulated", QString::number(bytes_accumulated()));
 }
