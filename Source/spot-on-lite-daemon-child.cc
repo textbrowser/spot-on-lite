@@ -638,8 +638,6 @@ QList<QSslCipher> spot_on_lite_daemon_child::default_ssl_ciphers(void) const
 		cipher = QSslCipher(next, QSsl::TlsV1_1);
 	      else if(protocol == "TlsV1_0")
 		cipher = QSslCipher(next, QSsl::TlsV1_0);
-	      else
-		cipher = QSslCipher(next, QSsl::SslV3);
 
 	      if(cipher.isNull())
 		cipher = QSslCipher(next, QSsl::UnknownProtocol);
@@ -702,7 +700,8 @@ bool spot_on_lite_daemon_child::record_congestion
 	query.prepare("INSERT INTO congestion_control "
 		      "(date_time_inserted, hash) "
 		      "VALUES (?, ?)");
-	query.addBindValue(QDateTime::currentDateTime().toTime_t());
+	query.addBindValue
+	  (QDateTime::currentDateTime().currentSecsSinceEpoch());
 #if QT_VERSION >= 0x050100
 	query.addBindValue
 	  (QCryptographicHash::hash(data, QCryptographicHash::Sha3_384).
@@ -1979,7 +1978,8 @@ void spot_on_lite_daemon_child::record_remote_identity
 			  "(algorithm, date_time_inserted, identity, pid) "
 			  "VALUES (?, ?, ?, ?)");
 	    query.addBindValue(algorithm);
-	    query.addBindValue(QDateTime::currentDateTime().toTime_t());
+	    query.addBindValue
+	      (QDateTime::currentDateTime().currentSecsSinceEpoch());
 	    query.addBindValue(identity.toBase64());
 	    query.addBindValue(m_pid);
 	    query.exec();
@@ -2002,12 +2002,12 @@ void spot_on_lite_daemon_child::remove_expired_identities(void)
 
   while(it.hasNext())
     {
-      auto now = QDateTime::currentDateTime().toTime_t();
+      auto now = QDateTime::currentDateTime().currentSecsSinceEpoch();
 
       it.next();
 
-      if(now > it.value().toTime_t() && now - it.value().toTime_t() >
-	 m_identity_lifetime)
+      if(now > it.value().currentSecsSinceEpoch() &&
+	 now - it.value().currentSecsSinceEpoch() > m_identity_lifetime)
 	it.remove();
     }
 #else
@@ -2026,7 +2026,7 @@ void spot_on_lite_daemon_child::remove_expired_identities(void)
 	query.exec
 	  (QString("DELETE FROM remote_identities WHERE "
 		   "%1 - date_time_inserted > %2").
-	   arg(QDateTime::currentDateTime().toTime_t()).
+	   arg(QDateTime::currentDateTime().currentSecsSinceEpoch()).
 	   arg(m_identity_lifetime));
       }
 
@@ -2403,8 +2403,13 @@ void spot_on_lite_daemon_child::slot_local_socket_ready_read(void)
   }
 
   if(m_process_local_content_future.isFinished())
+#if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
     m_process_local_content_future = QtConcurrent::run
       (this, &spot_on_lite_daemon_child::process_local_content);
+#else
+    m_process_local_content_future = QtConcurrent::run
+      (&spot_on_lite_daemon_child::process_local_content, this);
+#endif
 }
 
 void spot_on_lite_daemon_child::slot_ready_read(void)
@@ -2475,8 +2480,13 @@ void spot_on_lite_daemon_child::slot_ready_read(void)
 void spot_on_lite_daemon_child::slot_remove_expired_identities(void)
 {
   if(m_expired_identities_future.isFinished())
+#if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
     m_expired_identities_future = QtConcurrent::run
       (this, &spot_on_lite_daemon_child::remove_expired_identities);
+#else
+    m_expired_identities_future = QtConcurrent::run
+      (&spot_on_lite_daemon_child::remove_expired_identities, this);
+#endif
 }
 
 void spot_on_lite_daemon_child::

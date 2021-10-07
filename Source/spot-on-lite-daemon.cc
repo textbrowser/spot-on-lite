@@ -909,7 +909,7 @@ void spot_on_lite_daemon::purge_congestion_control(void)
 	query.exec
 	  (QString("DELETE FROM congestion_control WHERE "
 		   "%1 - date_time_inserted > %2").
-	   arg(QDateTime::currentDateTime().toTime_t()).
+	   arg(QDateTime::currentDateTime().currentSecsSinceEpoch()).
 	   arg(m_congestion_control_lifetime.fetchAndAddAcquire(0)));
       }
 
@@ -975,8 +975,13 @@ void spot_on_lite_daemon::slot_peer_process_timeout(void)
 void spot_on_lite_daemon::slot_purge_congestion_control_timeout(void)
 {
   if(m_congestion_control_future.isFinished())
+#if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
     m_congestion_control_future = QtConcurrent::run
       (this, &spot_on_lite_daemon::purge_congestion_control);
+#else
+    m_congestion_control_future = QtConcurrent::run
+      (&spot_on_lite_daemon::purge_congestion_control, this);
+#endif
 }
 
 void spot_on_lite_daemon::slot_ready_read(void)

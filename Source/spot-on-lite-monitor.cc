@@ -101,8 +101,13 @@ spot_on_lite_monitor::spot_on_lite_monitor(void):QMainWindow()
   home_dir.mkdir(".spot-on-lite-monitor");
   qRegisterMetaType<QMap<Columns, QString> > ("QMap<Columns, QString>");
   m_daemon_pid = -1;
+#if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
   m_future = QtConcurrent::run
     (this, &spot_on_lite_monitor::read_statistics_database);
+#else
+  m_future = QtConcurrent::run
+    (&spot_on_lite_monitor::read_statistics_database, this);
+#endif
   m_path_timer.start(1500);
   m_ui.setupUi(this);
   m_ui.processes->sortByColumn(PID, Qt::AscendingOrder);
