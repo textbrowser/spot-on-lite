@@ -127,7 +127,7 @@ spot_on_lite_daemon_child::spot_on_lite_daemon_child
   m_congestion_control_file_name = congestion_control_file_name;
   m_end_of_message_marker = end_of_message_marker.toUtf8();
   m_general_timer.start(5000);
-  m_identity_lifetime = static_cast<unsigned int>
+  m_identity_lifetime = 1000 * static_cast<unsigned int>
     (qBound(5, identities_lifetime, 600));
   m_local_content_last_parsed = QDateTime::currentMSecsSinceEpoch();
   m_local_server_file_name = local_server_file_name;
@@ -701,7 +701,7 @@ bool spot_on_lite_daemon_child::record_congestion
 		      "(date_time_inserted, hash) "
 		      "VALUES (?, ?)");
 	query.addBindValue
-	  (QDateTime::currentDateTime().currentSecsSinceEpoch());
+	  (QDateTime::currentDateTime().currentMSecsSinceEpoch());
 #if QT_VERSION >= 0x050100
 	query.addBindValue
 	  (QCryptographicHash::hash(data, QCryptographicHash::Sha3_384).
@@ -1979,7 +1979,7 @@ void spot_on_lite_daemon_child::record_remote_identity
 			  "VALUES (?, ?, ?, ?)");
 	    query.addBindValue(algorithm);
 	    query.addBindValue
-	      (QDateTime::currentDateTime().currentSecsSinceEpoch());
+	      (QDateTime::currentDateTime().currentMSecsSinceEpoch());
 	    query.addBindValue(identity.toBase64());
 	    query.addBindValue(m_pid);
 	    query.exec();
@@ -2002,12 +2002,12 @@ void spot_on_lite_daemon_child::remove_expired_identities(void)
 
   while(it.hasNext())
     {
-      auto now = QDateTime::currentDateTime().currentSecsSinceEpoch();
+      auto now = QDateTime::currentDateTime().currentMSecsSinceEpoch();
 
       it.next();
 
-      if(now > it.value().currentSecsSinceEpoch() &&
-	 now - it.value().currentSecsSinceEpoch() > m_identity_lifetime)
+      if(now > it.value().currentMSecsSinceEpoch() &&
+	 now - it.value().currentMSecsSinceEpoch() > m_identity_lifetime)
 	it.remove();
     }
 #else
@@ -2026,7 +2026,7 @@ void spot_on_lite_daemon_child::remove_expired_identities(void)
 	query.exec
 	  (QString("DELETE FROM remote_identities WHERE "
 		   "%1 - date_time_inserted > %2").
-	   arg(QDateTime::currentDateTime().currentSecsSinceEpoch()).
+	   arg(QDateTime::currentDateTime().currentMSecsSinceEpoch()).
 	   arg(m_identity_lifetime));
       }
 

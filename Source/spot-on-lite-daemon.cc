@@ -75,7 +75,7 @@ spot_on_lite_daemon::spot_on_lite_daemon
 	   "socketpair() failure. Exiting.");
 
   m_configuration_file_name = configuration_file_name;
-  m_congestion_control_lifetime = 90; // Seconds
+  m_congestion_control_lifetime = 90 * 1000;
   m_congestion_control_timer.start(15000); // 15 Seconds
   m_general_timer.start(1500);
   m_local_so_rcvbuf_so_sndbuf = 32768; // 32 KiB
@@ -139,7 +139,7 @@ spot_on_lite_daemon::spot_on_lite_daemon
 
 spot_on_lite_daemon::spot_on_lite_daemon(void):QObject()
 {
-  m_congestion_control_lifetime = 90; // Seconds
+  m_congestion_control_lifetime = 90 * 1000;
   m_local_so_rcvbuf_so_sndbuf = 0;
   m_local_socket_server_directory_name = QDir::tempPath();
   m_maximum_accumulated_bytes = 0;
@@ -483,7 +483,7 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
 	  }
 	else
 	  m_congestion_control_lifetime.fetchAndStoreAcquire
-	    (congestion_control_lifetime);
+	    (1000 * congestion_control_lifetime);
       }
     else if(key == "local_so_rcvbuf_so_sndbuf")
       {
@@ -909,7 +909,7 @@ void spot_on_lite_daemon::purge_congestion_control(void)
 	query.exec
 	  (QString("DELETE FROM congestion_control WHERE "
 		   "%1 - date_time_inserted > %2").
-	   arg(QDateTime::currentDateTime().currentSecsSinceEpoch()).
+	   arg(QDateTime::currentDateTime().currentMSecsSinceEpoch()).
 	   arg(m_congestion_control_lifetime.fetchAndAddAcquire(0)));
       }
 
