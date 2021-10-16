@@ -121,6 +121,8 @@ spot_on_lite_daemon_child::spot_on_lite_daemon_child
 {
   m_attempt_local_connection_timer.setInterval(2500);
   m_attempt_remote_connection_timer.setInterval(2500);
+  m_bytes_read = 0ULL;
+  m_bytes_written = 0ULL;
   m_certificates_file_name = certificates_file_name;
   m_client_role = socket_descriptor < 0;
   m_configuration_file_name = configuration_file_name;
@@ -1719,7 +1721,7 @@ void spot_on_lite_daemon_child::process_read_data(const QByteArray &data)
 
 	      if(rc > 0)
 		{
-		  m_bytes_written += static_cast<quint64> (rc);
+		  m_bytes_written.fetchAndAddOrdered(static_cast<quint64> (rc));
 		  save_statistic
 		    ("bytes_written",
 		     QString::number(m_bytes_written.fetchAndAddOrdered(0ULL)));
@@ -1798,7 +1800,7 @@ void spot_on_lite_daemon_child::process_remote_content(void)
 	      auto rc = m_local_socket.write(data.mid(0, maximum));
 
 	      if(rc > 0)
-		m_bytes_written += static_cast<quint64> (rc);
+		m_bytes_written.fetchAndAddOrdered(static_cast<quint64> (rc));
 	    }
 	}
     }
@@ -2050,7 +2052,7 @@ set_ssl_ciphers(const QList<QSslCipher> &ciphers,
 {
   auto preferred(default_ssl_ciphers());
 
-  for(int i = preferred.size() - 1; i >= 0; i--)
+  for(auto i = preferred.size() - 1; i >= 0; i--)
     if(!ciphers.contains(preferred.at(i)))
       preferred.removeAt(i);
 
@@ -2066,7 +2068,7 @@ void spot_on_lite_daemon_child::share_identity(const QByteArray &data)
 
   if(rc > 0)
     {
-      m_bytes_written += static_cast<quint64> (rc);
+      m_bytes_written.fetchAndAddOrdered(static_cast<quint64> (rc));
       save_statistic
 	("bytes_written",
 	 QString::number(m_bytes_written.fetchAndAddOrdered(0ULL)));
@@ -2371,7 +2373,7 @@ void spot_on_lite_daemon_child::slot_local_socket_ready_read(void)
 
       if(!data.isEmpty())
 	{
-	  m_bytes_read += static_cast<quint64> (data.length());
+	  m_bytes_read.fetchAndAddOrdered(static_cast<quint64> (data.length()));
 
 	  {
 	    QWriteLocker lock(&m_local_content_mutex);
@@ -2420,7 +2422,8 @@ void spot_on_lite_daemon_child::slot_ready_read(void)
 
       if(data.isEmpty())
 	{
-	  m_bytes_read += static_cast<quint64> (data.length());
+	  m_bytes_read.fetchAndAddOrdered
+	    (static_cast<quint64> (data.length()));
 	  save_statistic
 	    ("bytes_read",
 	     QString::number(m_bytes_read.fetchAndAddOrdered(0ULL)));
@@ -2543,7 +2546,8 @@ void spot_on_lite_daemon_child::write(const QByteArray &data)
 		if(rc > 0)
 		  {
 		    i += rc;
-		    m_bytes_written += static_cast<quint64> (rc);
+		    m_bytes_written.fetchAndAddOrdered
+		      (static_cast<quint64> (rc));
 		    m_remote_socket->flush();
 		  }
 		else
@@ -2583,7 +2587,7 @@ void spot_on_lite_daemon_child::write(const QByteArray &data)
 	    if(rc > 0)
 	      {
 		i += static_cast<int> (rc);
-		m_bytes_written += static_cast<quint64> (rc);
+		m_bytes_written.fetchAndAddOrdered(static_cast<quint64> (rc));
 	      }
 	    else
 	      break;
