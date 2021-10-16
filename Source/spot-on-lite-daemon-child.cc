@@ -2420,7 +2420,7 @@ void spot_on_lite_daemon_child::slot_ready_read(void)
     {
       auto data(m_remote_socket->readAll());
 
-      if(data.isEmpty())
+      if(!data.isEmpty())
 	{
 	  m_bytes_read.fetchAndAddOrdered
 	    (static_cast<quint64> (data.length()));
