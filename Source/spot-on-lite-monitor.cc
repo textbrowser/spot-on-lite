@@ -27,6 +27,11 @@
 
 #include <QApplication>
 #include <QFileDialog>
+#ifdef Q_OS_ANDROID
+#if (QT_VERSION >= QT_VERSION_CHECK(6, 1, 0))
+#include <QJniObject>
+#endif
+#endif
 #include <QSqlDatabase>
 #include <QSqlQuery>
 #include <QtConcurrent>
@@ -491,6 +496,13 @@ void spot_on_lite_monitor::slot_path_timeout(void)
 void spot_on_lite_monitor::slot_quit(void)
 {
   QApplication::instance()->quit();
+#ifdef Q_OS_ANDROID
+#if (QT_VERSION >= QT_VERSION_CHECK(6, 1, 0))
+  auto activity = QJniObject(QNativeInterface::QAndroidApplication::context());
+
+  activity.callMethod<void> ("finishAndRemoveTask");
+#endif
+#endif
 }
 
 void spot_on_lite_monitor::slot_select_path(void)
