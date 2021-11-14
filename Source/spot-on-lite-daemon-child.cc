@@ -33,9 +33,11 @@ extern "C"
 #ifdef Q_OS_LINUX
 #include <linux/sockios.h>
 #endif
+#ifdef SPOTON_LITE_DAEMON_OPENSSL_SUPPORTED
 #include <openssl/pem.h>
 #include <openssl/ssl.h>
 #include <openssl/x509v3.h>
+#endif
 #include <sys/ioctl.h>
 #include <sys/resource.h>
 #include <sys/socket.h>
@@ -283,10 +285,14 @@ spot_on_lite_daemon_child::spot_on_lite_daemon_child
 
   if(!m_ssl_control_string.isEmpty() && m_ssl_key_size > 0)
     {
+#ifdef SPOTON_LITE_DAEMON_OPENSSL_SUPPORTED
 #if OPENSSL_VERSION_NUMBER < 0x10100000L || defined(Q_OS_OPENBSD)
       auto rc = SSL_library_init(); // Always returns 1.
 #else
       auto rc = OPENSSL_init_ssl(0, nullptr);
+#endif
+#else
+      int rc = 0;
 #endif
 
       if(m_protocol == QAbstractSocket::TcpSocket && rc == 1)
@@ -515,6 +521,7 @@ QList<QSslCipher> spot_on_lite_daemon_child::default_ssl_ciphers(void) const
   if(m_ssl_control_string.isEmpty())
     return list;
 
+#ifdef SPOTON_DAEMON_LITE_OPENSSL_SUPPORTED
   QStringList protocols;
   SSL *ssl = nullptr;
   SSL_CTX *ctx = nullptr;
@@ -662,6 +669,7 @@ QList<QSslCipher> spot_on_lite_daemon_child::default_ssl_ciphers(void) const
   if(list.isEmpty())
     log("spot_on_lite_daemon_child::default_ssl_ciphers(): "
 	"empty cipher list.");
+#endif
 
   return list;
 }
@@ -885,6 +893,7 @@ void spot_on_lite_daemon_child::data_received
 void spot_on_lite_daemon_child::generate_certificate
 (void *key, QByteArray &certificate, const long int days, QString &error)
 {
+#ifdef SPOTON_LITE_DAEMON_OPENSSL_SUPPORTED
   BIO *memory = nullptr;
   BUF_MEM *bptr;
   EC_KEY *ecc = nullptr;
@@ -1113,10 +1122,17 @@ void spot_on_lite_daemon_child::generate_certificate
   X509_free(x509);
   free(buffer);
   free(common_name);
+#else
+  Q_UNUSED(certificate);
+  Q_UNUSED(days);
+  Q_UNUSED(error);
+  Q_UNUSED(key);
+#endif
 }
 
 void spot_on_lite_daemon_child::generate_ssl_tls(void)
 {
+#ifdef SPOTON_LITE_DAEMON_OPENSSL_SUPPORTED
   BIGNUM *f4 = nullptr;
   BIO *private_memory = nullptr;
   BIO *public_memory = nullptr;
@@ -1377,6 +1393,7 @@ void spot_on_lite_daemon_child::generate_ssl_tls(void)
   RSA_free(rsa);
   free(private_buffer);
   free(public_buffer);
+#endif
 }
 
 void spot_on_lite_daemon_child::log(const QString &error) const

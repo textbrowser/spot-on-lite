@@ -30,7 +30,9 @@
 
 extern "C"
 {
+#ifdef SPOTON_LITE_DAEMON_OPENSSL_SUPPORTED
 #include <openssl/rsa.h>
+#endif
 }
 
 #include <QAbstractSocket>

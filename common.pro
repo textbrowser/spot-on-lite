@@ -1,9 +1,33 @@
 CONFIG += qt warn_on
 CONFIG -= app_bundle gui
+DEFINES += SPOTON_LITE_DAEMON_OPENSSL_SUPPORTED
 LANGUAGE = C++
 QMAKE_CXXFLAGS_RELEASE -= -O2
 
-freebsd-* {
+android {
+DEFINES += SPOTON_LITE_DAEMON_DTLS_SUPPORTED
+DEFINES -= SPOTON_LITE_DAEMON_OPENSSL_SUPPORTED
+QMAKE_CXXFLAGS_RELEASE += -O3 \
+                          -Wall \
+                          -Wcast-qual \
+                          -Wdouble-promotion \
+                          -Wextra \
+                          -Wfloat-equal \
+                          -Wformat=2 \
+                          -Wno-unused-variable \
+                          -Woverloaded-virtual \
+                          -Wpointer-arith \
+                          -Wundef \
+                          -Wstack-protector \
+                          -Wstrict-overflow=1 \
+                          -Wundef \
+                          -fPIE \
+                          -fstack-protector-all \
+                          -funroll-loops \
+                          -fwrapv \
+                          -pedantic \
+                          -std=c++11
+} else:freebsd-* {
 DEFINES += SPOTON_LITE_DAEMON_DTLS_SUPPORTED
 QMAKE_CXX = clang++
 QMAKE_CXXFLAGS_RELEASE += -O3 \
@@ -175,7 +199,8 @@ QMAKE_EXTRA_TARGETS += libshalisp
 QMAKE_LFLAGS += `ecl-config --ldflags`
 }
 
-macx {
+android {
+} else:macx {
 INCLUDEPATH += /usr/local/opt/openssl/include
 LIBS += -L/usr/local/opt/openssl/lib
 }
