@@ -28,17 +28,64 @@
 #ifndef _spot_on_lite_common_h_
 #define _spot_on_lite_common_h_
 
+extern "C"
+{
+#ifdef SPOTON_LITE_DAEMON_SCHEDULING_ENABLED
+#include <sched.h>
+#endif
+}
+
 #include <QSqlDatabase>
 #include <QSqlQuery>
 
 class spot_on_lite_common
 {
  public:
+  static int set_schedule(const QString &schedule)
+  {
+#ifdef SPOTON_LITE_DAEMON_SCHEDULING_ENABLED
+    if(schedule.trimmed().isEmpty())
+      return 0;
+
+    QString policy("");
+    auto list(schedule.trimmed().split(':'));
+    int p = 0;
+
+    policy = list.value(0).trimmed().toLower();
+
+    if(policy == "batch")
+      p = SCHED_BATCH;
+    else if(policy == "fifo")
+      p = SCHED_FIFO;
+    else if(policy == "idle")
+      p = SCHED_IDLE;
+    else if(policy == "other")
+      p = SCHED_OTHER;
+    else if(policy == "rr")
+      p = SCHED_RR;
+    else
+      return -1;
+
+    auto priority = qBound(sched_get_priority_min(p),
+			   list.value(1).trimmed().toInt(),
+			   sched_get_priority_max(p));
+    int rc = 0;
+    pid_t pid = 0;
+    struct sched_param parameters = {};
+
+    parameters.sched_priority = priority;
+    return sched_setscheduler(pid, p, &parameters);
+#else
+    Q_UNUSED(schedule);
+    return 0;
+#endif
+  }
+
   static void save_statistic(const QString &key,
-		      const QString &file_name,
-		      const QString &value,
-		      const qint64 pid,
-		      const quint64 db_connection_id)
+			     const QString &file_name,
+			     const QString &value,
+			     const qint64 pid,
+			     const quint64 db_connection_id)
   {
     {
       auto db = QSqlDatabase::addDatabase
