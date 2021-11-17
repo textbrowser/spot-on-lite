@@ -142,6 +142,7 @@ int main(int argc, char *argv[])
   QString peer_scope_identity("");
   QString protocol("");
   QString remote_identities_file_name("");
+  QString schedule("");
   QString server_identity("");
   QString ssl_control_string("");
   auto rc = EXIT_SUCCESS;
@@ -366,8 +367,7 @@ int main(int argc, char *argv[])
 	      }
 	  }
       }
-    else if(argv && argv[i] &&
-	    strcmp(argv[i], "--remote-identities-file") == 0)
+    else if(argv && argv[i] && strcmp(argv[i], "--remote-identities-file") == 0)
       {
 	if(remote_identities_file_name.isEmpty())
 	  {
@@ -381,6 +381,16 @@ int main(int argc, char *argv[])
 			  << std::endl;
 		return EXIT_FAILURE;
 	      }
+	  }
+      }
+    else if(argv && argv[i] && strcmp(argv[i], "--schedule") == 0)
+      {
+	if(schedule.isEmpty())
+	  {
+	    i += 1;
+
+	    if(argc > i && argv[i])
+	      schedule = argv[i];
 	  }
       }
     else if(argv && argv[i] && strcmp(argv[i], "--server-identity") == 0)
@@ -518,6 +528,7 @@ int main(int argc, char *argv[])
 	     peer_scope_identity,
 	     protocol,
 	     remote_identities_file_name,
+	     schedule,
 	     server_identity,
 	     ssl_control_string,
 	     identities_lifetime,

@@ -76,6 +76,7 @@ void spot_on_lite_daemon_udp_listener::new_connection
     return;
 
   QPointer<spot_on_lite_daemon_child> client;
+  auto child_process_schedule(m_parent->child_process_schedule());
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 15, 0))
   auto list(m_configuration.split(",", Qt::KeepEmptyParts));
 #else
@@ -100,6 +101,7 @@ void spot_on_lite_daemon_udp_listener::new_connection
      peer_address.scopeId(),
      "udp",
      m_parent->remote_identities_file_name(),
+     child_process_schedule,
      server_identity,
      list.value(3),
      list.value(9).toInt(),

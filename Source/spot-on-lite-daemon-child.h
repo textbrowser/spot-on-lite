@@ -72,6 +72,7 @@ class spot_on_lite_daemon_child: public QObject
      const QString &peer_scope_identity,
      const QString &protocol,
      const QString &remote_identities_file_name,
+     const QString &schedule,
      const QString &server_identity,
      const QString &ssl_control_string,
      const int identities_lifetime,

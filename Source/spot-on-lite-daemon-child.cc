@@ -110,6 +110,7 @@ spot_on_lite_daemon_child::spot_on_lite_daemon_child
  const QString &peer_scope_identity,
  const QString &protocol,
  const QString &remote_identities_file_name,
+ const QString &schedule,
  const QString &server_identity,
  const QString &ssl_control_string,
  const int identities_lifetime,
@@ -418,6 +419,7 @@ spot_on_lite_daemon_child::spot_on_lite_daemon_child
   save_statistic
     ("arguments", QCoreApplication::instance()->arguments().join(' '));
   save_statistic("name", QCoreApplication::instance()->arguments().value(0));
+  spot_on_lite_common::set_schedule(schedule);
 }
 
 spot_on_lite_daemon_child::~spot_on_lite_daemon_child()
