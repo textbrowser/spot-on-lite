@@ -485,6 +485,8 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
 	  m_congestion_control_lifetime.fetchAndStoreAcquire
 	    (1000 * congestion_control_lifetime);
       }
+    else if(key == "daemon_schedule")
+      spot_on_lite_common::set_schedule(settings.value(key).toString());
     else if(key == "local_so_rcvbuf_so_sndbuf")
       {
 	auto so_rcvbuf_so_sndbuf = settings.value(key).toInt(&o);

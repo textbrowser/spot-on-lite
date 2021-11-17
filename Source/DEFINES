@@ -20,6 +20,10 @@ SPOTON_LITE_DAEMON_IDENTITIES_CONTAINER_MAXIMUM_SIZE
 
 Maximum size of memory-resident identities container.
 
+SPOTON_LITE_DAEMON_SCHEDULING_ENABLED
+
+Defined if /usr/include/sched.h exists. Supports process scheduling.
+
 SPOTON_LITE_DAEMON_SHA_TEST
 
 If enabled, test SHA-512.
