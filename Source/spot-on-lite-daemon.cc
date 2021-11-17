@@ -180,6 +180,11 @@ QString spot_on_lite_daemon::child_process_ld_library_path(void) const
   return m_child_process_ld_library_path;
 }
 
+QString spot_on_lite_daemon::child_process_schedule(void) const
+{
+  return m_child_process_schedule;
+}
+
 QString spot_on_lite_daemon::configuration_file_name(void) const
 {
   return m_configuration_file_name;
@@ -430,6 +435,8 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
     else if(key == "child_process_ld_library_path")
       m_child_process_ld_library_path =
 	settings.value(key).toString().trimmed();
+    else if(key == "child_process_schedule")
+      m_child_process_schedule = settings.value(key).toString();
     else if(key == "congestion_control_file")
       {
 #ifdef Q_OS_WINDOWS

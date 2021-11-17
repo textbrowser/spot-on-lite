@@ -1,4 +1,4 @@
-.TH Spot-On-Lite-Daemon-Child 1 "September 12, 2021"
+.TH Spot-On-Lite-Daemon-Child 1 "November 17, 2021"
 .SH NAME
 Spot-On-Lite-Daemon-Child
 .SH SYNOPSIS
@@ -49,6 +49,9 @@ Absolute path of the remote identities file. Assumed to be correct. Only the fir
 .TP
 .BI --server-identity " identity"
 Identity of the parent listener. Required for permanent SSL/TLS certificates. Assumed to be correct. Only the first instance will be considered.
+.TP
+.BI --schedule " policy:priority"
+Specifies the desired schedule. Only the first instance will be considered.
 .TP
 .BI --silence-timeout " seconds"
 The process expects periodic data from its peer. If data is not received within the specified number of seconds, the process will terminate itself. The seconds parameter will be bound to the range [15, 3600]. If seconds is zero, the mechanism will be disabled. Only the first instance will be considered.
