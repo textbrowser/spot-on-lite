@@ -17,6 +17,7 @@ Completed Items
 - Partition datagrams.
 - Process accumulated data which may have arrived
   while a local socket is not connected.
+- Process scheduling for Unix.
 - Purge entries from UDP listener's m_clients.
 - Record certificate data.
 - Remote peers.
@@ -34,5 +35,4 @@ Remaining Items
 - Future-proof (replace SHA-512, etc.).
 - IPv6 scope identities?
 - Optionally share CD identities in client mode.
-- Process scheduling for Unix.
 - Windows? Yuck!
