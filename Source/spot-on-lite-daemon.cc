@@ -352,6 +352,8 @@ void spot_on_lite_daemon::prepare_peers(void)
 		    toStdString().data(),
 		    "--remote-identities-file",
 		    m_remote_identities_file_name.toStdString().data(),
+		    "--schedule",
+		    m_child_process_schedule.toStdString().data(),
 		    "--server-identity",
 		    server_identity.toStdString().data(),
 		    "--silence-timeout",

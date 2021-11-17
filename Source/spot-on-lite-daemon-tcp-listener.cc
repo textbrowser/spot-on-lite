@@ -80,33 +80,30 @@ void spot_on_lite_daemon_tcp_listener::incomingConnection
   if(sd == -1)
     return;
 
+  auto certificates_file_name(m_parent->certificates_file_name().toStdString());
+  auto child_process_schedule(m_parent->child_process_schedule().toStdString());
+  auto command(m_parent->child_process_file_name().toStdString());
+  auto configuration_file_name
+    (m_parent->configuration_file_name().toStdString());
+  auto congestion_control_file_name
+    (m_parent->congestion_control_file_name().toStdString());
+  auto ld_library_path(m_parent->child_process_ld_library_path().toStdString());
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 15, 0))
   auto list(m_configuration.split(",", Qt::KeepEmptyParts));
 #else
   auto list(m_configuration.split(",", QString::KeepEmptyParts));
 #endif
   auto listener_sd = static_cast<int> (socketDescriptor());
+  auto local_server_file_name(m_parent->local_server_file_name().toStdString());
+  auto log_file_name(m_parent->log_file_name().toStdString());
   auto maximum_accumulated_bytes = m_parent->maximum_accumulated_bytes();
+  auto remote_identities_file_name
+    (m_parent->remote_identities_file_name().toStdString());
+  auto server_identity(QString("%1:%2").
+		       arg(serverAddress().toString()).
+		       arg(serverPort()).toStdString());
   auto so_linger = list.value(6).toInt();
   pid_t pid = 0;
-  std::string certificates_file_name
-    (m_parent->certificates_file_name().toStdString());
-  std::string command
-    (m_parent->child_process_file_name().toStdString());
-  std::string configuration_file_name
-    (m_parent->configuration_file_name().toStdString());
-  std::string congestion_control_file_name
-    (m_parent->congestion_control_file_name().toStdString());
-  std::string ld_library_path
-    (m_parent->child_process_ld_library_path().toStdString());
-  std::string local_server_file_name
-    (m_parent->local_server_file_name().toStdString());
-  std::string log_file_name(m_parent->log_file_name().toStdString());
-  std::string remote_identities_file_name
-    (m_parent->remote_identities_file_name().toStdString());
-  std::string server_identity(QString("%1:%2").
-			      arg(serverAddress().toString()).
-			      arg(serverPort()).toStdString());
 
   if((pid = fork()) == 0)
     {
@@ -148,6 +145,8 @@ void spot_on_lite_daemon_tcp_listener::incomingConnection
 		QString::number(maximum_accumulated_bytes).toStdString().data(),
 		"--remote-identities-file",
 		remote_identities_file_name.data(),
+		"--schedule",
+		child_process_schedule.data(),
 		"--server-identity",
 		server_identity.data(),
 		"--silence-timeout",
