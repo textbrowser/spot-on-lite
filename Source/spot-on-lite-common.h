@@ -54,11 +54,23 @@ class spot_on_lite_common
     policy = list.value(0).trimmed().toLower();
 
     if(policy == "batch")
-      p = SCHED_BATCH;
+      {
+#ifdef Q_OS_LINUX
+	p = SCHED_BATCH;
+#else
+	return -1;
+#endif
+      }
     else if(policy == "fifo")
       p = SCHED_FIFO;
     else if(policy == "idle")
-      p = SCHED_IDLE;
+      {
+#ifdef Q_OS_LINUX
+	p = SCHED_IDLE;
+#else
+	return -1;
+#endif
+      }
     else if(policy == "other")
       p = SCHED_OTHER;
     else if(policy == "rr")
