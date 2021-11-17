@@ -1236,7 +1236,13 @@ void spot_on_lite_daemon_child::generate_ssl_tls(void)
       goto done_label;
     }
 
-  if(!PEM_write_bio_PrivateKey(private_memory, pk, 0, 0, 0, 0, 0))
+  if(!PEM_write_bio_PrivateKey(private_memory,
+			       pk,
+			       nullptr,
+			       nullptr,
+			       0,
+			       nullptr,
+			       nullptr))
     {
       error = "PEM_write_bio_PrivateKey() failure";
       goto done_label;
