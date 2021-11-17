@@ -437,7 +437,7 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
     else if(key == "child_process_ld_library_path")
       m_child_process_ld_library_path =
 	settings.value(key).toString().trimmed();
-    else if(key == "child_process_schedule")
+    else if(key == "child_schedule")
       m_child_process_schedule = settings.value(key).toString();
     else if(key == "congestion_control_file")
       {
