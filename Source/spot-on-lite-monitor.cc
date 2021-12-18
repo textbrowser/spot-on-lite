@@ -197,6 +197,7 @@ spot_on_lite_monitor::spot_on_lite_monitor(void):QMainWindow()
 	}
     }
 
+  m_ui.processes->resizeColumnsToContents();
   m_ui.processes->setFocus();
   restoreGeometry(settings.value("geometry").toByteArray());
   slot_deleted(m_daemon_pid);
@@ -403,6 +404,8 @@ void spot_on_lite_monitor::slot_added
 	("QToolButton {background-color: rgb(144, 238, 144);}");
       m_ui.off_on->setText(tr("Online"));
     }
+
+  m_ui.processes->resizeColumnsToContents();
 }
 
 void spot_on_lite_monitor::slot_changed
