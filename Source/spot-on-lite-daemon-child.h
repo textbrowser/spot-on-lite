@@ -155,7 +155,7 @@ class spot_on_lite_daemon_child: public QObject
   QHash<QByteArray, QString> remote_identities(bool *ok) const;
   QList<QByteArray> local_certificate_configuration(void) const;
   QList<QSslCipher> default_ssl_ciphers(void) const;
-  bool record_congestion(const QByteArray &data);
+  bool record_congestion(const QByteArray &data) const;
   int bytes_accumulated(void) const;
   int bytes_in_send_queue(void) const;
   static quint64 db_id(void);
@@ -166,7 +166,7 @@ class spot_on_lite_daemon_child: public QObject
 			    QString &error);
   void generate_ssl_tls(void);
   void log(const QString &error) const;
-  void memzero(QByteArray &bytes);
+  void memzero(QByteArray &bytes) const;
 #ifdef SPOTON_LITE_DAEMON_DTLS_SUPPORTED
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 12, 0))
   void prepare_dtls(void);

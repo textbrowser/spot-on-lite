@@ -690,7 +690,7 @@ bool spot_on_lite_daemon_child::memcmp(const QByteArray &a, const QByteArray &b)
 }
 
 bool spot_on_lite_daemon_child::record_congestion
-(const QByteArray &data)
+(const QByteArray &data) const
 {
   auto added = false;
   auto db_connection_id = db_id();
@@ -1431,7 +1431,7 @@ void spot_on_lite_daemon_child::log(const QString &error) const
     }
 }
 
-void spot_on_lite_daemon_child::memzero(QByteArray &bytes)
+void spot_on_lite_daemon_child::memzero(QByteArray &bytes) const
 {
   memset(bytes.data(), 0, static_cast<size_t> (bytes.length()));
   bytes.clear();
