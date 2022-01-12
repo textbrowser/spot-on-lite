@@ -485,7 +485,7 @@ remote_identities(bool *ok) const
 }
 
 QList<QByteArray> spot_on_lite_daemon_child::
-local_certificate_configuration(void)
+local_certificate_configuration(void) const
 {
   QList<QByteArray> list;
   auto db_connection_id = db_id();

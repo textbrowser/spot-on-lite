@@ -153,7 +153,7 @@ class spot_on_lite_daemon_child: public QObject
   static QAtomicInteger<quint64> s_db_id;
   unsigned int m_identity_lifetime;
   QHash<QByteArray, QString> remote_identities(bool *ok) const;
-  QList<QByteArray> local_certificate_configuration(void);
+  QList<QByteArray> local_certificate_configuration(void) const;
   QList<QSslCipher> default_ssl_ciphers(void) const;
   bool record_congestion(const QByteArray &data);
   int bytes_accumulated(void) const;
