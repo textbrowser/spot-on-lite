@@ -428,7 +428,8 @@ spot_on_lite_daemon_child::~spot_on_lite_daemon_child()
   stop_threads_and_timers();
 }
 
-QHash<QByteArray, QString>spot_on_lite_daemon_child::remote_identities(bool *ok)
+QHash<QByteArray, QString>spot_on_lite_daemon_child::
+remote_identities(bool *ok) const
 {
   if(ok)
     *ok = true;
@@ -785,7 +786,7 @@ quint64 spot_on_lite_daemon_child::db_id(void)
   return s_db_id.fetchAndAddOrdered(1);
 }
 
-void spot_on_lite_daemon_child::create_remote_identities_database(void)
+void spot_on_lite_daemon_child::create_remote_identities_database(void) const
 {
   auto db_connection_id = db_id();
 

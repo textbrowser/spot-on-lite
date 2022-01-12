@@ -152,14 +152,14 @@ class spot_on_lite_daemon_child: public QObject
   spot_on_lite_daemon_sha m_sha_512;
   static QAtomicInteger<quint64> s_db_id;
   unsigned int m_identity_lifetime;
-  QHash<QByteArray, QString> remote_identities(bool *ok);
+  QHash<QByteArray, QString> remote_identities(bool *ok) const;
   QList<QByteArray> local_certificate_configuration(void);
   QList<QSslCipher> default_ssl_ciphers(void) const;
   bool record_congestion(const QByteArray &data);
   int bytes_accumulated(void) const;
   int bytes_in_send_queue(void) const;
-  quint64 db_id(void);
-  void create_remote_identities_database(void);
+  static quint64 db_id(void);
+  void create_remote_identities_database(void) const;
   void generate_certificate(void *key,
 			    QByteArray &certificate,
 			    const long int days,
