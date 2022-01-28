@@ -620,9 +620,10 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
 	** 8  - Local SO_RCVBUF / SO_SNDBUF
 	** 9  - Identities Lifetime (Seconds)
 	** 10 - Protocol
+	** 11 - Certificate Lifetime (Days)
 	*/
 
-	const int expected = 11;
+	const int expected = 12;
 
 	if(list.size() != expected)
 	  {
@@ -821,6 +822,24 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
 		      << "\" protocol value is invalid. "
 		      << "Expecting a value of tcp or udp. "
 		      << "Ignoring entry."
+		      << std::endl;
+	  }
+
+	auto certificate_lifetime = list.at(11).toInt(&o);
+
+	if(certificate_lifetime < 1 || !o)
+	  {
+	    entry_ok = false;
+
+	    if(ok)
+	      *ok = false;
+
+	    std::cerr << "spot_on_lite_daemon::"
+		      << "process_configuration_file(): The "
+		      << "listener/peer \""
+		      << key.toStdString()
+		      << "\" certificate lifetime value is invalid. "
+		      << "Expecting a value greater than 0. Ignoring entry."
 		      << std::endl;
 	  }
 
