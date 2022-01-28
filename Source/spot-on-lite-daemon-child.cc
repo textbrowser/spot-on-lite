@@ -92,7 +92,6 @@ static int MAXIMUM_REMOTE_IDENTITIES =
   SPOTON_LITE_DAEMON_IDENTITIES_CONTAINER_MAXIMUM_SIZE;
 #endif
 #endif
-static auto FIVE_YEARS = 5L * 24L * 60L * 60L * 365L; // Five years.
 static int END_OF_MESSAGE_MARKER_WINDOW = 10000;
 static int MAXIMUM_TCP_WRITE_SIZE = 8192;
 static int MAXIMUM_UDP_WRITE_SIZE = 508;
@@ -113,6 +112,7 @@ spot_on_lite_daemon_child::spot_on_lite_daemon_child
  const QString &schedule,
  const QString &server_identity,
  const QString &ssl_control_string,
+ const int certificate_lifetime,
  const int identities_lifetime,
  const int local_so_rcvbuf_so_sndbuf,
  const int maximum_accumulated_bytes,
@@ -126,6 +126,8 @@ spot_on_lite_daemon_child::spot_on_lite_daemon_child
   m_attempt_remote_connection_timer.setInterval(2500);
   m_bytes_read = 0ULL;
   m_bytes_written = 0ULL;
+  m_certificate_lifetime = qBound
+    (1, certificate_lifetime, std::numeric_limits<int>::max());
   m_certificates_file_name = certificates_file_name;
   m_client_role = socket_descriptor < 0;
   m_configuration_file_name = configuration_file_name;
@@ -1147,7 +1149,7 @@ void spot_on_lite_daemon_child::generate_ssl_tls(void)
   QByteArray public_key;
   QString error("");
   RSA *rsa = nullptr;
-  auto days = FIVE_YEARS;
+  auto days = 24L * 60L * 60L * static_cast<long int> (m_certificate_lifetime);
   char *private_buffer = nullptr;
   char *public_buffer = nullptr;
   int ecc_group = 0;

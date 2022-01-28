@@ -146,6 +146,7 @@ int main(int argc, char *argv[])
   QString server_identity("");
   QString ssl_control_string("");
   auto rc = EXIT_SUCCESS;
+  int certificate_lifetime = -1;
   int identities_lifetime = -1;
   int local_so_rcvbuf_so_sndbuf = -1;
   int maximum_accumulated_bytes = -1;
@@ -156,7 +157,26 @@ int main(int argc, char *argv[])
   quint16 peer_port = 0;
 
   for(int i = 0; i < argc; i++)
-    if(argv && argv[i] && strcmp(argv[i], "--certificates-file") == 0)
+    if(argv && argv[i] && strcmp(argv[i], "--certificate-lifetime") == 0)
+      {
+	if(certificate_lifetime == -1)
+	  {
+	    i += 1;
+
+	    auto ok = false;
+
+	    if(argc > i)
+	      certificate_lifetime = spoton_atoi(&ok, argv[i]);
+
+	    if(!ok)
+	      {
+		std::cerr << "Invalid certificate-lifetime usage. Exiting."
+			  << std::endl;
+		return EXIT_FAILURE;
+	      }
+	  }
+      }
+    else if(argv && argv[i] && strcmp(argv[i], "--certificates-file") == 0)
       {
 	if(certificates_file_name.isEmpty())
 	  {
@@ -531,6 +551,7 @@ int main(int argc, char *argv[])
 	     schedule,
 	     server_identity,
 	     ssl_control_string,
+	     certificate_lifetime,
 	     identities_lifetime,
 	     local_so_rcvbuf_so_sndbuf,
 	     maximum_accumulated_bytes,
@@ -546,7 +567,8 @@ int main(int argc, char *argv[])
   catch(const std::bad_alloc &exception)
     {
       std::cerr << "Spot-On-Lite-Daemon-Child memory failure! "
-		<< "Aborting!" << std::endl;
+		<< "Aborting!"
+		<< std::endl;
       rc = EXIT_FAILURE;
     }
   catch(...)

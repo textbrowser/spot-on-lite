@@ -125,6 +125,8 @@ void spot_on_lite_daemon_tcp_listener::incomingConnection
 
       if(execle(command.data(),
 		command.data(),
+		"--certificate-lifetime",
+		list.value(11).toStdString().data(),
 		"--certificates-file",
 		certificates_file_name.data(),
 		"--configuration-file",

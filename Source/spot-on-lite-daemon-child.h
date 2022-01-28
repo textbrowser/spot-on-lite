@@ -75,6 +75,7 @@ class spot_on_lite_daemon_child: public QObject
      const QString &schedule,
      const QString &server_identity,
      const QString &ssl_control_string,
+     const int certificate_lifetime,
      const int identities_lifetime,
      const int local_so_rcvbuf_so_sndbuf,
      const int maximum_accumulated_bytes,
@@ -139,6 +140,7 @@ class spot_on_lite_daemon_child: public QObject
   QTimer m_keep_alive_timer;
   bool m_client_role;
   bool m_spot_on_lite;
+  int m_certificate_lifetime;
   int m_local_so_rcvbuf_so_sndbuf;
   int m_maximum_accumulated_bytes;
   int m_silence;
