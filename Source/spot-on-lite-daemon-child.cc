@@ -1470,6 +1470,7 @@ void spot_on_lite_daemon_child::prepare_local_socket(void)
     QWriteLocker lock(&m_local_content_mutex);
 
     m_local_content.clear();
+    m_local_content.squeeze();
     m_local_content_last_parsed = QDateTime::currentMSecsSinceEpoch();
   }
 
@@ -1571,6 +1572,7 @@ void spot_on_lite_daemon_child::process_local_content(void)
       {
 	emit write_signal(m_local_content);
 	m_local_content.clear();
+	m_local_content.squeeze();
 	m_local_content_last_parsed = QDateTime::currentMSecsSinceEpoch();
 	lock.unlock();
 	save_statistic
@@ -1619,6 +1621,7 @@ void spot_on_lite_daemon_child::process_local_content(void)
 
 	vector.append(bytes);
 	m_local_content.remove(0, bytes.length());
+	m_local_content.squeeze();
       }
   }
 
@@ -1708,6 +1711,7 @@ void spot_on_lite_daemon_child::process_local_content(void)
 	QWriteLocker lock(&m_local_content_mutex);
 
 	m_local_content.clear();
+	m_local_content.squeeze();
 	m_local_content_last_parsed = QDateTime::currentMSecsSinceEpoch();
       }
 
@@ -1767,6 +1771,7 @@ void spot_on_lite_daemon_child::process_read_data(const QByteArray &data)
   if(m_remote_content.length() >= m_maximum_accumulated_bytes)
     {
       m_remote_content.clear();
+      m_remote_content.squeeze();
       m_remote_content_last_parsed = QDateTime::currentMSecsSinceEpoch();
     }
 
@@ -1795,6 +1800,7 @@ void spot_on_lite_daemon_child::process_remote_content(void)
     {
       data = m_remote_content.mid(0, index + m_end_of_message_marker.length());
       m_remote_content.remove(0, data.length());
+      m_remote_content.squeeze();
       m_remote_content_last_parsed = QDateTime::currentMSecsSinceEpoch();
 
       if(m_client_role)
@@ -1844,10 +1850,12 @@ void spot_on_lite_daemon_child::purge_containers(void)
     QWriteLocker lock(&m_local_content_mutex);
 
     m_local_content.clear();
+    m_local_content.squeeze();
     m_local_content_last_parsed = QDateTime::currentMSecsSinceEpoch();
   }
 
   m_remote_content.clear();
+  m_remote_content.squeeze();
   m_remote_content_last_parsed = QDateTime::currentMSecsSinceEpoch();
   purge_remote_identities();
   save_statistic("bytes_accumulated", QString::number(bytes_accumulated()));
@@ -2292,6 +2300,7 @@ void spot_on_lite_daemon_child::slot_general_timer_timeout(void)
        END_OF_MESSAGE_MARKER_WINDOW)
       {
 	m_local_content.clear();
+	m_local_content.squeeze();
 	m_local_content_last_parsed = QDateTime::currentMSecsSinceEpoch();
       }
   }
@@ -2300,6 +2309,7 @@ void spot_on_lite_daemon_child::slot_general_timer_timeout(void)
      END_OF_MESSAGE_MARKER_WINDOW)
     {
       m_remote_content.clear();
+      m_remote_content.squeeze();
       m_remote_content_last_parsed = QDateTime::currentMSecsSinceEpoch();
     }
 
@@ -2409,6 +2419,7 @@ void spot_on_lite_daemon_child::slot_local_socket_ready_read(void)
 	    if(m_local_content.length() >= m_maximum_accumulated_bytes)
 	      {
 		m_local_content.clear();
+		m_local_content.squeeze();
 		m_local_content_last_parsed =
 		  QDateTime::currentMSecsSinceEpoch();
 	      }
