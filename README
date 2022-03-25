@@ -1,4 +1,4 @@
-Spot-On-Lite supports Qt 5.x. It has been tested on
+Spot-On-Lite supports Qt 5 LTS and 6 LTS. It has been tested on
 Debian and OpenBSD. It compiles on Debian, Mac OS X, and OpenBSD.
 
 Also included is a thread-safe Lisp implementation of SHA-512.
