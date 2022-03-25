@@ -201,6 +201,7 @@ class spot_on_lite_daemon_child: public QObject
   void slot_broadcast_capabilities(void);
   void slot_connected(void);
   void slot_disconnected(void);
+  void slot_error(QAbstractSocket::SocketError error);
   void slot_general_timer_timeout(void);
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 12, 0))
   void slot_handshake_timeout(void);
@@ -211,6 +212,7 @@ class spot_on_lite_daemon_child: public QObject
   void slot_local_socket_connected(void);
   void slot_local_socket_disconnected(void);
   void slot_local_socket_ready_read(void);
+  void slot_peer_verify_error(const QSslError &error);
   void slot_ready_read(void);
   void slot_remove_expired_identities(void);
   void slot_ssl_errors(const QList<QSslError> &errors);

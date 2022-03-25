@@ -274,6 +274,10 @@ spot_on_lite_daemon_child::spot_on_lite_daemon_child
 	  this,
 	  SLOT(slot_disconnected(void)));
   connect(m_remote_socket,
+	  SIGNAL(error(QAbstractSocket::SocketError)),
+	  this,
+	  SLOT(slot_error(QAbstractSocket::SocketError)));
+  connect(m_remote_socket,
 	  SIGNAL(readyRead(void)),
 	  this,
 	  SLOT(slot_ready_read(void)));
@@ -299,10 +303,16 @@ spot_on_lite_daemon_child::spot_on_lite_daemon_child
 #endif
 
       if(m_protocol == QAbstractSocket::TcpSocket && rc == 1)
-	connect(qobject_cast<QSslSocket *> (m_remote_socket),
-		SIGNAL(sslErrors(const QList<QSslError> &)),
-		this,
-		SLOT(slot_ssl_errors(const QList<QSslError> &)));
+	{
+	  connect(qobject_cast<QSslSocket *> (m_remote_socket),
+		  SIGNAL(peerVerifyError(const QSslError &)),
+		  this,
+		  SLOT(slot_peer_verify_error(const QSslError &)));
+	  connect(qobject_cast<QSslSocket *> (m_remote_socket),
+		  SIGNAL(sslErrors(const QList<QSslError> &)),
+		  this,
+		  SLOT(slot_ssl_errors(const QList<QSslError> &)));
+	}
 
       if(m_client_role && rc == 1)
 	{
@@ -526,7 +536,7 @@ QList<QSslCipher> spot_on_lite_daemon_child::default_ssl_ciphers(void) const
   if(m_ssl_control_string.isEmpty())
     return list;
 
-#ifdef SPOTON_DAEMON_LITE_OPENSSL_SUPPORTED
+#ifdef SPOTON_LITE_DAEMON_OPENSSL_SUPPORTED
   QStringList protocols;
   SSL *ssl = nullptr;
   SSL_CTX *ctx = nullptr;
@@ -1495,6 +1505,7 @@ void spot_on_lite_daemon_child::prepare_ssl_tls_configuration
 
       if(!m_ssl_configuration.privateKey().isNull())
 	{
+	  m_ssl_configuration.setPeerVerifyMode(QSslSocket::VerifyNone);
 	  m_ssl_configuration.setSslOption
 	    (QSsl::SslOptionDisableCompression, true);
 	  m_ssl_configuration.setSslOption
@@ -1511,6 +1522,11 @@ void spot_on_lite_daemon_child::prepare_ssl_tls_configuration
 #endif
 	  set_ssl_ciphers
 	    (m_ssl_configuration.supportedCiphers(), m_ssl_configuration);
+
+	  if(m_protocol == QAbstractSocket::TcpSocket)
+	    qobject_cast<QSslSocket *>
+	      (m_remote_socket)->setSslConfiguration(m_ssl_configuration);
+
 #ifdef SPOTON_LITE_DAEMON_DTLS_SUPPORTED
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 12, 0))
 	  if(m_protocol == QAbstractSocket::UdpSocket)
@@ -1531,9 +1547,6 @@ void spot_on_lite_daemon_child::prepare_ssl_tls_configuration
 	    }
 #endif
 #endif
-	  if(m_protocol == QAbstractSocket::TcpSocket)
-	    qobject_cast<QSslSocket *>
-	      (m_remote_socket)->setSslConfiguration(m_ssl_configuration);
 	}
       else
 	/*
@@ -2291,6 +2304,11 @@ void spot_on_lite_daemon_child::slot_disconnected(void)
     }
 }
 
+void spot_on_lite_daemon_child::slot_error(QAbstractSocket::SocketError error)
+{
+  Q_UNUSED(error);
+}
+
 void spot_on_lite_daemon_child::slot_general_timer_timeout(void)
 {
   {
@@ -2451,6 +2469,11 @@ void spot_on_lite_daemon_child::slot_local_socket_ready_read(void)
     m_process_local_content_future = QtConcurrent::run
       (&spot_on_lite_daemon_child::process_local_content, this);
 #endif
+}
+
+void spot_on_lite_daemon_child::slot_peer_verify_error(const QSslError &error)
+{
+  Q_UNUSED(error);
 }
 
 void spot_on_lite_daemon_child::slot_ready_read(void)
