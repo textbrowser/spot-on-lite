@@ -95,7 +95,7 @@ static int MAXIMUM_REMOTE_IDENTITIES =
 static int END_OF_MESSAGE_MARKER_WINDOW = 10000;
 static int MAXIMUM_TCP_WRITE_SIZE = 8192;
 static int MAXIMUM_UDP_WRITE_SIZE = 508;
-static int s_certificate_version = 3;
+static int s_certificate_version = 2;
 
 spot_on_lite_daemon_child::spot_on_lite_daemon_child
 (const QByteArray &initial_data,
@@ -1013,9 +1013,7 @@ void spot_on_lite_daemon_child::generate_certificate
 	 m_remote_socket->localAddress().toString().toLatin1().constData(),
 	 static_cast<size_t> (length));
   common_name_entry = X509_NAME_ENTRY_create_by_NID
-    (nullptr,
-     NID_commonName, V_ASN1_PRINTABLESTRING,
-     common_name, length);
+    (nullptr, NID_commonName, V_ASN1_PRINTABLESTRING, common_name, length);
 
   if(!common_name_entry)
     {
