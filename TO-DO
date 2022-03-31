@@ -6,6 +6,7 @@ Completed Items
 - Cryptographic Discovery. Requires SHA-512.
 - DTLS cookies.
 - DTLS.
+- Debian release.
 - Disable Nagle's algorithm.
 - Disable socket linger. Optional.
 - Distribute CD identities. An identity is shared whenever a server
@@ -30,7 +31,6 @@ Completed Items
 Remaining Items
 
 - Android.
-- Debian release.
 - Echo proxy.
 - Future-proof (replace SHA-512, etc.).
 - IPv6 scope identities?
