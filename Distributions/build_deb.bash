@@ -11,11 +11,10 @@ cp -p ./spot-on-lite-monitor.sh ./usr/local/spot-on-lite/.
 cp -pr ./Documentation/* ./usr/local/spot-on-lite/Documentation/.
 
 mkdir -p spot-on-lite-debian/usr/local
-mkdir -p spot-on-lite-debian/usr/share/applications
-cp -p ./spot-on-lite.desktop spot-on-lite-debian/usr/share/applications/.
 cp -pr ./DEBIAN spot-on-lite-debian/.
 cp -r ./usr/local/spot-on-lite spot-on-lite-debian/usr/local/.
 fakeroot dpkg-deb --build spot-on-lite-debian Spot-On-Lite-2022.03.30_amd64.deb
+mv Spot-On-Lite-2022.03.30_amd64.deb ~/Desktop/.
 rm -fr ./usr
 rm -fr spot-on-lite-debian
 make distclean
