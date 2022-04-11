@@ -161,37 +161,37 @@ void spot_on_lite_daemon_udp_listener::slot_general_timeout(void)
 
 void spot_on_lite_daemon_udp_listener::slot_ready_read(void)
 {
+  QByteArray data;
+  QHostAddress peer_address;
+  qint64 size = 0;
+  quint16 peer_port = 0;
+
   while(hasPendingDatagrams())
     {
-      QByteArray data;
-      QHostAddress peer_address;
-      auto size = qMax(static_cast<qint64> (0), pendingDatagramSize());
-      quint16 peer_port = 0;
-
+      size = qMax(static_cast<qint64> (0), pendingDatagramSize());
       data.resize(static_cast<int> (size));
 
       if(readDatagram(data.data(), size, &peer_address, &peer_port) <= 0)
 	continue;
 
-      if(m_clients.size() >= m_max_pending_connections)
-	continue;
-      else if(peer_address.isNull())
+      if(m_clients.size() >= m_max_pending_connections || peer_address.isNull())
 	continue;
 
-      if(!m_clients.contains(QString::number(peer_port) +
-			     peer_address.scopeId() +
-			     peer_address.toString()))
+      auto key(QString::number(peer_port) +
+	       peer_address.scopeId() +
+	       peer_address.toString());
+
+      if(!m_clients.contains(key))
 	new_connection(data, peer_address, peer_port);
       else
 	{
 	  QPointer<spot_on_lite_daemon_child> client
-	    (m_clients.value(QString::number(peer_port) +
-			     peer_address.scopeId() +
-			     peer_address.toString(),
-			     nullptr));
+	    (m_clients.value(key, nullptr));
 
 	  if(client)
 	    client->data_received(data, peer_address, peer_port);
+	  else
+	    m_clients.remove(key);
 	}
     }
 }
