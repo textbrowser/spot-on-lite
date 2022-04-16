@@ -1,0 +1,11 @@
+# Limit 2 connections per IP.
+
+iptables -A INPUT \
+	 --connlimit-above 2 \
+	 --connlimit-mask 32 \
+	 --dport 4710 \
+	 --reject-with tcp-reset \ 
+	 --syn \
+	 -j REJECT \
+	 -m connlimit \
+	 -p tcp
