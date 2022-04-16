@@ -1,3 +1,7 @@
+# Delete rule.
+
+sudo iptables -D INPUT 1
+
 # Limit 2 connections per IP.
 
 iptables -A INPUT \
@@ -9,3 +13,7 @@ iptables -A INPUT \
 	 --connlimit-mask 32 \
 	 -j REJECT \
 	 --reject-with tcp-reset
+
+# List contents.
+
+sudo iptables -L --list-numbers
