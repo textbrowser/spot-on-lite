@@ -8,12 +8,12 @@ iptables -A INPUT \
 	 -p tcp \
 	 --dport 4710 \
 	 --syn \
+	 -j REJECT \
+	 --reject-with tcp-reset \
 	 -m connlimit \
 	 --connlimit-above 2 \
-	 --connlimit-mask 32 \
-	 -j REJECT \
-	 --reject-with tcp-reset
+	 --connlimit-mask 32
 
 # List contents.
 
-sudo iptables -L --list-numbers
+sudo iptables -L --line-numbers
