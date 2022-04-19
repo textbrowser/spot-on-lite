@@ -218,6 +218,7 @@ int main(int argc, char *argv[])
 	    string += "  --help                        display helpful text\n";
 	    string += "  --keep-terminal               "
 	      "do not become a daemon\n";
+	    string += "  --statistics                  display vitals\n";
 	    string += "  --validate-configuration-file file\n";
 	    std::cout << string << std::endl;
 	    return EXIT_SUCCESS;
