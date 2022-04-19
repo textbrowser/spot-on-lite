@@ -117,6 +117,7 @@ class spot_on_lite_common
 		     "memory TEXT, "
 		     "name TEXT, "
 		     "pid BIGINT NOT NULL PRIMARY KEY, "
+		     "start_time BIGINT, "
 		     "type TEXT)");
 	  query.exec("PRAGMA journal_mode = OFF");
 	  query.exec("PRAGMA synchronous = OFF");

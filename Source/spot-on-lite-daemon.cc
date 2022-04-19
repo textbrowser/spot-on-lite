@@ -131,6 +131,12 @@ spot_on_lite_daemon::spot_on_lite_daemon
      QCoreApplication::applicationPid(),
      static_cast<quint64> (1));
   spot_on_lite_common::save_statistic
+    ("start_time",
+     m_statistics_file_name,
+     QString::number(QDateTime::currentSecsSinceEpoch()),
+     QCoreApplication::applicationPid(),
+     static_cast<quint64> (1));
+  spot_on_lite_common::save_statistic
     ("type",
      m_statistics_file_name,
      "daemon",
@@ -1146,6 +1152,7 @@ void spot_on_lite_daemon::vitals(void)
 		      "'IP Information', ip_information, "
 		      "'Memory', memory, "
 		      "'Name', name, "
+		      "'Uptime', start_time, "
 		      "'Type', type "
 		      "FROM statistics "
 		      "GROUP BY pid ORDER BY pid");
@@ -1186,6 +1193,19 @@ void spot_on_lite_daemon::vitals(void)
 		      std::cout << locale.
 			           toString(record.value(i).toULongLong()).
 			           toStdString();
+		    else if(record.fieldName(i).contains("start_time"))
+		      {
+			QDateTime date_time;
+
+			date_time.setSecsSinceEpoch
+			  (record.value(i).toLongLong());
+			std::cout << QString::
+			             number(date_time.
+					    secsTo(QDateTime::
+						   currentDateTime())).
+			             toStdString()
+				  << " Second(s)";
+		      }
 		    else
 		      std::cout << string.toStdString();
 

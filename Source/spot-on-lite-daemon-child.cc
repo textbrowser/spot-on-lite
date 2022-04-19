@@ -431,6 +431,8 @@ spot_on_lite_daemon_child::spot_on_lite_daemon_child
   save_statistic
     ("arguments", QCoreApplication::instance()->arguments().join(' '));
   save_statistic("name", QCoreApplication::instance()->arguments().value(0));
+  save_statistic
+    ("start_time", QString::number(QDateTime::currentSecsSinceEpoch()));
   spot_on_lite_common::set_schedule(schedule);
 }
 
