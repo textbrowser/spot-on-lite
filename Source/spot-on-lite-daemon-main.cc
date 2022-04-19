@@ -205,6 +205,29 @@ static int prepare_signal_handlers(void)
 
 int main(int argc, char *argv[])
 {
+  for(int i = 0; i < argc; i++)
+    if(argv && argv[i])
+      {
+	if(strcmp(argv[i], "--help") == 0)
+	  {
+	    std::string string;
+
+	    string += "Usage: Spot-On-Lite-Daemon [OPTION]...\n";
+	    string += "Spot-On-Lite-Daemon\n\n";
+	    string += "  --configuration-file          file\n";
+	    string += "  --help                        display helpful text\n";
+	    string += "  --keep-terminal               "
+	      "do not become a daemon\n";
+	    string += "  --validate-configuration-file file\n";
+	    std::cout << string << std::endl;
+	    return EXIT_SUCCESS;
+	  }
+	else if(strcmp(argv[i], "--statistics") == 0)
+	  {
+	    return EXIT_SUCCESS;
+	  }
+      }
+
 #ifdef SPOTON_LITE_DAEMON_SHA_TEST
   spot_on_lite_daemon_sha s;
 
@@ -223,21 +246,6 @@ int main(int argc, char *argv[])
 	       "331b99dec4b5433ac7d329eeb6dd26545e96e55b874be909")
 	   << ".";
 #endif
-
-  for(int i = 0; i < argc; i++)
-    if(argv && argv[i] && strcmp(argv[i], "--help") == 0)
-      {
-        std::string string;
-
-        string += "Usage: Spot-On-Lite-Daemon [OPTION]...\n";
-        string += "Spot-On-Lite-Daemon\n\n";
-	string += "  --configuration-file          file\n";
-        string += "  --help                        display helpful text\n";
-	string += "  --keep-terminal               do not become a daemon\n";
-	string += "  --validate-configuration-file file\n";
-        std::cout << string << std::endl;
-        return EXIT_SUCCESS;
-      }
 
   auto keep_terminal = false;
 
