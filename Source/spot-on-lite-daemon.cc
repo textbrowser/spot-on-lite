@@ -47,6 +47,7 @@ extern "C"
 #include <QSocketNotifier>
 #include <QSqlDatabase>
 #include <QSqlQuery>
+#include <QSqlRecord>
 #include <QStringList>
 #include <QtConcurrent>
 #include <QtDebug>
@@ -1119,4 +1120,77 @@ void spot_on_lite_daemon::validate_configuration_file
 
   for(const auto &i : m_peers_properties)
     qDebug() << i.split(',');
+}
+
+void spot_on_lite_daemon::vitals(void)
+{
+  QString connectionName("vitals");
+
+  {
+    QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE", connectionName);
+
+    db.setDatabaseName(QDir::tempPath() +
+		       QDir::separator() +
+		       "spot-on-lite-daemon-statistics.sqlite");
+
+    if(db.open())
+      {
+	QLocale locale;
+	QSqlQuery query(db);
+
+	query.setForwardOnly(true);
+	query.prepare("SELECT DISTINCT(pid), "
+		      "'Bytes Accumulated', bytes_accumulated, "
+		      "'Bytes Read', bytes_read, "
+		      "'Bytes Written', bytes_written, "
+		      "'IP Information', ip_information, "
+		      "'Memory', memory, "
+		      "'Name', name, "
+		      "'Type', type "
+		      "FROM statistics "
+		      "GROUP BY pid ORDER BY pid");
+
+	if(query.exec())
+	  {
+	    while(query.next())
+	      {
+		auto record(query.record());
+
+		for(int i = 0; i < record.count(); i++)
+		  {
+		    if(i == 0)
+		      {
+			std::cout << QString("%1").arg("PID", -20, ' ').
+			             toStdString()
+				  << record.value(i).toString().toStdString()
+				  << std::endl;
+			continue;
+		      }
+
+		    auto string(record.value(i).toString());
+
+		    if(i % 2 == 1)
+		      string = QString("%1").arg(string, -20, ' ');
+
+		    if(record.fieldName(i).contains("bytes") ||
+		       record.fieldName(i).contains("memory"))
+		      std::cout << locale.
+			           toString(record.value(i).toULongLong()).
+			           toStdString();
+		    else
+		      std::cout << string.toStdString();
+
+		    if(i % 2 == 0)
+		      std::cout << std::endl;
+		  }
+
+		std::cout << std::endl;
+	      }
+	  }
+      }
+
+    db.close();
+  }
+
+  QSqlDatabase::removeDatabase(connectionName);
 }

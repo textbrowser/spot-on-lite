@@ -224,6 +224,7 @@ int main(int argc, char *argv[])
 	  }
 	else if(strcmp(argv[i], "--statistics") == 0)
 	  {
+	    spot_on_lite_daemon::vitals();
 	    return EXIT_SUCCESS;
 	  }
       }

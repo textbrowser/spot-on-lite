@@ -58,6 +58,7 @@ class spot_on_lite_daemon: public QObject
   QString remote_identities_file_name(void) const;
   int maximum_accumulated_bytes(void) const;
   static void handler_signal(int signal_number);
+  static void vitals(void);
   void log(const QString &error) const;
   void start(void);
   void validate_configuration_file
