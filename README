@@ -1,3 +1,4 @@
+<html>
 Spot-On-Lite supports Qt 5 LTS and 6 LTS. It has been tested on
 Debian and OpenBSD. It compiles on Debian, Mac OS X, and OpenBSD.
 
@@ -33,3 +34,4 @@ Summary of Spot-On-Lite
 <li>UDP unicast.</li>
 <li>Vitals!</li>
 </ul>
+</html>
