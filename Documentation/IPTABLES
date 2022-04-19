@@ -14,6 +14,18 @@ iptables -A INPUT \
 	 --connlimit-above 2 \
 	 --connlimit-mask 32
 
+# Limit 50 connections to port 4710.
+
+iptables -A INPUT \
+	 -p tcp \
+	 --dport 4710 \
+	 --syn \
+	 -j REJECT \
+	 --reject-with tcp-reset \
+	 -m connlimit \
+	 --connlimit-above 50 \
+	 --connlimit-mask 0
+
 # List contents.
 
 sudo iptables -L --line-numbers
