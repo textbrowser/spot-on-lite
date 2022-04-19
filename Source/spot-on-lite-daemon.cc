@@ -1057,7 +1057,7 @@ void spot_on_lite_daemon::slot_signal(void)
 
   memset(a, 0, sizeof(a));
 
-  auto rc = ::read(s_signal_fd[1], a, sizeof(a));
+  auto rc = ::read(s_signal_fd[1], a, sizeof(a) - 1);
 
   if(rc > 0)
     {
@@ -1160,10 +1160,19 @@ void spot_on_lite_daemon::vitals(void)
 		  {
 		    if(i == 0)
 		      {
+			auto pid = static_cast<pid_t>
+			  (record.value(i).toLongLong());
+			std::string dead("");
+
+			if(kill(pid, 0) == -1 && errno == ESRCH)
+			  dead = " (DEAD)";
+
 			std::cout << QString("%1").arg("PID", -20, ' ').
 			             toStdString()
 				  << record.value(i).toString().toStdString()
+				  << dead
 				  << std::endl;
+
 			continue;
 		      }
 
