@@ -1162,6 +1162,7 @@ void spot_on_lite_daemon::vitals(void)
 	    while(query.next())
 	      {
 		auto record(query.record());
+		std::string dead("");
 
 		for(int i = 0; i < record.count(); i++)
 		  {
@@ -1169,7 +1170,6 @@ void spot_on_lite_daemon::vitals(void)
 		      {
 			auto pid = static_cast<pid_t>
 			  (record.value(i).toLongLong());
-			std::string dead("");
 
 			if(kill(pid, 0) == -1 && errno == ESRCH)
 			  dead = " (DEAD)";
@@ -1179,7 +1179,6 @@ void spot_on_lite_daemon::vitals(void)
 				  << record.value(i).toString().toStdString()
 				  << dead
 				  << std::endl;
-
 			continue;
 		      }
 
@@ -1195,16 +1194,21 @@ void spot_on_lite_daemon::vitals(void)
 			           toStdString();
 		    else if(record.fieldName(i).contains("start_time"))
 		      {
-			QDateTime date_time;
+			if(dead.empty())
+			  std::cout << "0 Seconds";
+			else
+			  {
+			    QDateTime date_time;
 
-			date_time.setSecsSinceEpoch
-			  (record.value(i).toLongLong());
-			std::cout << QString::
-			             number(date_time.
-					    secsTo(QDateTime::
-						   currentDateTime())).
-			             toStdString()
-				  << " Second(s)";
+			    date_time.setSecsSinceEpoch
+			      (record.value(i).toLongLong());
+			    std::cout << QString::
+			                 number(date_time.
+						secsTo(QDateTime::
+						       currentDateTime())).
+			                 toStdString()
+				      << " Second(s)";
+			  }
 		      }
 		    else
 		      std::cout << string.toStdString();
