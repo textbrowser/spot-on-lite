@@ -1194,7 +1194,7 @@ void spot_on_lite_daemon::vitals(void)
 			           toStdString();
 		    else if(record.fieldName(i).contains("start_time"))
 		      {
-			if(dead.empty())
+			if(!dead.empty())
 			  std::cout << "0 Seconds";
 			else
 			  {
