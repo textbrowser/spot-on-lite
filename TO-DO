@@ -36,4 +36,5 @@ Remaining Items
 - Future-proof (replace SHA-512, etc.).
 - IPv6 scope identities?
 - Optionally share CD identities in client mode.
+- Uptime statistic and large values (seconds since is zero).
 - Windows? Yuck!
