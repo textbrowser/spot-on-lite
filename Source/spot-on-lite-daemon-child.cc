@@ -1749,11 +1749,11 @@ void spot_on_lite_daemon_child::process_read_data(const QByteArray &data)
   if(data.isEmpty())
     return;
 
+  if(m_silence > 0)
+    m_keep_alive_timer.start();
+
   if(m_client_role || m_end_of_message_marker.isEmpty())
     {
-      if(m_silence > 0)
-	m_keep_alive_timer.start();
-
       if(m_local_socket.state() == QLocalSocket::ConnectedState &&
 	 record_congestion(data))
 	{
@@ -1773,13 +1773,10 @@ void spot_on_lite_daemon_child::process_read_data(const QByteArray &data)
 		}
 	    }
 	}
-
-      if(m_end_of_message_marker.isEmpty())
-	return;
     }
 
-  if(m_silence > 0)
-    m_keep_alive_timer.start();
+  if(m_end_of_message_marker.isEmpty())
+    goto done_label;
 
   if(m_remote_content.length() >= m_maximum_accumulated_bytes)
     {
@@ -1792,6 +1789,8 @@ void spot_on_lite_daemon_child::process_read_data(const QByteArray &data)
     (data.mid(0,
 	      qAbs(m_maximum_accumulated_bytes - m_remote_content.length())));
   process_remote_content();
+
+ done_label:
   save_statistic("bytes_accumulated", QString::number(bytes_accumulated()));
 }
 
@@ -1799,7 +1798,11 @@ void spot_on_lite_daemon_child::process_remote_content(void)
 {
   if(m_end_of_message_marker.isEmpty() ||
      m_local_socket.state() != QLocalSocket::ConnectedState)
-    return;
+    {
+      m_remote_content.clear();
+      m_remote_content.squeeze();
+      return;
+    }
 
   QByteArray data;
   auto type_capabilities
@@ -2113,6 +2116,9 @@ set_ssl_ciphers(const QList<QSslCipher> &ciphers,
 
 void spot_on_lite_daemon_child::share_identity(const QByteArray &data)
 {
+  if(m_local_socket.state() != QLocalSocket::ConnectedState)
+    return;
+
   auto rc = m_local_socket.write(data);
 
   if(rc > 0)
