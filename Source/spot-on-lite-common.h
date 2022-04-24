@@ -92,6 +92,15 @@ class spot_on_lite_common
 #endif
   }
 
+  static void save_statistic(const QList<QVariant> &list)
+  {
+    save_statistic(list.value(0).toString(),
+		   list.value(1).toString(),
+		   list.value(2).toString(),
+		   list.value(3).toLongLong(),
+		   list.value(4).toULongLong());
+  }
+
   static void save_statistic(const QString &key,
 			     const QString &file_name,
 			     const QString &value,

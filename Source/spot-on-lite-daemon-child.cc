@@ -2094,8 +2094,18 @@ void spot_on_lite_daemon_child::remove_expired_identities(void)
 void spot_on_lite_daemon_child::save_statistic
 (const QString &key, const QString &value)
 {
-  spot_on_lite_common::save_statistic
-    (key, m_statistics_file_name, value, m_pid, db_id());
+  QList<QVariant> list;
+
+  list << key << m_statistics_file_name << value << m_pid << db_id();
+
+  if(m_statistics_future.isFinished())
+#if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
+    m_statistics_future = QtConcurrent::run
+      (&spot_on_lite_common::save_statistic, list);
+#else
+    m_statistics_future = QtConcurrent::run
+      (&spot_on_lite_common::save_statistic, list);
+#endif
 }
 
 void spot_on_lite_daemon_child::
@@ -2581,6 +2591,7 @@ void spot_on_lite_daemon_child::stop_threads_and_timers(void)
   m_general_timer.stop();
   m_keep_alive_timer.stop();
   m_process_local_content_future.cancel();
+  m_statistics_future.cancel();
 
   /*
   ** Wait for threads to complete.
@@ -2588,6 +2599,7 @@ void spot_on_lite_daemon_child::stop_threads_and_timers(void)
 
   m_expired_identities_future.waitForFinished();
   m_process_local_content_future.waitForFinished();
+  m_statistics_future.waitForFinished();
 }
 
 void spot_on_lite_daemon_child::write(const QByteArray &data)
