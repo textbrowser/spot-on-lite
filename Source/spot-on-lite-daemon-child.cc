@@ -2489,13 +2489,8 @@ void spot_on_lite_daemon_child::slot_ready_read(void)
       auto data(m_remote_socket->readAll());
 
       if(!data.isEmpty())
-	{
-	  m_bytes_read.fetchAndAddOrdered
-	    (static_cast<quint64> (data.length()));
-	  save_statistic
-	    ("bytes_read",
-	     QString::number(m_bytes_read.fetchAndAddOrdered(0ULL)));
-	}
+	m_bytes_read.fetchAndAddOrdered
+	  (static_cast<quint64> (data.length()));
 
 #ifdef SPOTON_LITE_DAEMON_DTLS_SUPPORTED
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 12, 0))
@@ -2524,10 +2519,9 @@ void spot_on_lite_daemon_child::slot_ready_read(void)
 	    {
 	      if(!m_dtls->doHandshake(socket, data))
 		{
-		  log
-		    (QString("spot_on_lite_daemon_child::"
-			     "slot_ready_read(): doHandshake() failure (%1).").
-		     arg(m_dtls->dtlsErrorString()));
+		  log(QString("spot_on_lite_daemon_child::slot_ready_read(): "
+			      "doHandshake() failure (%1).").
+		      arg(m_dtls->dtlsErrorString()));
 
 		  if(!(m_dtls->dtlsError() == QDtlsError::NoError ||
 		       m_dtls->dtlsError() == QDtlsError::TlsNonFatalError))
@@ -2546,6 +2540,9 @@ void spot_on_lite_daemon_child::slot_ready_read(void)
 
       process_read_data(data);
     }
+
+  save_statistic
+    ("bytes_read", QString::number(m_bytes_read.fetchAndAddOrdered(0ULL)));
 }
 
 void spot_on_lite_daemon_child::slot_remove_expired_identities(void)
@@ -2669,6 +2666,7 @@ void spot_on_lite_daemon_child::write(const QByteArray &data)
       }
     }
 
-  save_statistic("bytes_written",
-		 QString::number(m_bytes_written.fetchAndAddOrdered(0ULL)));
+  save_statistic
+    ("bytes_written",
+     QString::number(m_bytes_written.fetchAndAddOrdered(0ULL)));
 }
