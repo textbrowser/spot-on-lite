@@ -96,6 +96,7 @@ static int END_OF_MESSAGE_MARKER_WINDOW = 10000;
 static int MAXIMUM_TCP_WRITE_SIZE = 8192;
 static int MAXIMUM_UDP_WRITE_SIZE = 508;
 static int s_certificate_version = 2; // TLS 1.3 is sensitive.
+static int s_statistics_queue_maximum_size = 100;
 
 spot_on_lite_daemon_child::spot_on_lite_daemon_child
 (const QByteArray &initial_data,
@@ -2094,18 +2095,42 @@ void spot_on_lite_daemon_child::remove_expired_identities(void)
 void spot_on_lite_daemon_child::save_statistic
 (const QString &key, const QString &value)
 {
+  QWriteLocker lock(&m_statistics_queue_mutex);
+
+  if(m_statistics_queue.size() >= s_statistics_queue_maximum_size)
+    return;
+  else
+    lock.unlock();
+
   QList<QVariant> list;
 
   list << key << m_statistics_file_name << value << m_pid << db_id();
+  lock.relock();
+  m_statistics_queue.enqueue(list);
+  lock.unlock();
 
   if(m_statistics_future.isFinished())
 #if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
     m_statistics_future = QtConcurrent::run
-      (&spot_on_lite_common::save_statistic, list);
+      (this, &spot_on_lite_daemon_child::save_statistic_concurrent);
 #else
     m_statistics_future = QtConcurrent::run
-      (&spot_on_lite_common::save_statistic, list);
+      (&spot_on_lite_daemon_child::save_statistic_concurrent, this);
 #endif
+}
+
+void spot_on_lite_daemon_child::save_statistic_concurrent(void)
+{
+  do
+    {
+      QWriteLocker lock(&m_statistics_queue_mutex);
+
+      if(m_statistics_queue.isEmpty())
+	break;
+
+      spot_on_lite_common::save_statistic(m_statistics_queue.dequeue());
+    }
+  while(!m_statistics_future.isCanceled());
 }
 
 void spot_on_lite_daemon_child::

@@ -46,6 +46,7 @@ extern "C"
 #include <QHostAddress>
 #include <QLocalSocket>
 #include <QPointer>
+#include <QQueue>
 #include <QReadWriteLock>
 #include <QSslCipher>
 #include <QSslConfiguration>
@@ -120,6 +121,8 @@ class spot_on_lite_daemon_child: public QObject
   QPointer<QDtls> m_dtls;
 #endif
 #endif
+  QQueue<QList<QVariant>> m_statistics_queue;
+  QReadWriteLock m_statistics_queue_mutex;
 #ifdef SPOTON_LITE_DAEMON_ENABLE_IDENTITIES_CONTAINER
   QReadWriteLock m_remote_identities_mutex;
 #endif
@@ -190,6 +193,7 @@ class spot_on_lite_daemon_child: public QObject
   void record_remote_identity(const QByteArray &data);
   void remove_expired_identities(void);
   void save_statistic(const QString &key, const QString &value);
+  void save_statistic_concurrent(void);
   void set_ssl_ciphers(const QList<QSslCipher> &ciphers,
 		       QSslConfiguration &configuration) const;
   void share_identity(const QByteArray &data);
