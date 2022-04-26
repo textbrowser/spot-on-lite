@@ -27,6 +27,7 @@ Completed Items
 - Remove local socket server file on exit.
 - Restart dead peers.
 - UDP unicast.
+- Uptime statistic and large values (seconds-since is zero).
 
 Remaining Items
 
@@ -36,5 +37,4 @@ Remaining Items
 - Future-proof (replace SHA-512, etc.).
 - IPv6 scope identities?
 - Optionally share CD identities in client mode.
-- Uptime statistic and large values (seconds since is zero).
 - Windows? Yuck!

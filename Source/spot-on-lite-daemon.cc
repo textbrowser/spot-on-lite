@@ -1198,16 +1198,23 @@ void spot_on_lite_daemon::vitals(void)
 			  std::cout << "0 Seconds";
 			else
 			  {
-			    QDateTime date_time;
+			    auto start_time(record.value(i).toLongLong());
 
-			    date_time.setSecsSinceEpoch
-			      (record.value(i).toLongLong());
-			    std::cout << QString::
-			                 number(date_time.
-						secsTo(QDateTime::
-						       currentDateTime())).
-			                 toStdString()
-				      << " Second(s)";
+			    if(start_time > 0)
+			      {
+				QDateTime date_time;
+
+				date_time.setSecsSinceEpoch
+				  (record.value(i).toLongLong());
+				std::cout << QString::
+				             number(date_time.
+						    secsTo(QDateTime::
+							   currentDateTime())).
+				             toStdString()
+					  << " Second(s)";
+			      }
+			    else
+			      std::cout << " 0 Seconds";
 			  }
 		      }
 		    else
