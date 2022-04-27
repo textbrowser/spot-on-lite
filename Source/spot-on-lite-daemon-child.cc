@@ -1208,7 +1208,7 @@ void spot_on_lite_daemon_child::generate_ssl_tls(void)
       goto done_label;
     }
 
-  if(!(ecc = EC_KEY_new_by_curve_name(ecc_group)))
+  if(!(ecc = EC_KEY_new_by_curve_name_ex(nullptr, nullptr, ecc_group)))
     {
       error = "EC_KEY_new_by_curve_name() returned zero";
       goto done_label;

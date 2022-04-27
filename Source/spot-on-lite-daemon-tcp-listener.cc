@@ -160,7 +160,7 @@ void spot_on_lite_daemon_tcp_listener::incomingConnection
 		"--ssl-tls-key-size",
 		list.value(4).toStdString().data(),
 		"--tcp",
-		NULL,
+		nullptr,
 		envp) == -1)
 	{
 	  ::close(sd);

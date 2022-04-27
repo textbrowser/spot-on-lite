@@ -36,5 +36,6 @@ Remaining Items
 - Echo proxy.
 - Future-proof (replace SHA-512, etc.).
 - IPv6 scope identities?
+- OpenSSL 3.x.
 - Optionally share CD identities in client mode.
 - Windows? Yuck!
