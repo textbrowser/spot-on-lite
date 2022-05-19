@@ -33,3 +33,16 @@ Summary of Spot-On-Lite
 <li>UDP unicast.</li>
 <li>Vitals!</li>
 </ul>
+
+```
+/usr/local/spot-on-lite/Spot-On-Lite-Daemon --statistics
+PID                 652
+Bytes Accumulated   0
+Bytes Read          0
+Bytes Written       0
+IP Information      
+Memory              11,204
+Name                ./Spot-On-Lite-Daemon
+Uptime              1254994 Second(s)
+Type                daemon
+```
