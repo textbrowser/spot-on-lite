@@ -133,7 +133,7 @@ spot_on_lite_daemon::spot_on_lite_daemon
   spot_on_lite_common::save_statistic
     ("start_time",
      m_statistics_file_name,
-     QString::number(QDateTime::currentMSecsSinceEpoch() / 1000),
+     QString::number(QDateTime::currentMSecsSinceEpoch()),
      QCoreApplication::applicationPid(),
      static_cast<quint64> (1));
   spot_on_lite_common::save_statistic
@@ -1204,7 +1204,7 @@ void spot_on_lite_daemon::vitals(void)
 			      {
 				QDateTime date_time;
 
-				date_time.setSecsSinceEpoch
+				date_time.setMSecsSinceEpoch
 				  (record.value(i).toLongLong());
 				std::cout << QString::
 				             number(date_time.
