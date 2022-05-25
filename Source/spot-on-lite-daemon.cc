@@ -133,7 +133,7 @@ spot_on_lite_daemon::spot_on_lite_daemon
   spot_on_lite_common::save_statistic
     ("start_time",
      m_statistics_file_name,
-     QString::number(QDateTime::currentSecsSinceEpoch()),
+     QString::number(QDateTime::currentMSecsSinceEpoch() / 1000),
      QCoreApplication::applicationPid(),
      static_cast<quint64> (1));
   spot_on_lite_common::save_statistic
