@@ -1,7 +1,10 @@
 Spot-On-Lite supports Qt 5 LTS and 6 LTS. It has been tested on
-Debian and OpenBSD. It compiles on Debian, Mac OS X, and OpenBSD.
+Debian and OpenBSD. Spot-On-Lite compiles on Debian, Mac OS X, and OpenBSD.
 
-Also included is a thread-safe Lisp implementation of SHA-512.
+ARM, PowerPC, and Sparc are supported. Qt 5.5 is also supported for
+PowerPC.
+
+Included is a thread-safe Lisp implementation of SHA-512.
 Super fast, super cute.
 
 On Linux, limiting the number of processes may be achieved
@@ -28,6 +31,7 @@ Summary of Spot-On-Lite
 <li>Monitor graphical interface.</li>
 <li>Multiple instances of a daemon.</li>
 <li>Per-process TCP clients.</li>
+<li>PowerPC!</li>
 <li>Qt 5 LTS, Qt 6 LTS.</li>
 <li>Sparc.</li>
 <li>UDP unicast.</li>
