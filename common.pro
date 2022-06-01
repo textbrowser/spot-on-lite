@@ -134,8 +134,6 @@ QMAKE_CXXFLAGS_RELEASE += -O3 \
                           -fPIE \
                           -fstack-protector-all \
                           -fwrapv \
-                          -mcpu=ultrasparc \
-                          -mtune=ultrasparc \
                           -pedantic \
                           -pie \
                           -std=c++11
