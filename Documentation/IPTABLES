@@ -1,4 +1,4 @@
-# Delete rule.
+# Delete a rule.
 
 sudo iptables -D INPUT 1
 
@@ -11,7 +11,7 @@ iptables -A INPUT \
 	 -j REJECT \
 	 --reject-with tcp-reset \
 	 -m connlimit \
-	 --connlimit-above 2 \
+	 --connlimit-above 1 \
 	 --connlimit-mask 32
 
 # Limit 50 connections to port 4710.
@@ -23,7 +23,7 @@ iptables -A INPUT \
 	 -j REJECT \
 	 --reject-with tcp-reset \
 	 -m connlimit \
-	 --connlimit-above 50 \
+	 --connlimit-above 49 \
 	 --connlimit-mask 0
 
 # List contents.
