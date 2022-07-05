@@ -234,6 +234,7 @@ QString spot_on_lite_monitor::ini_path(void)
 
 void spot_on_lite_monitor::read_statistics_database(void)
 {
+  QDateTime last_modified;
   QMap<qint64, QMap<Columns, QString> > processes;
   const QString db_connection_id("1");
   const auto db_path(QDir::tempPath() +
@@ -247,13 +248,21 @@ void spot_on_lite_monitor::read_statistics_database(void)
 
       QThread::msleep(100);
 
-      if(!QFileInfo(db_path).isReadable())
+      QFileInfo file_info(db_path);
+
+      if(!file_info.isReadable())
 	{
 	  for(auto pid : processes.keys())
 	    emit deleted(pid);
 
+	  last_modified = QDateTime();
 	  continue;
 	}
+
+      if(file_info.lastModified() > last_modified)
+	last_modified = file_info.lastModified();
+      else
+	continue;
 
       {
 	auto db = QSqlDatabase::addDatabase("QSQLITE", db_connection_id);
