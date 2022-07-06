@@ -1,4 +1,4 @@
-#!/usr/bin/bash
+#!/bin/bash
 
 mkdir -p ./usr/local/spot-on-lite/Documentation
 make -j $(nproc)
