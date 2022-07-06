@@ -11,7 +11,7 @@ cp -p ./spot-on-lite-monitor.sh ./usr/local/spot-on-lite/.
 cp -pr ./Documentation/* ./usr/local/spot-on-lite/Documentation/.
 
 mkdir -p spot-on-lite-debian/usr/local
-cp -pr ./RASPBERRY spot-on-lite-debian/DEBIAN.
+cp -pr ./RASPBERRY spot-on-lite-debian/DEBIAN
 cp -r ./usr/local/spot-on-lite spot-on-lite-debian/usr/local/.
 fakeroot dpkg-deb --build spot-on-lite-debian Spot-On-Lite-2022.07.05_armhf.deb
 mv Spot-On-Lite-2022.07.05_armhf.deb ~/Desktop/.
