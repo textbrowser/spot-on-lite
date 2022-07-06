@@ -10,11 +10,11 @@ cp -p ./spot-on-lite-daemon.conf ./usr/local/spot-on-lite/.
 cp -p ./spot-on-lite-monitor.sh ./usr/local/spot-on-lite/.
 cp -pr ./Documentation/* ./usr/local/spot-on-lite/Documentation/.
 
-mkdir -p spot-on-lite-raspberry/usr/local
-cp -pr ./RASPBERRY spot-on-lite-raspberry/.
-cp -r ./usr/local/spot-on-lite spot-on-lite-raspberry/usr/local/.
-fakeroot dpkg-deb --build spot-on-lite-raspberry Spot-On-Lite-2022.07.05_armhf.deb
+mkdir -p spot-on-lite-debian/usr/local
+cp -pr ./RASPBERRY spot-on-lite-debian/DEBIAN.
+cp -r ./usr/local/spot-on-lite spot-on-lite-debian/usr/local/.
+fakeroot dpkg-deb --build spot-on-lite-debian Spot-On-Lite-2022.07.05_armhf.deb
 mv Spot-On-Lite-2022.07.05_armhf.deb ~/Desktop/.
 rm -fr ./usr
-rm -fr spot-on-lite-raspberry
+rm -fr spot-on-lite-debian
 make distclean
