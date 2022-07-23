@@ -21,12 +21,14 @@ Debian administrators, please add spot-on-lite-daemon.debian.sh to
 
 Summary of Spot-On-Lite
 <ul>
+<li>AMD64 and ARMHF distributions.</li>
 <li>ARM (Pi!)</li>
 <li>Configurable.</li>
 <li>Congestion control.</li>
 <li>Cryptographic Discovery!</li>
 <li>DTLS!</li>
-<li>Debian, FreeBSD, OpenBSD.</li>
+<li>Debian, FreeBSD, Mac, OpenBSD.</li>
+<li>Documentation manuals.</li>
 <li>Infinite listeners.</li>
 <li>Monitor graphical interface.</li>
 <li>Multiple instances of a daemon.</li>
