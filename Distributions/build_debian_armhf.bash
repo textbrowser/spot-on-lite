@@ -1,5 +1,17 @@
-#!/usr/bin/bash
+#!/bin/bash
+# Alexis Megas.
 
+if [ ! -x /usr/bin/dpkg-deb ]; then
+    echo "Please install dpkg-deb."
+    exit
+fi
+
+if [ ! -x /usr/bin/fakeroot ]; then
+    echo "Please install fakeroot."
+    exit 1
+fi
+
+make distclean 2>/dev/null
 mkdir -p ./usr/local/spot-on-lite/Documentation
 make -j $(nproc)
 cp -p ./Icons/monitor.png ./usr/local/spot-on-lite/.
@@ -11,10 +23,10 @@ cp -p ./spot-on-lite-monitor.sh ./usr/local/spot-on-lite/.
 cp -pr ./Documentation/* ./usr/local/spot-on-lite/Documentation/.
 
 mkdir -p spot-on-lite-debian/usr/local
-cp -pr ./DEBIAN spot-on-lite-debian/.
+cp -pr ./RASPBERRY spot-on-lite-debian/DEBIAN
 cp -r ./usr/local/spot-on-lite spot-on-lite-debian/usr/local/.
-fakeroot dpkg-deb --build spot-on-lite-debian Spot-On-Lite-2022.07.05_amd64.deb
-mv Spot-On-Lite-2022.07.05_amd64.deb ~/Desktop/.
+fakeroot dpkg-deb --build spot-on-lite-debian Spot-On-Lite-2022.07.05_armhf.deb
+mv Spot-On-Lite-2022.07.05_armhf.deb ~/Desktop/.
 rm -fr ./usr
 rm -fr spot-on-lite-debian
 make distclean
