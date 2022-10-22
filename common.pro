@@ -22,6 +22,7 @@ QMAKE_CXXFLAGS  += -Wall \
                    -Wextra \
                    -Wfloat-equal \
                    -Wformat=2 \
+                   -Wno-deprecated-declarations \
                    -Woverloaded-virtual \
                    -Wpointer-arith \
                    -Wstack-protector \
@@ -42,7 +43,8 @@ QMAKE_CXXFLAGS_RELEASE += -O3 \
                           -Wcast-qual \
                           -Wdouble-promotion \
                           -Wextra \
-			  -Wformat=2 \
+                          -Wformat=2 \
+                          -Wno-deprecated-declarations \
                           -Woverloaded-virtual \
                           -Wpointer-arith \
                           -Wstack-protector \
@@ -65,6 +67,7 @@ QMAKE_CXXFLAGS_RELEASE += -O3 \
                           -Wfloat-equal \
                           -Wformat=2 \
                           -Wlogical-op \
+                          -Wno-deprecated-declarations \
                           -Wno-unused-variable \
                           -Woverloaded-virtual \
                           -Wpointer-arith \
@@ -88,7 +91,8 @@ QMAKE_CXXFLAGS_RELEASE += -O3 \
                           -Wextra \
                           -Wformat-overflow=2 \
                           -Wformat-truncation=2 \
-			  -Wformat=2 \
+                          -Wformat=2 \
+                          -Wno-deprecated-declarations \
                           -Wno-unused-variable \
                           -Woverloaded-virtual \
                           -Wpointer-arith \
@@ -108,7 +112,8 @@ QMAKE_CXXFLAGS_RELEASE += -O3 \
                           -Wextra \
                           -Wformat-overflow=2 \
                           -Wformat-truncation=2 \
-			  -Wformat=2 \
+                          -Wformat=2 \
+                          -Wno-deprecated-declarations \
                           -Wno-unused-variable \
                           -Woverloaded-virtual \
                           -Wpointer-arith \
@@ -125,7 +130,8 @@ QMAKE_CXXFLAGS_RELEASE += -O3 \
                           -Wall \
                           -Wcast-qual \
                           -Wextra \
-			  -Wformat=2 \
+                          -Wformat=2 \
+                          -Wno-deprecated-declarations \
                           -Wno-unused-variable \
                           -Woverloaded-virtual \
                           -Wpointer-arith \
@@ -145,7 +151,8 @@ QMAKE_CXXFLAGS_RELEASE += -O3 \
                           -Wextra \
                           -Wformat-overflow=2 \
                           -Wformat-truncation=2 \
-			  -Wformat=2 \
+                          -Wformat=2 \
+                          -Wno-deprecated-declarations \
                           -Wno-unused-variable \
                           -Woverloaded-virtual \
                           -Wpointer-arith \

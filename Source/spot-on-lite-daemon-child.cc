@@ -65,10 +65,6 @@ extern "C"
 #include "spot-on-lite-common.h"
 #include "spot-on-lite-daemon-child.h"
 
-#ifdef OPENSSL_VERSION_STR
-#define SPOTON_LITE_DAEMON_OPENSSL_3 1
-#endif
-
 QAtomicInteger<quint64> spot_on_lite_daemon_child::s_db_id = 0;
 
 static QString socket_type_to_string
@@ -1131,20 +1127,10 @@ void spot_on_lite_daemon_child::generate_certificate
     memzero(certificate);
 
   if(ecc)
-    {
-#ifdef SPOTON_LITE_DAEMON_OPENSSL_3
-#else
-      EC_KEY_up_ref(ecc); // Reference counter.
-#endif
-    }
+    EC_KEY_up_ref(ecc); // Reference counter.
 
   if(rsa)
-    {
-#ifdef SPOTON_LITE_DAEMON_OPENSSL_3
-#else
-      RSA_up_ref(rsa); // Reference counter.
-#endif
-    }
+    RSA_up_ref(rsa); // Reference counter.
 
   EVP_PKEY_free(pk);
   X509_NAME_ENTRY_free(common_name_entry);
@@ -1222,14 +1208,11 @@ void spot_on_lite_daemon_child::generate_ssl_tls(void)
       goto done_label;
     }
 
-#ifdef SPOTON_LITE_DAEMON_OPENSSL_3
-#else
   if(!(ecc = EC_KEY_new_by_curve_name(ecc_group)))
     {
       error = "EC_KEY_new_by_curve_name() returned zero";
       goto done_label;
     }
-#endif
 
   if(!(private_memory = BIO_new(BIO_s_mem())))
     {
@@ -1243,19 +1226,13 @@ void spot_on_lite_daemon_child::generate_ssl_tls(void)
       goto done_label;
     }
 
-#ifdef SPOTON_LITE_DAEMON_OPENSSL_3
-#else
   EC_KEY_set_asn1_flag(ecc, OPENSSL_EC_NAMED_CURVE);
-#endif
 
-#ifdef SPOTON_LITE_DAEMON_OPENSSL_3
-#else
   if(EC_KEY_generate_key(ecc) == 0)
     {
       error = "EC_KEY_generate_key() failure";
       goto done_label;
     }
-#endif
 
   if(!(pk = EVP_PKEY_new()))
     {
@@ -1269,14 +1246,11 @@ void spot_on_lite_daemon_child::generate_ssl_tls(void)
       goto done_label;
     }
 
-#ifdef SPOTON_LITE_DAEMON_OPENSSL_3
-#else
   if(!(ecc = EVP_PKEY_get1_EC_KEY(pk)))
     {
       error = "EVP_PKEY_get1_EC_KEY() failure";
       goto done_label;
     }
-#endif
 
   if(!PEM_write_bio_PrivateKey(private_memory,
 			       pk,
@@ -1344,23 +1318,17 @@ void spot_on_lite_daemon_child::generate_ssl_tls(void)
       goto done_label;
     }
 
-#ifdef SPOTON_LITE_DAEMON_OPENSSL_3
-#else
   if(!(rsa = RSA_new()))
     {
       error = "RSA_new() returned zero";
       goto done_label;
     }
-#endif
 
-#ifdef SPOTON_LITE_DAEMON_OPENSSL_3
-#else
   if(RSA_generate_key_ex(rsa, m_ssl_key_size, f4, nullptr) == -1)
     {
       error = "RSA_generate_key_ex() returned negative one";
       goto done_label;
     }
-#endif
 
   if(!(private_memory = BIO_new(BIO_s_mem())))
     {
@@ -1374,8 +1342,6 @@ void spot_on_lite_daemon_child::generate_ssl_tls(void)
       goto done_label;
     }
 
-#ifdef SPOTON_LITE_DAEMON_OPENSSL_3
-#else
   if(PEM_write_bio_RSAPrivateKey(private_memory,
 				 rsa,
 				 nullptr,
@@ -1387,16 +1353,12 @@ void spot_on_lite_daemon_child::generate_ssl_tls(void)
       error = "PEM_write_bio_RSAPrivateKey() returned zero";
       goto done_label;
     }
-#endif
 
-#ifdef SPOTON_LITE_DAEMON_OPENSSL_3
-#else
   if(PEM_write_bio_RSAPublicKey(public_memory, rsa) == 0)
     {
       error = "PEM_write_bio_RSAPublicKey() returned zero";
       goto done_label;
     }
-#endif
 
   BIO_get_mem_ptr(private_memory, &bptr);
 
@@ -1448,15 +1410,9 @@ void spot_on_lite_daemon_child::generate_ssl_tls(void)
   BIO_free(private_memory);
   BIO_free(public_memory);
   BN_free(f4);
-#ifdef SPOTON_LITE_DAEMON_OPENSSL_3
-#else
   EC_KEY_free(ecc);
-#endif
   EVP_PKEY_free(pk);
-#ifdef SPOTON_LITE_DAEMON_OPENSSL_3
-#else
   RSA_free(rsa);
-#endif
   free(private_buffer);
   free(public_buffer);
 #endif
