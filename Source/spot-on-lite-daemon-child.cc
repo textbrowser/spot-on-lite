@@ -65,6 +65,7 @@ extern "C"
 #include "spot-on-lite-common.h"
 #include "spot-on-lite-daemon-child.h"
 
+QAtomicInteger<bool> s_openssl_3 = false;
 QAtomicInteger<quint64> spot_on_lite_daemon_child::s_db_id = 0;
 
 static QString socket_type_to_string
@@ -123,6 +124,14 @@ spot_on_lite_daemon_child::spot_on_lite_daemon_child
  const int ssl_key_size,
  const quint16 peer_port):QObject()
 {
+#ifdef OPENSSL_VERSION_STR
+  QString version(OPENSSL_VERSION_STR);
+
+  if(version >= "3.0.0")
+    s_openssl_3 = true;
+#else
+  s_openssl_3 = false;
+#endif
   m_attempt_local_connection_timer.setInterval(2500);
   m_attempt_remote_connection_timer.setInterval(2500);
   m_bytes_read = 0ULL;
