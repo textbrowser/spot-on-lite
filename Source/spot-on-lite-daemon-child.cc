@@ -1644,7 +1644,7 @@ void spot_on_lite_daemon_child::process_local_content(void)
   if(m_process_local_content_future.isCanceled() || vector.isEmpty())
     goto done_label;
 
-  for(const auto &bytes : vector)
+  foreach(const auto &bytes, vector)
     {
       if(bytes.contains("type=" + type_identity + "&content="))
 	{

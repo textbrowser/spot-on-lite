@@ -1121,10 +1121,10 @@ void spot_on_lite_daemon::validate_configuration_file
   m_peers_properties.clear();
   process_configuration_file(ok);
 
-  for(const auto &i : m_listeners_properties)
+  foreach(const auto &i, m_listeners_properties)
     qDebug() << i.split(',');
 
-  for(const auto &i : m_peers_properties)
+  foreach(const auto &i, m_peers_properties)
     qDebug() << i.split(',');
 }
 

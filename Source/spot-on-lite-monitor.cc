@@ -252,7 +252,7 @@ void spot_on_lite_monitor::read_statistics_database(void)
 
       if(!file_info.isReadable())
 	{
-	  for(auto pid : processes.keys())
+	  foreach(auto pid, processes.keys())
 	    emit deleted(pid);
 
 	  last_modified = QDateTime();
@@ -358,7 +358,7 @@ void spot_on_lite_monitor::read_statistics_database(void)
 		    }
 		}
 
-	    for(auto pid : deleted_processes)
+	    foreach(auto pid, deleted_processes)
 	      emit deleted(pid);
 	  }
 
