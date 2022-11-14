@@ -37,5 +37,6 @@ Remaining Items
 - Echo proxy.
 - Future-proof (replace SHA-512, etc.).
 - IPv6 scope identities?
+- Nixie communications. New class, port.
 - Optionally share CD identities in client mode.
 - Windows? Yuck!
