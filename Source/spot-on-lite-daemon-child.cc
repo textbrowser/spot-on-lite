@@ -551,7 +551,7 @@ QList<QSslCipher> spot_on_lite_daemon_child::default_ssl_ciphers(void) const
 	    << "TlsV1_1"
 	    << "TlsV1_0";
 
-  if(!m_ssl_control_string.toLower().contains("!sslv3"))
+  if(!m_ssl_control_string.contains("!sslv3", Qt::CaseInsensitive))
     protocols << "SslV3";
 #else
   protocols << "TlsV1_3"
