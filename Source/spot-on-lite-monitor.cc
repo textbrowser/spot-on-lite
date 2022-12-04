@@ -409,8 +409,6 @@ void spot_on_lite_monitor::slot_added
     {
       m_daemon_pid = static_cast<pid_t> (values.value(PID).toLongLong());
       m_ui.off_on->setChecked(true);
-      m_ui.off_on->setStyleSheet
-	("QToolButton {background-color: rgb(144, 238, 144);}");
       m_ui.off_on->setText(tr("Online"));
     }
 
@@ -464,8 +462,6 @@ void spot_on_lite_monitor::slot_deleted(const qint64 pid)
     {
       m_daemon_pid = -1;
       m_ui.off_on->setChecked(false);
-      m_ui.off_on->setStyleSheet
-	("QToolButton {background-color: rgb(240, 128, 128);}");
       m_ui.off_on->setText(tr("Offline"));
     }
 
