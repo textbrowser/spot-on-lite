@@ -1,4 +1,4 @@
-.TH Spot-On-Lite-Daemon 1 "April 19, 2022"
+.TH Spot-On-Lite-Daemon 1 "December 4, 2022"
 .SH NAME
 Spot-On-Lite-Daemon
 .SH SYNOPSIS
@@ -15,7 +15,7 @@ Absolute path of the configuration file. Only the first instance will be conside
 Display helpful text.
 .TP
 .BI --keep-terminal
-Do not become a daemon process.
+Do not become a daemon process. The fork() is ignored on Mac.
 .TP
 .BI --statistics
 Display vitals.
