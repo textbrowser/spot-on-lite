@@ -97,8 +97,6 @@ QMAKE_CXXFLAGS_RELEASE += -O3 \
                           -Wcast-qual \
                           -Wdouble-promotion \
                           -Wextra \
-                          -Wformat-overflow=2 \
-                          -Wformat-truncation=2 \
                           -Wformat=2 \
                           -Wno-deprecated-declarations \
                           -Wno-unused-variable \
@@ -220,8 +218,12 @@ QMAKE_LFLAGS += `ecl-config --ldflags`
 
 android {
 } else:macx {
+exists(/usr/local/opt/openssl) {
 INCLUDEPATH += /usr/local/opt/openssl/include
 LIBS += -L/usr/local/opt/openssl/lib
+} else {
+DEFINES -= SPOTON_LITE_DAEMON_OPENSSL_SUPPORTED
+}
 }
 
 QMAKE_CLEAN += Source/spot-on-lite-daemon-sha.a \
