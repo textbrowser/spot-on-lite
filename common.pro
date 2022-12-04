@@ -1,6 +1,5 @@
 CONFIG += qt warn_on
 CONFIG -= app_bundle gui
-DEFINES += SPOTON_LITE_DAEMON_OPENSSL_SUPPORTED
 LANGUAGE = C++
 QMAKE_CXXFLAGS_RELEASE -= -O2
 
@@ -218,25 +217,25 @@ QMAKE_LFLAGS += `ecl-config --ldflags`
 
 android {
 } else:macx {
-exists(/usr/local/opt/openssl) {
-INCLUDEPATH += /usr/local/opt/openssl/include
-LIBS += -L/usr/local/opt/openssl/lib
-} else {
-DEFINES -= SPOTON_LITE_DAEMON_OPENSSL_SUPPORTED
+exists(/opt/homebrew/opt/openssl@3) {
+DEFINES += SPOTON_LITE_DAEMON_OPENSSL_SUPPORTED
+INCLUDEPATH += /opt/homebrew/opt/openssl@3/include
+LIBS += -L/opt/homebrew/opt/openssl@3/lib -lcrypto -lssl
 }
+exists(/usr/local/opt/openssl) {
+DEFINES += SPOTON_LITE_DAEMON_OPENSSL_SUPPORTED
+INCLUDEPATH += /usr/local/opt/openssl/include
+LIBS += -L/usr/local/opt/openssl/lib -lcrypto -lssl
+}
+} else {
+DEFINES += SPOTON_LITE_DAEMON_OPENSSL_SUPPORTED
+LIBS += -lcrypto -lssl
 }
 
 QMAKE_CLEAN += Source/spot-on-lite-daemon-sha.a \
                Source/spot-on-lite-daemon-sha.fas \
                Source/spot-on-lite-daemon-sha.lib
-
 INCLUDEPATH += Source
-
-android {
-} else {
-LIBS += -lcrypto -lssl
-}
-
 MOC_DIR = temp/moc
 OBJECTS_DIR = temp/obj
 RCC_DIR = temp/rcc
