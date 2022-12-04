@@ -95,7 +95,9 @@ static int MAXIMUM_REMOTE_IDENTITIES =
 static int END_OF_MESSAGE_MARKER_WINDOW = 10000;
 static int MAXIMUM_TCP_WRITE_SIZE = 8192;
 static int MAXIMUM_UDP_WRITE_SIZE = 508;
+#ifdef SPOTON_LITE_DAEMON_OPENSSL_SUPPORTED
 static int s_certificate_version = 2; // TLS 1.3 is sensitive.
+#endif
 static int s_statistics_queue_maximum_size = 100;
 
 spot_on_lite_daemon_child::spot_on_lite_daemon_child
