@@ -109,6 +109,7 @@ static int make_daemon(void)
 
   umask(0);
 
+#ifndef Q_OS_MACOS
   pid_t pid = 0;
 
   if((pid = fork()) < 0)
@@ -118,6 +119,7 @@ static int make_daemon(void)
     }
   else if(pid != 0)
     exit(EXIT_SUCCESS);
+#endif
 
   setsid();
 

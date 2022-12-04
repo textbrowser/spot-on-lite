@@ -320,7 +320,7 @@ void spot_on_lite_daemon::prepare_peers(void)
       auto command(m_child_process_file_name.toStdString());
       auto so_linger = list.value(6).toInt();
       pid_t pid = 0;
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
       auto ld_library_path
 	(m_child_process_ld_library_path.remove("DYLD_LIBRARY_PATH=").
 	 toStdString());
