@@ -93,6 +93,7 @@ void spot_on_lite_daemon::handler_signal(int signal_number)
   Q_UNUSED(rc);
 }
 
+#ifndef Q_OS_MACOS
 static int make_daemon(void)
 {
   struct rlimit rl = {};
@@ -146,6 +147,7 @@ static int make_daemon(void)
 
   return 0;
 }
+#endif
 
 static int prepare_signal_handlers(void)
 {
