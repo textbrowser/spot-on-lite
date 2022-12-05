@@ -40,4 +40,5 @@ Remaining Items
 - Mac! Yuck!
 - Nixie communications. New class, port.
 - Optionally share CD identities in client mode.
+- Remove temporary files after termination of non-daemon daemon.
 - Windows? Yuck!
