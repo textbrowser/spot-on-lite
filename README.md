@@ -30,7 +30,7 @@ Summary of Spot-On-Lite
 <li>Debian, FreeBSD, Mac, OpenBSD.</li>
 <li>Documentation manuals.</li>
 <li>Infinite listeners.</li>
-<li>Monitor graphical interface.</li>
+<li>Monitor interface.</li>
 <li>Multiple instances of a daemon.</li>
 <li>Per-process TCP clients.</li>
 <li>PowerPC!</li>

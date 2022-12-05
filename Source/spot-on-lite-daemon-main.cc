@@ -205,6 +205,8 @@ static int prepare_signal_handlers(void)
   return 0;
 }
 
+static std::string s_version = "2022.12.10";
+
 int main(int argc, char *argv[])
 {
   for(int i = 0; i < argc; i++)
@@ -215,19 +217,27 @@ int main(int argc, char *argv[])
 	    std::string string;
 
 	    string += "Usage: Spot-On-Lite-Daemon [OPTION]...\n";
-	    string += "Spot-On-Lite-Daemon\n\n";
-	    string += "  --configuration-file          file\n";
-	    string += "  --help                        display helpful text\n";
-	    string += "  --keep-terminal               "
-	      "do not become a daemon\n";
-	    string += "  --statistics                  display vitals\n";
-	    string += "  --validate-configuration-file file\n";
+	    string += "Spot-On-Lite-Daemon\n";
+	    string += "   --configuration-file          file\n";
+	    string += "   --help                        display helpful text\n";
+	    string += "   --keep-terminal               ";
+	    string += "do not become a daemon\n";
+	    string += "   --statistics                  display vitals\n";
+	    string += "   --validate-configuration-file file";
 	    std::cout << string << std::endl;
 	    return EXIT_SUCCESS;
 	  }
 	else if(strcmp(argv[i], "--statistics") == 0)
 	  {
 	    spot_on_lite_daemon::vitals();
+	    return EXIT_SUCCESS;
+	  }
+	else if(strcmp(argv[i], "--version") == 0)
+	  {
+	    std::string string;
+
+	    string += "Spot-On-Lite\n   Version " + s_version;
+	    std::cout << string << std::endl;
 	    return EXIT_SUCCESS;
 	  }
       }
