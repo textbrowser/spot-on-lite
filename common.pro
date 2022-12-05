@@ -42,7 +42,6 @@ QMAKE_CXXFLAGS  += -Wall \
                    -pedantic \
                    -std=c++11
 } else:freebsd-* {
-DEFINES += SPOTON_LITE_DAEMON_DTLS_SUPPORTED
 QMAKE_CXX = clang++
 QMAKE_CXXFLAGS_RELEASE += -O3 \
                           -Wall \
@@ -64,7 +63,6 @@ QMAKE_CXXFLAGS_RELEASE += -O3 \
                           -pedantic \
                           -std=c++17
 } else:linux-* {
-DEFINES += SPOTON_LITE_DAEMON_DTLS_SUPPORTED
 QMAKE_CXXFLAGS_RELEASE += -O3 \
                           -Wall \
 			  -Warray-bounds=2 \
@@ -228,8 +226,11 @@ INCLUDEPATH += /usr/local/opt/openssl/include
 LIBS += -L/usr/local/opt/openssl/lib -lcrypto -lssl
 }
 } else {
-DEFINES += SPOTON_LITE_DAEMON_OPENSSL_SUPPORTED
+exists(/usr/include/openssl) {
+DEFINES += SPOTON_LITE_DAEMON_DTLS_SUPPORTED \
+           SPOTON_LITE_DAEMON_OPENSSL_SUPPORTED
 LIBS += -lcrypto -lssl
+}
 }
 
 QMAKE_CLEAN += Source/spot-on-lite-daemon-sha.a \
