@@ -52,3 +52,5 @@ Name                ./Spot-On-Lite-Daemon
 Uptime              1254994 Second(s)
 Type                daemon
 ```
+
+![alt text](https://github.com/textbrowser/spot-on-lite/blob/Images/spot-on-lite-monitor.png)
