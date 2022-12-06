@@ -53,4 +53,4 @@ Uptime              1254994 Second(s)
 Type                daemon
 ```
 
-![alt text](https://github.com/textbrowser/spot-on-lite/blob/Images/spot-on-lite-monitor.png)
+![alt text](https://github.com/textbrowser/spot-on-lite/blob/master/Images/spot-on-lite-monitor.png)
