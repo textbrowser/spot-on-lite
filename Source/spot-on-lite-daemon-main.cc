@@ -47,6 +47,12 @@ extern "C"
 #include "spot-on-lite-daemon-sha.h"
 #endif
 
+char *spot_on_lite_daemon::s_congestion_control_file_name = NULL;
+char *spot_on_lite_daemon::s_local_socket_server_name = NULL;
+char *spot_on_lite_daemon::s_log_file_name = NULL;
+char *spot_on_lite_daemon::s_remote_identities_file_name = NULL;
+char *spot_on_lite_daemon::s_statistics_file_name = NULL;
+
 void spot_on_lite_daemon::handler_signal(int signal_number)
 {
   auto pid = waitpid(-1, nullptr, WNOHANG);
@@ -91,6 +97,28 @@ void spot_on_lite_daemon::handler_signal(int signal_number)
   auto rc = ::write(s_signal_fd[0], a, strlen(a));
 
   Q_UNUSED(rc);
+
+  if(signal_number == SIGINT || signal_number == SIGTERM)
+    {
+      kill(0, SIGTERM);
+
+      if(spot_on_lite_daemon::s_congestion_control_file_name)
+	unlink(spot_on_lite_daemon::s_congestion_control_file_name);
+
+      if(spot_on_lite_daemon::s_local_socket_server_name)
+	unlink(spot_on_lite_daemon::s_local_socket_server_name);
+
+      if(spot_on_lite_daemon::s_log_file_name)
+	unlink(spot_on_lite_daemon::s_log_file_name);
+
+      if(spot_on_lite_daemon::s_remote_identities_file_name)
+	unlink(spot_on_lite_daemon::s_remote_identities_file_name);
+
+      if(spot_on_lite_daemon::s_statistics_file_name)
+	unlink(spot_on_lite_daemon::s_statistics_file_name);
+
+      _exit(EXIT_SUCCESS);
+    }
 }
 
 #ifndef Q_OS_MACOS
@@ -178,12 +206,12 @@ static int prepare_signal_handlers(void)
     std::cerr << "sigaction() failure for SIGPIPE. Ignoring." << std::endl;
 
   /*
-  ** Monitor SIGTERM, SIGUSR1, SIGUSR2.
+  ** Monitor some signals.
   */
 
   QList<int> list;
 
-  list << SIGCHLD << SIGTERM << SIGUSR1 << SIGUSR2;
+  list << SIGCHLD << SIGINT << SIGTERM << SIGUSR1 << SIGUSR2;
 
   for(int i = 0; i < list.size(); i++)
     {

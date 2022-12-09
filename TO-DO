@@ -26,6 +26,7 @@ Completed Items
 - Remote peers.
 - Remove expired identities.
 - Remove local socket server file on exit.
+- Remove temporary files after termination of daemon.
 - Restart dead peers.
 - UDP unicast.
 - Uptime statistic and large values (seconds-since is zero).
@@ -40,5 +41,4 @@ Remaining Items
 - Mac! Yuck!
 - Nixie communications. New class, port.
 - Optionally share CD identities in client mode.
-- Remove temporary files after termination of non-daemon daemon.
 - Windows? Yuck!

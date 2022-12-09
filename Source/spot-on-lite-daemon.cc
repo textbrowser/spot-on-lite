@@ -88,6 +88,7 @@ spot_on_lite_daemon::spot_on_lite_daemon
   m_statistics_file_name = QDir::tempPath() +
     QDir::separator() +
     "spot-on-lite-daemon-statistics.sqlite";
+  s_statistics_file_name = strdup(m_statistics_file_name.toStdString().data());
   connect(&m_congestion_control_timer,
 	  SIGNAL(timeout(void)),
 	  this,
@@ -291,14 +292,17 @@ void spot_on_lite_daemon::prepare_local_socket_server(void)
     return;
 
   m_local_server.close();
-  m_local_server.listen
-    (QString("%1/Spot-On-Lite-Daemon-Local-Server.%2").
-     arg(m_local_socket_server_directory_name).
-     arg(QCoreApplication::applicationPid()));
+  m_local_server.listen(file_info.absoluteFilePath());
   m_local_sockets.clear();
 
   if(!m_local_server.isListening())
     m_local_sockets.clear();
+
+  if(s_local_socket_server_name)
+    free(s_local_socket_server_name);
+
+  s_local_socket_server_name = strdup
+    (file_info.absoluteFilePath().toStdString().data());
 }
 
 void spot_on_lite_daemon::prepare_peers(void)
@@ -462,7 +466,13 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
 	    m_congestion_control_file_name = settings.value(key).toString();
 
 	    if(!m_congestion_control_file_name.isEmpty())
-	      QFile::remove(m_congestion_control_file_name);
+	      {
+		QFile::remove(m_congestion_control_file_name);
+
+		free(s_congestion_control_file_name);
+		s_congestion_control_file_name = strdup
+		  (m_congestion_control_file_name.toStdString().data());
+	      }
 	  }
 	else
 	  {
@@ -580,7 +590,11 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
 		      << std::endl;
 	  }
 	else
-	  m_log_file_name = settings.value(key).toString();
+	  {
+	    m_log_file_name = settings.value(key).toString();
+	    free(s_log_file_name);
+	    s_log_file_name = strdup(m_log_file_name.toStdString().data());
+	  }
       }
     else if(key == "maximum_accumulated_bytes")
       {
@@ -912,6 +926,10 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
 
 	    if(!m_remote_identities_file_name.isEmpty())
 	      QFile::remove(m_remote_identities_file_name);
+
+	    free(s_remote_identities_file_name);
+	    s_remote_identities_file_name = strdup
+	      (m_remote_identities_file_name.toStdString().data());
 	  }
 	else
 	  {
