@@ -16,6 +16,7 @@ Completed Items
 - Introduce QSsl::Ec.
 - Limit number of processes via /etc/security/limits.conf.
 - Lisp version of the SHA-512 implementation. Optional.
+- Mac! Yuck!
 - OpenSSL 3.x (https://wiki.openssl.org/index.php/OpenSSL_3.0).
 - Partition datagrams.
 - Process accumulated data which may have arrived
@@ -38,7 +39,6 @@ Remaining Items
 - Echo proxy.
 - Future-proof (replace SHA-512, etc.).
 - IPv6 scope identities?
-- Mac! Yuck!
 - Nixie communications. New class, port.
 - Optionally share CD identities in client mode.
 - Windows? Yuck!
