@@ -39,6 +39,7 @@ Remaining Items
 - Echo proxy.
 - Future-proof (replace SHA-512, etc.).
 - IPv6 scope identities?
+- Include operating system information in distribution file names.
 - Nixie communications. New class, port.
 - Optionally remove temporary files.
 - Optionally share CD identities in client mode.
