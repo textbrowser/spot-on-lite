@@ -25,8 +25,8 @@ cp -pr ./Documentation/* ./usr/local/spot-on-lite/Documentation/.
 mkdir -p spot-on-lite-debian/usr/local
 cp -pr ./RASPBERRY spot-on-lite-debian/DEBIAN
 cp -r ./usr/local/spot-on-lite spot-on-lite-debian/usr/local/.
-fakeroot dpkg-deb --build spot-on-lite-debian Spot-On-Lite-2022.07.05_armhf.deb
-mv Spot-On-Lite-2022.07.05_armhf.deb ~/Desktop/.
+fakeroot dpkg-deb --build spot-on-lite-debian Spot-On-Lite-2022.12.10_armhf.deb
+mv Spot-On-Lite-2022.12.10_armhf.deb ~/Desktop/.
 rm -fr ./usr
 rm -fr spot-on-lite-debian
 make distclean
