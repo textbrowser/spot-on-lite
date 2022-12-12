@@ -55,6 +55,28 @@ char *spot_on_lite_daemon::s_statistics_file_name = NULL;
 
 void spot_on_lite_daemon::handler_signal(int signal_number)
 {
+  if(signal_number == SIGINT || signal_number == SIGTERM)
+    {
+      kill(0, SIGTERM);
+
+      if(spot_on_lite_daemon::s_congestion_control_file_name)
+	unlink(spot_on_lite_daemon::s_congestion_control_file_name);
+
+      if(spot_on_lite_daemon::s_local_socket_server_name)
+	unlink(spot_on_lite_daemon::s_local_socket_server_name);
+
+      if(spot_on_lite_daemon::s_log_file_name)
+	unlink(spot_on_lite_daemon::s_log_file_name);
+
+      if(spot_on_lite_daemon::s_remote_identities_file_name)
+	unlink(spot_on_lite_daemon::s_remote_identities_file_name);
+
+      if(spot_on_lite_daemon::s_statistics_file_name)
+	unlink(spot_on_lite_daemon::s_statistics_file_name);
+
+      _exit(EXIT_SUCCESS);
+    }
+
   auto pid = waitpid(-1, nullptr, WNOHANG);
   char a[32];
 
@@ -97,28 +119,6 @@ void spot_on_lite_daemon::handler_signal(int signal_number)
   auto rc = ::write(s_signal_fd[0], a, strlen(a));
 
   Q_UNUSED(rc);
-
-  if(signal_number == SIGINT || signal_number == SIGTERM)
-    {
-      kill(0, SIGTERM);
-
-      if(spot_on_lite_daemon::s_congestion_control_file_name)
-	unlink(spot_on_lite_daemon::s_congestion_control_file_name);
-
-      if(spot_on_lite_daemon::s_local_socket_server_name)
-	unlink(spot_on_lite_daemon::s_local_socket_server_name);
-
-      if(spot_on_lite_daemon::s_log_file_name)
-	unlink(spot_on_lite_daemon::s_log_file_name);
-
-      if(spot_on_lite_daemon::s_remote_identities_file_name)
-	unlink(spot_on_lite_daemon::s_remote_identities_file_name);
-
-      if(spot_on_lite_daemon::s_statistics_file_name)
-	unlink(spot_on_lite_daemon::s_statistics_file_name);
-
-      _exit(EXIT_SUCCESS);
-    }
 }
 
 #ifndef Q_OS_MACOS
