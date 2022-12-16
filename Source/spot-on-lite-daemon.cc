@@ -66,6 +66,7 @@ extern "C"
 #endif
 }
 
+bool spot_on_lite_daemon::s_remove_temporary_files = false;
 int spot_on_lite_daemon::s_signal_fd[2];
 
 spot_on_lite_daemon::spot_on_lite_daemon
@@ -82,7 +83,6 @@ spot_on_lite_daemon::spot_on_lite_daemon
   m_local_so_rcvbuf_so_sndbuf = 32768; // 32 KiB
   m_local_socket_server_directory_name = QDir::tempPath();
   m_maximum_accumulated_bytes = 8 * 1024 * 1024; // 8 MiB
-  m_remove_temporary_files = false;
   m_signal_socket_notifier = new QSocketNotifier
     (s_signal_fd[1], QSocketNotifier::Read, this);
   m_start_timer.start(5000);
@@ -947,7 +947,7 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
 	  }
       }
     else if(key == "remove_temporary_files")
-      m_remove_temporary_files = settings.value(key).toBool();
+      s_remove_temporary_files = settings.value(key).toBool();
 }
 
 void spot_on_lite_daemon::purge_congestion_control(void)

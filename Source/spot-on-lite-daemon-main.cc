@@ -59,20 +59,23 @@ void spot_on_lite_daemon::handler_signal(int signal_number)
     {
       kill(0, SIGTERM);
 
-      if(spot_on_lite_daemon::s_congestion_control_file_name)
-	unlink(spot_on_lite_daemon::s_congestion_control_file_name);
+      if(spot_on_lite_daemon::s_remove_temporary_files)
+	{
+	  if(spot_on_lite_daemon::s_congestion_control_file_name)
+	    unlink(spot_on_lite_daemon::s_congestion_control_file_name);
 
-      if(spot_on_lite_daemon::s_local_socket_server_name)
-	unlink(spot_on_lite_daemon::s_local_socket_server_name);
+	  if(spot_on_lite_daemon::s_local_socket_server_name)
+	    unlink(spot_on_lite_daemon::s_local_socket_server_name);
 
-      if(spot_on_lite_daemon::s_log_file_name)
-	unlink(spot_on_lite_daemon::s_log_file_name);
+	  if(spot_on_lite_daemon::s_log_file_name)
+	    unlink(spot_on_lite_daemon::s_log_file_name);
 
-      if(spot_on_lite_daemon::s_remote_identities_file_name)
-	unlink(spot_on_lite_daemon::s_remote_identities_file_name);
+	  if(spot_on_lite_daemon::s_remote_identities_file_name)
+	    unlink(spot_on_lite_daemon::s_remote_identities_file_name);
 
-      if(spot_on_lite_daemon::s_statistics_file_name)
-	unlink(spot_on_lite_daemon::s_statistics_file_name);
+	  if(spot_on_lite_daemon::s_statistics_file_name)
+	    unlink(spot_on_lite_daemon::s_statistics_file_name);
+	}
 
       _exit(EXIT_SUCCESS);
     }

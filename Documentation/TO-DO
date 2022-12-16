@@ -18,6 +18,7 @@ Completed Items
 - Lisp version of the SHA-512 implementation. Optional.
 - Mac! Yuck!
 - OpenSSL 3.x (https://wiki.openssl.org/index.php/OpenSSL_3.0).
+- Optionally remove temporary files.
 - Partition datagrams.
 - Process accumulated data which may have arrived
   while a local socket is not connected.
@@ -39,5 +40,4 @@ Remaining Items
 - Future-proof (replace SHA-512, etc.).
 - Include operating system information in distribution file names.
 - Nixie communications. New class, port.
-- Optionally remove temporary files.
 - Windows? Yuck!

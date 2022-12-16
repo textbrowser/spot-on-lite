@@ -47,6 +47,7 @@ class spot_on_lite_daemon: public QObject
   spot_on_lite_daemon(const QString &configuration_file_name);
   spot_on_lite_daemon(void);
   ~spot_on_lite_daemon();
+  static bool s_remove_temporary_files;
   static char *s_congestion_control_file_name;
   static char *s_local_socket_server_name;
   static char *s_log_file_name;
@@ -93,7 +94,6 @@ class spot_on_lite_daemon: public QObject
   QTimer m_start_timer;
   QVector<QString> m_listeners_properties;
   QVector<QString> m_peers_properties;
-  bool m_remove_temporary_files;
   int m_local_so_rcvbuf_so_sndbuf;
   int m_maximum_accumulated_bytes;
   static int s_signal_fd[2];
