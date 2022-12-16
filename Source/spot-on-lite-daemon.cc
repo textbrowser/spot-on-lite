@@ -66,7 +66,7 @@ extern "C"
 #endif
 }
 
-bool spot_on_lite_daemon::s_remove_temporary_files = false;
+bool spot_on_lite_daemon::s_remove_temporary_files = true;
 int spot_on_lite_daemon::s_signal_fd[2];
 
 spot_on_lite_daemon::spot_on_lite_daemon
