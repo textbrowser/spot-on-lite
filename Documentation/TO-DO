@@ -35,6 +35,7 @@ Completed Items
 
 Remaining Items
 
+- Allow smaller numeric values in listener definitions.
 - Android.
 - Bandwidth: Duration:Bytes.
 - Future-proof (replace SHA-512, etc.).
