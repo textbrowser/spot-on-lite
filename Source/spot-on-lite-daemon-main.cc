@@ -47,11 +47,11 @@ extern "C"
 #include "spot-on-lite-daemon-sha.h"
 #endif
 
-char *spot_on_lite_daemon::s_congestion_control_file_name = NULL;
-char *spot_on_lite_daemon::s_local_socket_server_name = NULL;
-char *spot_on_lite_daemon::s_log_file_name = NULL;
-char *spot_on_lite_daemon::s_remote_identities_file_name = NULL;
-char *spot_on_lite_daemon::s_statistics_file_name = NULL;
+char *spot_on_lite_daemon::s_congestion_control_file_name = nullptr;
+char *spot_on_lite_daemon::s_local_socket_server_name = nullptr;
+char *spot_on_lite_daemon::s_log_file_name = nullptr;
+char *spot_on_lite_daemon::s_remote_identities_file_name = nullptr;
+char *spot_on_lite_daemon::s_statistics_file_name = nullptr;
 
 void spot_on_lite_daemon::handler_signal(int signal_number)
 {
@@ -356,6 +356,8 @@ int main(int argc, char *argv[])
   if(!keep_terminal)
     if(make_daemon())
       return EXIT_FAILURE;
+#else
+  Q_UNUSED(keep_terminal);
 #endif
 
   if(prepare_signal_handlers())
