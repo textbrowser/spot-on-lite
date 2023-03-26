@@ -86,7 +86,7 @@ QMAKE_CXXFLAGS_RELEASE += -O3 \
                           -fwrapv \
                           -pedantic \
                           -pie \
-                          -std=c++11
+                          -std=c++17
 } else:macx {
 QMAKE_CXXFLAGS_RELEASE += -O3 \
                           -Wall \
@@ -106,7 +106,7 @@ QMAKE_CXXFLAGS_RELEASE += -O3 \
                           -fstack-protector-all \
                           -fwrapv \
                           -pedantic \
-                          -std=c++11
+                          -std=c++17
 } else:netbsd-* {
 QMAKE_CXXFLAGS_RELEASE += -O3 \
                           -Wall \
@@ -127,7 +127,7 @@ QMAKE_CXXFLAGS_RELEASE += -O3 \
                           -fwrapv \
                           -pedantic \
                           -pie \
-                          -std=c++11
+                          -std=c++17
 } else:openbsd-* {
 QMAKE_CXXFLAGS_RELEASE += -O3 \
                           -Wall \
@@ -145,7 +145,7 @@ QMAKE_CXXFLAGS_RELEASE += -O3 \
                           -fwrapv \
                           -pedantic \
                           -pie \
-                          -std=c++11
+                          -std=c++17
 } else:unix {
 QMAKE_CXXFLAGS_RELEASE += -O3 \
                           -Wall \
@@ -166,7 +166,7 @@ QMAKE_CXXFLAGS_RELEASE += -O3 \
                           -fwrapv \
                           -pedantic \
                           -pie \
-                          -std=c++11
+                          -std=c++11\7
 }
 
 unix {
