@@ -2,7 +2,7 @@
 
 sudo iptables -D INPUT 1
 
-# Limit 2 connections per IP.
+# Limit connections per IP.
 
 iptables -A INPUT \
 	 -p tcp \
@@ -12,6 +12,15 @@ iptables -A INPUT \
 	 --reject-with tcp-reset \
 	 -m connlimit \
 	 --connlimit-above 2 \
+	 --connlimit-mask 32
+iptables -A INPUT \
+	 -p tcp \
+	 --dport 5000 \
+	 --syn \
+	 -j REJECT \
+	 --reject-with tcp-reset \
+	 -m connlimit \
+	 --connlimit-above 1 \
 	 --connlimit-mask 32
 
 # Limit 50 connections to port 4710.
