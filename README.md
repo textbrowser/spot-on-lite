@@ -1,8 +1,8 @@
-Spot-On-Lite supports Qt 5.15 LTS, 6.2 LTS, and 6.5 LTS.
+Spot-On-Lite supports Qt LTS.
 It has been tested on Debian and OpenBSD.
-Spot-On-Lite compiles on Debian, Mac OS X, and OpenBSD.
+Spot-On-Lite compiles on Debian, FreeBSD, Mac OS X, and OpenBSD.
 
-ARM, PowerPC, and Sparc are supported. Qt 5.5 is also supported for
+ARM, PowerPC, and Sparc are supported. Qt 5.5.1 is also supported for
 PowerPC.
 
 Included is a thread-safe Lisp implementation of SHA-512.
@@ -35,9 +35,8 @@ Summary of Spot-On-Lite
 <li>Multiple instances of a daemon.</li>
 <li>Per-process TCP clients.</li>
 <li>PowerPC!</li>
-<li>Qt 5.15 LTS.</li>
-<li>Qt 6.2 LTS.</li>
-<li>Qt 6.5 LTS.</li>
+<li>Qt 5.5.1 (PowerPC).</li>
+<li>Qt LTS.</li>
 <li>Sparc.</li>
 <li>UDP unicast.</li>
 <li>Vitals!</li>
