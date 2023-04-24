@@ -63,6 +63,7 @@ QMAKE_CXXFLAGS_RELEASE += -O3 \
                           -pedantic \
                           -std=c++17
 } else:linux-* {
+DEFINES += SPOTON_LITE_DAEMON_UDP_MULTICASTING_IPC
 QMAKE_CXXFLAGS_RELEASE += -O3 \
                           -Wall \
 			  -Warray-bounds=2 \
