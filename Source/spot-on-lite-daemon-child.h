@@ -54,8 +54,6 @@ extern "C"
 
 #include "spot-on-lite-daemon-sha.h"
 
-class QLocalSocket;
-
 class spot_on_lite_daemon_child: public QObject
 {
   Q_OBJECT
