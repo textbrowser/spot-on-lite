@@ -164,7 +164,7 @@ spot_on_lite_daemon_child::spot_on_lite_daemon_child
 
   m_remote_socket->setReadBufferSize(m_maximum_accumulated_bytes);
   m_server_identity = server_identity;
-  m_silence = silence == 0 ? silence : 1000 * qBound(15, silence, 3600);
+  m_silence = silence == 0 ? silence : 1000 * qBound(5, silence, 3600);
   m_so_linger = qBound(-1, so_linger, std::numeric_limits<int>::max());
   m_spot_on_lite = m_client_role;
   m_ssl_control_string = ssl_control_string.trimmed();

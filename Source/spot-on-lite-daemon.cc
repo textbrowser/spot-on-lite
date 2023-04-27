@@ -755,7 +755,7 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
 
 	auto silence = list.at(5).toInt(&o);
 
-	if(!o || silence < 15 || silence > 3600)
+	if(!o || silence < 5 || silence > 3600)
 	  if(silence != 0)
 	    {
 	      entry_ok = false;
@@ -768,7 +768,7 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
 			<< "listener/peer \""
 			<< key.toStdString()
 			<< "\" silence value is invalid. Expecting a value "
-			<< "of 0 or in the range [15, 3600]. Ignoring entry."
+			<< "of 0 or in the range [5, 3600]. Ignoring entry."
 			<< std::endl;
 	    }
 

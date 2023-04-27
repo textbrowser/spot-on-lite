@@ -1,4 +1,4 @@
-.TH Spot-On-Lite-Daemon-Child 1 "January, 27, 2022"
+.TH Spot-On-Lite-Daemon-Child 1 "April, 27, 2023"
 .SH NAME
 Spot-On-Lite-Daemon-Child
 .SH SYNOPSIS
@@ -57,7 +57,7 @@ Identity of the parent listener. Required for permanent SSL/TLS certificates. As
 Specifies the desired schedule. Only the first instance will be considered.
 .TP
 .BI --silence-timeout " seconds"
-The process expects periodic data from its peer. If data is not received within the specified number of seconds, the process will terminate itself. The seconds parameter will be bound to the range [15, 3600]. If seconds is zero, the mechanism will be disabled. Only the first instance will be considered.
+The process expects periodic data from its peer. If data is not received within the specified number of seconds, the process will terminate itself. The seconds parameter will be bound to the range [5, 3600]. If seconds is zero, the mechanism will be disabled. Only the first instance will be considered.
 .TP
 .BI --so-linger " seconds"
 SO_LINGER seconds. If -1, ignored.
