@@ -1,3 +1,9 @@
+Archived Items
+
+- Bandwidth: Duration:Bytes.
+- Future-proof (replace SHA-512, etc.).
+- Nixie communications. New class, port.
+
 Completed Items
 
 - Allow smaller numeric values in listener definitions. Silence timeout.
@@ -36,6 +42,4 @@ Completed Items
 
 Remaining Items
 
-- Bandwidth: Duration:Bytes.
-- Future-proof (replace SHA-512, etc.).
-- Nixie communications. New class, port.
+- Completed!
