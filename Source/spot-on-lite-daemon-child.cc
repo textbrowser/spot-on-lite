@@ -276,10 +276,17 @@ spot_on_lite_daemon_child::spot_on_lite_daemon_child
 	  SIGNAL(disconnected(void)),
 	  this,
 	  SLOT(slot_disconnected(void)));
+#if (QT_VERSION < QT_VERSION_CHECK(5, 15, 0))
   connect(m_remote_socket,
 	  SIGNAL(error(QAbstractSocket::SocketError)),
 	  this,
 	  SLOT(slot_error(QAbstractSocket::SocketError)));
+#else
+  connect(m_remote_socket,
+	  SIGNAL(errorOccurred(QAbstractSocket::SocketError)),
+	  this,
+	  SLOT(slot_error(QAbstractSocket::SocketError)));
+#endif
   connect(m_remote_socket,
 	  SIGNAL(readyRead(void)),
 	  this,
