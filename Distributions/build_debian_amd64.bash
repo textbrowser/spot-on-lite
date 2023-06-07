@@ -25,8 +25,7 @@ cp -pr ./Documentation/* ./usr/local/spot-on-lite/Documentation/.
 mkdir -p spot-on-lite-debian/usr/local
 cp -pr ./DEBIAN spot-on-lite-debian/.
 cp -r ./usr/local/spot-on-lite spot-on-lite-debian/usr/local/.
-fakeroot dpkg-deb --build spot-on-lite-debian Spot-On-Lite-2023.01.15_amd64.deb
-mv Spot-On-Lite-2023.01.15_amd64.deb ~/Desktop/.
+fakeroot dpkg-deb --build spot-on-lite-debian Spot-On-Lite-2023.06.07_amd64.deb
 rm -fr ./usr
 rm -fr spot-on-lite-debian
 make distclean
