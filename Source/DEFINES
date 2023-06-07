@@ -31,7 +31,3 @@ Defined if /usr/include/sched.h exists. Supports process scheduling.
 SPOTON_LITE_DAEMON_SHA_TEST
 
 If enabled, test SHA-512.
-
-SPOTON_LITE_DAEMON_UDP_MULTICASTING_IPC
-
-If enabled, processes transfer messages via UDP multicasting.
