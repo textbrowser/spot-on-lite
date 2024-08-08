@@ -78,7 +78,7 @@ static QString socket_type_to_string
 
 static int hash_algorithm_key_length(const QByteArray &a)
 {
-  auto algorithm(a.toLower().trimmed());
+  auto const algorithm(a.toLower().trimmed());
 
   if(algorithm == "sha-512" || algorithm == "sha3-512")
     return 64;
@@ -304,9 +304,9 @@ spot_on_lite_daemon_child::spot_on_lite_daemon_child
     {
 #ifdef SPOTON_LITE_DAEMON_OPENSSL_SUPPORTED
 #if OPENSSL_VERSION_NUMBER < 0x10100000L || defined(Q_OS_OPENBSD)
-      auto rc = SSL_library_init(); // Always returns 1.
+      auto const rc = SSL_library_init(); // Always returns 1.
 #else
-      auto rc = OPENSSL_init_ssl(0, nullptr);
+      auto const rc = OPENSSL_init_ssl(0, nullptr);
 #endif
 #else
       int rc = 0;
@@ -328,7 +328,7 @@ spot_on_lite_daemon_child::spot_on_lite_daemon_child
 	{
 	  generate_ssl_tls();
 
-	  auto list(m_server_identity.split(":"));
+	  auto const list(m_server_identity.split(":"));
 
 	  m_peer_address = QHostAddress(list.value(0));
 	  m_peer_port = static_cast<quint16> (list.value(1).toInt());
@@ -377,7 +377,7 @@ spot_on_lite_daemon_child::spot_on_lite_daemon_child
 	}
       else if(rc == 1)
 	{
-	  auto list(local_certificate_configuration());
+	  auto const list(local_certificate_configuration());
 
 	  if(list.isEmpty())
 	    generate_ssl_tls();
@@ -428,7 +428,7 @@ spot_on_lite_daemon_child::spot_on_lite_daemon_child
     }
   else if(m_client_role)
     {
-      auto list(m_server_identity.split(":"));
+      auto const list(m_server_identity.split(":"));
 
       m_peer_address = QHostAddress(list.value(0));
       m_peer_port = static_cast<quint16> (list.value(1).toInt());
@@ -472,7 +472,7 @@ remote_identities(bool *ok) const
 #else
   create_remote_identities_database();
 
-  auto db_connection_id = db_id();
+  auto const db_connection_id = db_id();
 
   {
     auto db = QSqlDatabase::addDatabase
@@ -512,7 +512,7 @@ QList<QByteArray> spot_on_lite_daemon_child::
 local_certificate_configuration(void) const
 {
   QList<QByteArray> list;
-  auto db_connection_id = db_id();
+  auto const db_connection_id = db_id();
 
   {
     auto db = QSqlDatabase::addDatabase
@@ -571,7 +571,7 @@ QList<QSslCipher> spot_on_lite_daemon_child::default_ssl_ciphers(void) const
 
   while(!protocols.isEmpty())
     {
-      auto protocol(protocols.takeFirst());
+      auto const protocol(protocols.takeFirst());
 
       index = 0;
       next = nullptr;
@@ -703,7 +703,7 @@ QList<QSslCipher> spot_on_lite_daemon_child::default_ssl_ciphers(void) const
 
 bool spot_on_lite_daemon_child::memcmp(const QByteArray &a, const QByteArray &b)
 {
-  auto length = qMax(a.length(), b.length());
+  auto const length = qMax(a.length(), b.length());
   quint64 rc = 0;
 
   for(int i = 0; i < length; i++)
@@ -717,7 +717,7 @@ bool spot_on_lite_daemon_child::record_congestion
 (const QByteArray &data) const
 {
   auto added = false;
-  auto db_connection_id = db_id();
+  auto const db_connection_id = db_id();
 
   {
     auto db = QSqlDatabase::addDatabase
@@ -787,7 +787,7 @@ int spot_on_lite_daemon_child::bytes_in_send_queue(void) const
 	   &count) == -1)
     count = 0;
 #elif defined(Q_OS_MACOS)
-  auto length = static_cast<socklen_t> (sizeof(count));
+  auto const length = static_cast<socklen_t> (sizeof(count));
 
   if(getsockopt(static_cast<int> (m_remote_socket->socketDescriptor()),
 		SOL_SOCKET,
@@ -812,7 +812,7 @@ quint64 spot_on_lite_daemon_child::db_id(void)
 
 void spot_on_lite_daemon_child::create_remote_identities_database(void) const
 {
-  auto db_connection_id = db_id();
+  auto const db_connection_id = db_id();
 
   {
     auto db = QSqlDatabase::addDatabase
@@ -1169,7 +1169,8 @@ void spot_on_lite_daemon_child::generate_ssl_tls(void)
   QByteArray public_key;
   QString error("");
   RSA *rsa = nullptr;
-  auto days = 24L * 60L * 60L * static_cast<long int> (m_certificate_lifetime);
+  auto const days = 24L * 60L * 60L *
+    static_cast<long int> (m_certificate_lifetime);
   char *private_buffer = nullptr;
   char *public_buffer = nullptr;
   int ecc_group = 0;
@@ -1429,7 +1430,7 @@ void spot_on_lite_daemon_child::generate_ssl_tls(void)
 
 void spot_on_lite_daemon_child::log(const QString &error) const
 {
-  auto e(error.trimmed());
+  auto const e(error.trimmed());
 
   if(e.isEmpty())
     return;
@@ -1443,7 +1444,7 @@ void spot_on_lite_daemon_child::log(const QString &error) const
 
   if(file.open(QIODevice::Append | QIODevice::WriteOnly))
     {
-      auto dateTime(QDateTime::currentDateTime());
+      auto const dateTime(QDateTime::currentDateTime());
 
       file.write(dateTime.toString().toStdString().data());
       file.write("\n");
@@ -1572,7 +1573,7 @@ void spot_on_lite_daemon_child::process_configuration_file(void)
 {
   QSettings settings(m_configuration_file_name, QSettings::IniFormat);
 
-  foreach(const auto &key, settings.allKeys())
+  foreach(auto const &key, settings.allKeys())
     if(key == "type_capabilities" ||
        key == "type_identity" ||
        key == "type_spot_on_lite_client")
@@ -1626,7 +1627,7 @@ void spot_on_lite_daemon_child::process_local_content(void)
   while(!m_process_local_content_future.isCanceled());
 
   QVector<QByteArray> vector;
-  auto type_identity(m_message_types.value("type_identity"));
+  auto const type_identity(m_message_types.value("type_identity"));
   int index = 0;
 
   {
@@ -1639,7 +1640,7 @@ void spot_on_lite_daemon_child::process_local_content(void)
 	if(m_process_local_content_future.isCanceled())
 	  goto done_label;
 
-	auto bytes
+	auto const bytes
 	  (m_local_content.mid(0, index + m_end_of_message_marker.length()));
 
 	vector.append(bytes);
@@ -1653,7 +1654,7 @@ void spot_on_lite_daemon_child::process_local_content(void)
   if(m_process_local_content_future.isCanceled() || vector.isEmpty())
     goto done_label;
 
-  foreach(const auto &bytes, vector)
+  foreach(auto const &bytes, vector)
     {
       if(bytes.contains("type=" + type_identity + "&content="))
 	{
@@ -1687,7 +1688,7 @@ void spot_on_lite_daemon_child::process_local_content(void)
 
 	  if(data.contains("\n")) // Spot-On
 	    {
-	      auto list(data.split('\n'));
+	      auto const list(data.split('\n'));
 
 	      if(list.size() >= 3)
 		{
@@ -1767,12 +1768,12 @@ void spot_on_lite_daemon_child::process_read_data(const QByteArray &data)
       if(m_local_socket.state() == QLocalSocket::ConnectedState &&
 	 record_congestion(data))
 	{
-	  auto maximum = m_local_so_rcvbuf_so_sndbuf -
+	  auto const maximum = m_local_so_rcvbuf_so_sndbuf -
 	    static_cast<int> (m_local_socket.bytesToWrite());
 
 	  if(maximum > 0)
 	    {
-	      auto rc = m_local_socket.write(data.mid(0, maximum));
+	      auto const rc = m_local_socket.write(data.mid(0, maximum));
 
 	      if(rc > 0)
 		{
@@ -1815,10 +1816,10 @@ void spot_on_lite_daemon_child::process_remote_content(void)
     }
 
   QByteArray data;
-  auto type_capabilities
+  auto const type_capabilities
     (m_message_types.value("type_capabilities"));
-  auto type_identity(m_message_types.value("type_identity"));
-  auto type_spot_on_lite_client
+  auto const type_identity(m_message_types.value("type_identity"));
+  auto const type_spot_on_lite_client
     (m_message_types.value("type_spot_on_lite_client"));
   int index = 0;
 
@@ -1852,7 +1853,7 @@ void spot_on_lite_daemon_child::process_remote_content(void)
 
       if(record_congestion(data))
 	{
-	  auto maximum = m_local_so_rcvbuf_so_sndbuf -
+	  auto const maximum = m_local_so_rcvbuf_so_sndbuf -
 	    static_cast<int> (m_local_socket.bytesToWrite());
 
 	  if(maximum > 0)
@@ -1894,7 +1895,7 @@ void spot_on_lite_daemon_child::purge_remote_identities(void)
 
   m_remote_identities.clear();
 #else
-  auto db_connection_id = db_id();
+  auto const db_connection_id = db_id();
 
   {
     auto db = QSqlDatabase::addDatabase
@@ -1920,7 +1921,7 @@ void spot_on_lite_daemon_child::purge_remote_identities(void)
 
 void spot_on_lite_daemon_child::purge_statistics(void)
 {
-  auto db_connection_id = db_id();
+  auto const db_connection_id = db_id();
 
   {
     auto db = QSqlDatabase::addDatabase
@@ -1951,7 +1952,7 @@ void spot_on_lite_daemon_child::record_certificate
   if(m_client_role)
     return;
 
-  auto db_connection_id = db_id();
+  auto const db_connection_id = db_id();
 
   {
     auto db = QSqlDatabase::addDatabase
@@ -2026,7 +2027,7 @@ void spot_on_lite_daemon_child::record_remote_identity
 #else
       create_remote_identities_database();
 
-      auto db_connection_id = db_id();
+      auto const db_connection_id = db_id();
 
       {
 	auto db = QSqlDatabase::addDatabase
@@ -2066,7 +2067,7 @@ void spot_on_lite_daemon_child::remove_expired_identities(void)
 
   while(it.hasNext())
     {
-      auto now = QDateTime::currentDateTime().currentMSecsSinceEpoch();
+      auto const now = QDateTime::currentDateTime().currentMSecsSinceEpoch();
 
       it.next();
 
@@ -2075,7 +2076,7 @@ void spot_on_lite_daemon_child::remove_expired_identities(void)
 	it.remove();
     }
 #else
-  auto db_connection_id = db_id();
+  auto const db_connection_id = db_id();
 
   {
     auto db = QSqlDatabase::addDatabase
@@ -2163,7 +2164,7 @@ void spot_on_lite_daemon_child::share_identity(const QByteArray &data)
   if(m_local_socket.state() != QLocalSocket::ConnectedState)
     return;
 
-  auto rc = m_local_socket.write(data);
+  auto const rc = m_local_socket.write(data);
 
   if(rc > 0)
     {
@@ -2241,8 +2242,8 @@ void spot_on_lite_daemon_child::slot_broadcast_capabilities(void)
 
   QByteArray data;
   QByteArray results;
-  auto type_capabilities(m_message_types.value("type_capabilities"));
-  auto uuid(QUuid::createUuid());
+  auto const type_capabilities(m_message_types.value("type_capabilities"));
+  auto const uuid(QUuid::createUuid());
 
   data.append(uuid.toString().toUtf8());
   data.append("\n");
@@ -2272,7 +2273,7 @@ void spot_on_lite_daemon_child::slot_broadcast_capabilities(void)
 
       QByteArray data;
       QByteArray results;
-      auto type_spot_on_lite_client
+      auto const type_spot_on_lite_client
 	(m_message_types.value("type_spot_on_lite_client"));
 
       data.append("Spot-On-Lite");
@@ -2308,7 +2309,7 @@ void spot_on_lite_daemon_child::slot_connected(void)
 		 ":" +
 		 socket_type_to_string(m_remote_socket->socketType()));
 
-  auto sd = static_cast<int> (m_remote_socket->socketDescriptor());
+  auto const sd = static_cast<int> (m_remote_socket->socketDescriptor());
 
   if(m_so_linger > -1)
     {
@@ -2322,7 +2323,8 @@ void spot_on_lite_daemon_child::slot_connected(void)
       setsockopt(sd, SOL_SOCKET, SO_LINGER, &l, length);
     }
 
-  auto optlen = static_cast<socklen_t> (sizeof(m_maximum_accumulated_bytes));
+  auto const optlen = static_cast<socklen_t>
+    (sizeof(m_maximum_accumulated_bytes));
 
   setsockopt(sd, SOL_SOCKET, SO_RCVBUF, &m_maximum_accumulated_bytes, optlen);
   setsockopt(sd, SOL_SOCKET, SO_SNDBUF, &m_maximum_accumulated_bytes, optlen);
@@ -2452,8 +2454,9 @@ void spot_on_lite_daemon_child::slot_local_socket_connected(void)
     m_local_content_last_parsed = QDateTime::currentMSecsSinceEpoch();
   }
 
-  auto optlen = static_cast<socklen_t> (sizeof(m_local_so_rcvbuf_so_sndbuf));
-  auto sd = static_cast<int> (m_local_socket.socketDescriptor());
+  auto const optlen = static_cast<socklen_t>
+    (sizeof(m_local_so_rcvbuf_so_sndbuf));
+  auto const sd = static_cast<int> (m_local_socket.socketDescriptor());
 
   setsockopt(sd, SOL_SOCKET, SO_RCVBUF, &m_local_so_rcvbuf_so_sndbuf, optlen);
   setsockopt(sd, SOL_SOCKET, SO_SNDBUF, &m_local_so_rcvbuf_so_sndbuf, optlen);
@@ -2475,7 +2478,7 @@ void spot_on_lite_daemon_child::slot_local_socket_ready_read(void)
 {
   while(m_local_socket.bytesAvailable() > 0)
     {
-      auto data(m_local_socket.readAll());
+      auto const data(m_local_socket.readAll());
 
       if(!data.isEmpty())
 	{
@@ -2646,7 +2649,8 @@ void spot_on_lite_daemon_child::write(const QByteArray &data)
 
 	while(data.size() > i)
 	  {
-	    auto maximum = m_maximum_accumulated_bytes - bytes_in_send_queue();
+	    auto const maximum = m_maximum_accumulated_bytes -
+	      bytes_in_send_queue();
 
 	    if(maximum > 0)
 	      {

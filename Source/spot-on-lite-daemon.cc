@@ -236,7 +236,7 @@ size_t spot_on_lite_daemon::memory(void) const
 
 void spot_on_lite_daemon::log(const QString &error) const
 {
-  auto e(error.trimmed());
+  auto const e(error.trimmed());
 
   if(e.isEmpty() || m_log_file_name.isEmpty())
     return;
@@ -245,7 +245,7 @@ void spot_on_lite_daemon::log(const QString &error) const
 
   if(file.open(QIODevice::Append | QIODevice::WriteOnly))
     {
-      auto dateTime(QDateTime::currentDateTime());
+      auto const dateTime(QDateTime::currentDateTime());
 
       file.write(dateTime.toString().toStdString().data());
       file.write("\n");
@@ -316,24 +316,24 @@ void spot_on_lite_daemon::prepare_peers(void)
 
       QString server_identity;
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 15, 0))
-      auto list
+      auto const list
 	(m_peers_properties.at(i).split(",", Qt::KeepEmptyParts));
 #else
-      auto list
+      auto const list
 	(m_peers_properties.at(i).split(",", QString::KeepEmptyParts));
 #endif
-      auto command(m_child_process_file_name.toStdString());
-      auto so_linger = list.value(6).toInt();
-      pid_t pid = 0;
+      auto const command(m_child_process_file_name.toStdString());
+      auto const so_linger = list.value(6).toInt();
 #ifdef Q_OS_MACOS
-      auto ld_library_path
+      auto const ld_library_path
 	(m_child_process_ld_library_path.remove("DYLD_LIBRARY_PATH=").
 	 toStdString());
 #else
-      auto ld_library_path
+      auto const ld_library_path
 	(m_child_process_ld_library_path.remove("LD_LIBRARY_PATH").
 	 toStdString());
 #endif
+      pid_t pid = 0;
 
       server_identity = QString("%1:%2").arg(list.value(0)).arg(list.value(1));
 
@@ -398,7 +398,7 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
   QSettings settings(m_configuration_file_name, QSettings::IniFormat);
   auto o = true;
 
-  foreach(const auto &key, settings.allKeys())
+  foreach(auto const &key, settings.allKeys())
     if(key == "certificates_file")
       {
 #ifdef Q_OS_WINDOWS
@@ -490,7 +490,7 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
       }
     else if(key == "congestion_control_lifetime")
       {
-	auto congestion_control_lifetime = settings.value(key).toInt(&o);
+	auto const congestion_control_lifetime = settings.value(key).toInt(&o);
 
 	if(congestion_control_lifetime < 1 || !o)
 	  {
@@ -516,7 +516,7 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
       spot_on_lite_common::set_schedule(settings.value(key).toString());
     else if(key == "local_so_rcvbuf_so_sndbuf")
       {
-	auto so_rcvbuf_so_sndbuf = settings.value(key).toInt(&o);
+	auto const so_rcvbuf_so_sndbuf = settings.value(key).toInt(&o);
 
 	if(so_rcvbuf_so_sndbuf < 4096 || !o)
 	  {
@@ -599,7 +599,7 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
       }
     else if(key == "maximum_accumulated_bytes")
       {
-	auto maximum_accumulated_bytes = settings.value(key).toInt(&o);
+	auto const maximum_accumulated_bytes = settings.value(key).toInt(&o);
 
 	if(maximum_accumulated_bytes < 1024 || !o)
 	  {
@@ -684,7 +684,7 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
 		      << std::endl;
 	  }
 
-	auto port = list.at(1).toInt(&o);
+	auto const port = list.at(1).toInt(&o);
 
 	if(!o || port < 0 || port > 65535)
 	  {
@@ -702,7 +702,7 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
 		      << std::endl;
 	  }
 
-	auto backlog = list.at(2).toInt(&o);
+	auto const backlog = list.at(2).toInt(&o);
 
 	if(backlog < 1 || !o)
 	  {
@@ -724,7 +724,7 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
 
 	if(!list.at(4).isEmpty())
 	  {
-	    auto keySize = list.at(4).toInt(&o);
+	    auto const keySize = list.at(4).toInt(&o);
 
 	    if(!(keySize == 256 ||
 		 keySize == 384 ||
@@ -753,7 +753,7 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
 	      }
 	  }
 
-	auto silence = list.at(5).toInt(&o);
+	auto const silence = list.at(5).toInt(&o);
 
 	if(!o || silence < 5 || silence > 3600)
 	  if(silence != 0)
@@ -772,7 +772,7 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
 			<< std::endl;
 	    }
 
-	auto so_linger = list.at(6).toInt(&o);
+	auto const so_linger = list.at(6).toInt(&o);
 
 	if(!o || so_linger < -1 || so_linger > 65535)
 	  {
@@ -790,7 +790,7 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
 		      << std::endl;
 	  }
 
-	auto so_rcvbuf_so_sndbuf = list.at(8).toInt(&o);
+	auto const so_rcvbuf_so_sndbuf = list.at(8).toInt(&o);
 
 	if(!o || so_rcvbuf_so_sndbuf < 4096)
 	  {
@@ -809,7 +809,7 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
 		      << std::endl;
 	  }
 
-	auto identities_lifetime = list.at(9).toInt(&o);
+	auto const identities_lifetime = list.at(9).toInt(&o);
 
 	if(identities_lifetime < 30 || identities_lifetime > 600 || !o)
 	  {
@@ -828,7 +828,7 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
 		      << std::endl;
 	  }
 	
-	auto protocol(list.value(10));
+	auto const protocol(list.value(10));
 
 	if(!(protocol == "tcp" || protocol == "udp"))
 	  {
@@ -847,7 +847,7 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
 		      << std::endl;
 	  }
 
-	auto certificate_lifetime = list.at(11).toInt(&o);
+	auto const certificate_lifetime = list.at(11).toInt(&o);
 
 	if(certificate_lifetime < 1 || !o)
 	  {
@@ -1007,8 +1007,9 @@ void spot_on_lite_daemon::slot_new_local_connection(void)
   else
     socket->setReadBufferSize(m_maximum_accumulated_bytes);
 
-  auto optlen = static_cast<socklen_t> (sizeof(m_local_so_rcvbuf_so_sndbuf));
-  auto sockfd = static_cast<int> (socket->socketDescriptor());
+  auto const optlen = static_cast<socklen_t>
+    (sizeof(m_local_so_rcvbuf_so_sndbuf));
+  auto const sockfd = static_cast<int> (socket->socketDescriptor());
 
   setsockopt
     (sockfd, SOL_SOCKET, SO_RCVBUF, &m_local_so_rcvbuf_so_sndbuf, optlen);
@@ -1064,7 +1065,7 @@ void spot_on_lite_daemon::slot_ready_read(void)
 	 it.key() != socket &&
 	 it.key()->state() == QLocalSocket::ConnectedState)
 	{
-	  auto maximum = m_local_so_rcvbuf_so_sndbuf -
+	  auto const maximum = m_local_so_rcvbuf_so_sndbuf -
 	    static_cast<int> (it.key()->bytesToWrite());
 
 	  if(maximum > 0)
@@ -1097,7 +1098,7 @@ void spot_on_lite_daemon::slot_signal(void)
 	      string = string.mid(1);
 	      std::reverse(string.begin(), string.end());
 
-	      auto pid = static_cast<pid_t> (string.toLongLong());
+	      auto const pid = static_cast<pid_t> (string.toLongLong());
 
 	      if(kill(pid, 0) == -1 && errno == ESRCH)
 		emit child_died(pid);
@@ -1142,10 +1143,10 @@ void spot_on_lite_daemon::validate_configuration_file
   m_peers_properties.clear();
   process_configuration_file(ok);
 
-  foreach(const auto &i, m_listeners_properties)
+  foreach(auto const &i, m_listeners_properties)
     qDebug() << i.split(',');
 
-  foreach(const auto &i, m_peers_properties)
+  foreach(auto const &i, m_peers_properties)
     qDebug() << i.split(',');
 }
 
@@ -1154,7 +1155,7 @@ void spot_on_lite_daemon::vitals(void)
   QString connectionName("vitals");
 
   {
-    QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE", connectionName);
+    auto db = QSqlDatabase::addDatabase("QSQLITE", connectionName);
 
     db.setDatabaseName(QDir::tempPath() +
 		       QDir::separator() +
@@ -1182,14 +1183,14 @@ void spot_on_lite_daemon::vitals(void)
 	  {
 	    while(query.next())
 	      {
-		auto record(query.record());
+		auto const record(query.record());
 		std::string dead("");
 
 		for(int i = 0; i < record.count(); i++)
 		  {
 		    if(i == 0)
 		      {
-			auto pid = static_cast<pid_t>
+			auto const pid = static_cast<pid_t>
 			  (record.value(i).toLongLong());
 
 			if(kill(pid, 0) == -1 && errno == ESRCH)
@@ -1219,7 +1220,7 @@ void spot_on_lite_daemon::vitals(void)
 			  std::cout << "0 Seconds";
 			else
 			  {
-			    auto start_time(record.value(i).toLongLong());
+			    auto const start_time(record.value(i).toLongLong());
 
 			    if(start_time > 0)
 			      {

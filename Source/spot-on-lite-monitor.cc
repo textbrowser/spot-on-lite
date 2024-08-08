@@ -236,8 +236,8 @@ void spot_on_lite_monitor::read_statistics_database(void)
 {
   QDateTime last_modified;
   QMap<qint64, QMap<Columns, QString> > processes;
-  const QString db_connection_id("1");
-  const auto db_path(QDir::tempPath() +
+  QString const db_connection_id("1");
+  auto const db_path(QDir::tempPath() +
 		     QDir::separator() +
 		     "spot-on-lite-daemon-statistics.sqlite");
 
@@ -290,7 +290,7 @@ void spot_on_lite_monitor::read_statistics_database(void)
 	      while(query.next())
 		{
 		  QMap<Columns, QString> values;
-		  QString status(tr("Active"));
+		  auto status(tr("Active"));
 
 		  values[ARGUMENTS] = query.value(0).toString();
 		  values[BYTES_ACCUMULATED] = query.value(1).toString();
@@ -302,7 +302,7 @@ void spot_on_lite_monitor::read_statistics_database(void)
 		  values[PID] = query.value(7).toString();
 		  values[TYPE] = query.value(8).toString();
 
-		  auto pid = values.value(PID).toLongLong();
+		  auto const pid = values.value(PID).toLongLong();
 
 #ifdef Q_OS_UNIX
 		  if(kill(static_cast<pid_t> (pid), 0) != 0)
@@ -312,7 +312,7 @@ void spot_on_lite_monitor::read_statistics_database(void)
 
 		  values[STATUS] = status;
 
-		  auto index = deleted_processes.indexOf(pid);
+		  auto const index = deleted_processes.indexOf(pid);
 
 		  if(index >= 0)
 		    deleted_processes.removeAt(index);
@@ -358,7 +358,7 @@ void spot_on_lite_monitor::read_statistics_database(void)
 		    }
 		}
 
-	    foreach(auto pid, deleted_processes)
+	    foreach(auto const pid, deleted_processes)
 	      emit deleted(pid);
 	  }
 
@@ -376,8 +376,8 @@ void spot_on_lite_monitor::slot_added
   m_ui.processes->setRowCount(m_ui.processes->rowCount() + 1);
 
   QMapIterator<Columns, QString> it(values);
-  auto pid = values.value(PID).toLongLong();
-  auto row = m_ui.processes->rowCount() - 1;
+  auto const pid = values.value(PID).toLongLong();
+  auto const row = m_ui.processes->rowCount() - 1;
 
   while(it.hasNext())
     {
@@ -423,7 +423,7 @@ void spot_on_lite_monitor::slot_changed
   if(!item)
     return;
 
-  auto row = item->row();
+  auto const row = item->row();
 
   if(row < 0)
     return;
@@ -485,7 +485,7 @@ void spot_on_lite_monitor::slot_path_timeout(void)
   if(!file_info.isReadable())
     color = QColor(240, 128, 128);
 
-  QPalette palette(m_ui.configuration_file->palette());
+  auto palette(m_ui.configuration_file->palette());
 
   palette.setColor(m_ui.configuration_file->backgroundRole(), color);
   m_ui.configuration_file->setPalette(palette);

@@ -212,7 +212,7 @@ QByteArray spot_on_lite_daemon_sha::sha_512(const QByteArray &data) const
   QByteArray hash;
   QByteArray number(8, 0);
   QVector<quint64> H(8);
-  auto N = qCeil(static_cast<double> (data.size() + 17) / 128.0);
+  auto const N = qCeil(static_cast<double> (data.size() + 17) / 128.0);
 
   /*
   ** Padding the hash (5.1.2).
@@ -385,9 +385,9 @@ QByteArray spot_on_lite_daemon_sha::sha_512_hmac(const QByteArray &data,
   if(s_block_length > k.length())
     k.append(QByteArray(s_block_length - k.length(), 0));
 
+  QByteArray const ipad(s_block_length, 0x36);
+  QByteArray const opad(s_block_length, 0x5c);
   QByteArray left(s_block_length, 0);
-  const QByteArray ipad(s_block_length, 0x36);
-  const QByteArray opad(s_block_length, 0x5c);
 
   for(int i = 0; i < s_block_length; i++)
     left[i] = static_cast<char> (k.at(i) ^ opad.at(i));

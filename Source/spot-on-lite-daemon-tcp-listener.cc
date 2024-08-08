@@ -73,36 +73,40 @@ void spot_on_lite_daemon_tcp_listener::incomingConnection
       return;
     }
 
-  auto sd = dup(static_cast<int> (socket_descriptor));
+  auto const sd = dup(static_cast<int> (socket_descriptor));
 
   ::close(static_cast<int> (socket_descriptor));
 
   if(sd == -1)
     return;
 
-  auto certificates_file_name(m_parent->certificates_file_name().toStdString());
-  auto child_process_schedule(m_parent->child_process_schedule().toStdString());
-  auto command(m_parent->child_process_file_name().toStdString());
-  auto configuration_file_name
+  auto const certificates_file_name
+    (m_parent->certificates_file_name().toStdString());
+  auto const child_process_schedule
+    (m_parent->child_process_schedule().toStdString());
+  auto const command(m_parent->child_process_file_name().toStdString());
+  auto const configuration_file_name
     (m_parent->configuration_file_name().toStdString());
-  auto congestion_control_file_name
+  auto const congestion_control_file_name
     (m_parent->congestion_control_file_name().toStdString());
-  auto ld_library_path(m_parent->child_process_ld_library_path().toStdString());
+  auto const ld_library_path
+    (m_parent->child_process_ld_library_path().toStdString());
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 15, 0))
-  auto list(m_configuration.split(",", Qt::KeepEmptyParts));
+  auto const list(m_configuration.split(",", Qt::KeepEmptyParts));
 #else
-  auto list(m_configuration.split(",", QString::KeepEmptyParts));
+  auto const list(m_configuration.split(",", QString::KeepEmptyParts));
 #endif
-  auto listener_sd = static_cast<int> (socketDescriptor());
-  auto local_server_file_name(m_parent->local_server_file_name().toStdString());
-  auto log_file_name(m_parent->log_file_name().toStdString());
-  auto maximum_accumulated_bytes = m_parent->maximum_accumulated_bytes();
-  auto remote_identities_file_name
+  auto const listener_sd = static_cast<int> (socketDescriptor());
+  auto const local_server_file_name
+    (m_parent->local_server_file_name().toStdString());
+  auto const log_file_name(m_parent->log_file_name().toStdString());
+  auto const maximum_accumulated_bytes = m_parent->maximum_accumulated_bytes();
+  auto const remote_identities_file_name
     (m_parent->remote_identities_file_name().toStdString());
-  auto server_identity(QString("%1:%2").
-		       arg(serverAddress().toString()).
-		       arg(serverPort()).toStdString());
-  auto so_linger = list.value(6).toInt();
+  auto const server_identity(QString("%1:%2").
+			     arg(serverAddress().toString()).
+			     arg(serverPort()).toStdString());
+  auto const so_linger = list.value(6).toInt();
   pid_t pid = 0;
 
   if((pid = fork()) == 0)
@@ -208,11 +212,11 @@ void spot_on_lite_daemon_tcp_listener::slot_start_timeout(void)
   */
 
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 15, 0))
-  auto list(m_configuration.split(",", Qt::KeepEmptyParts));
+  auto const list(m_configuration.split(",", Qt::KeepEmptyParts));
 #else
-  auto list(m_configuration.split(",", QString::KeepEmptyParts));
+  auto const list(m_configuration.split(",", QString::KeepEmptyParts));
 #endif
-  auto maximum_clients = list.value(2).toInt();
+  auto const maximum_clients = list.value(2).toInt();
 
   if(m_child_pids.size() >= maximum_clients)
     {
@@ -225,10 +229,11 @@ void spot_on_lite_daemon_tcp_listener::slot_start_timeout(void)
 
   if(listen(QHostAddress(list.value(0)), list.value(1).toUShort()))
     {
-      auto maximum_accumulated_bytes = m_parent ?
+      auto const maximum_accumulated_bytes = m_parent ?
 	m_parent->maximum_accumulated_bytes() : 8388608;
-      auto optlen = static_cast<socklen_t> (sizeof(maximum_accumulated_bytes));
-      auto sd = static_cast<int> (socketDescriptor());
+      auto const optlen = static_cast<socklen_t>
+	(sizeof(maximum_accumulated_bytes));
+      auto const sd = static_cast<int> (socketDescriptor());
 
       setMaxPendingConnections(maximum_clients);
       setsockopt(sd, SOL_SOCKET, SO_RCVBUF, &maximum_accumulated_bytes, optlen);
