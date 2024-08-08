@@ -282,9 +282,9 @@ void spot_on_lite_daemon::prepare_listeners(void)
 
 void spot_on_lite_daemon::prepare_local_socket_server(void)
 {
-  QFileInfo file_info(QString("%1/Spot-On-Lite-Daemon-Local-Server.%2").
-		      arg(m_local_socket_server_directory_name).
-		      arg(QCoreApplication::applicationPid()));
+  QFileInfo const file_info(QString("%1/Spot-On-Lite-Daemon-Local-Server.%2").
+			    arg(m_local_socket_server_directory_name).
+			    arg(QCoreApplication::applicationPid()));
 
   if(file_info.exists() &&
      file_info.isReadable() &&
@@ -408,7 +408,7 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
 		   S_IRUSR | S_IWUSR));
 #endif
 
-	QFileInfo file_info(settings.value(key).toString());
+	QFileInfo const file_info(settings.value(key).toString());
 
 	if(file_info.isReadable() && file_info.isWritable())
 	  m_certificates_file_name = settings.value(key).toString();
@@ -427,7 +427,7 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
       }
     else if(key == "child_process_file")
       {
-	QFileInfo file_info(settings.value(key).toString());
+	QFileInfo const file_info(settings.value(key).toString());
 
 	if(file_info.isExecutable() &&
 	   file_info.isFile() &&
@@ -460,7 +460,7 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
 		   S_IRUSR | S_IWUSR));
 #endif
 
-	QFileInfo file_info(settings.value(key).toString());
+	QFileInfo const file_info(settings.value(key).toString());
 
 	if(file_info.isReadable() && file_info.isWritable())
 	  {
@@ -537,7 +537,7 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
       }
     else if(key == "local_socket_server_directory")
       {
-	QFileInfo file_info(settings.value(key).toString());
+	QFileInfo const file_info(settings.value(key).toString());
 
 	if(!file_info.isDir())
 	  {
@@ -576,7 +576,7 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
 		   S_IRUSR | S_IWUSR));
 #endif
 
-	QFileInfo file_info(settings.value(key).toString());
+	QFileInfo const file_info(settings.value(key).toString());
 
 	if(!file_info.isWritable())
 	  {
@@ -919,7 +919,7 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
 		   S_IRUSR | S_IWUSR));
 #endif
 
-	QFileInfo file_info(settings.value(key).toString());
+	QFileInfo const file_info(settings.value(key).toString());
 
 	if(file_info.isReadable() && file_info.isWritable())
 	  {

@@ -248,7 +248,7 @@ void spot_on_lite_monitor::read_statistics_database(void)
 
       QThread::msleep(100);
 
-      QFileInfo file_info(db_path);
+      QFileInfo const file_info(db_path);
 
       if(!file_info.isReadable())
 	{

@@ -342,7 +342,7 @@ int main(int argc, char *argv[])
 	  }
       }
 
-  QFileInfo file_info(configuration_file_name);
+  QFileInfo const file_info(configuration_file_name);
 
   if(!file_info.isReadable())
     {
