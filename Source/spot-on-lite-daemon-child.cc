@@ -941,9 +941,9 @@ void spot_on_lite_daemon_child::generate_certificate
     goto done_label;
 
   if(m_ssl_key_size < 1024)
-    ecc = (EC_KEY *) key;
+    ecc = static_cast<EC_KEY *> (key);
   else
-    rsa = (RSA *) key;
+    rsa = static_cast<RSA *> (key);
 
   if(m_ssl_key_size < 1024 && !ecc)
     {

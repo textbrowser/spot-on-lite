@@ -163,7 +163,7 @@ static int make_daemon(void)
     rl.rlim_max = 2048;
 
   for(rlim_t i = 0; i < rl.rlim_max; i++)
-    close((int) i);
+    close(static_cast<int> (i));
 
   auto fd0 = open("/dev/null", O_RDWR);
   auto fd1 = dup(0);

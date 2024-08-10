@@ -75,6 +75,7 @@ QMAKE_CXXFLAGS_RELEASE += -O3 \
                           -Wlogical-op \
                           -Wno-deprecated-declarations \
                           -Wno-unused-variable \
+                          -Wold-style-cast \
                           -Woverloaded-virtual \
                           -Wpointer-arith \
                           -Wundef \
