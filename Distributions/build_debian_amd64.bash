@@ -1,12 +1,14 @@
 #!/usr/bin/env bash
 # Alexis Megas.
 
-if [ ! -x /usr/bin/dpkg-deb ]; then
+if [ ! -x /usr/bin/dpkg-deb ]
+then
     echo "Please install dpkg-deb."
     exit 1
 fi
 
-if [ ! -x /usr/bin/fakeroot ]; then
+if [ ! -x /usr/bin/fakeroot ]
+then
     echo "Please install fakeroot."
     exit 1
 fi

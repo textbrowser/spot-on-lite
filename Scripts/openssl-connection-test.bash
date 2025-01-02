@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # A test script.
 
-for i in {1..256};
+for i in {1..256}
 do
     openssl s_client -connect 127.0.0.1:4710 &
 done
