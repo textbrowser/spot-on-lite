@@ -1,8 +1,8 @@
 Prepare spot-on-lite-daemon.conf.
 
-> make -j 4
-> sudo mkdir -p /usr/local/spot-on-lite
-> sudo cp Scripts/spot-on-lite-daemon.sh /usr/local/spot-on-lite/.
-> sudo cp Spot-On-Lite-* spot-on-lite-daemon.conf /usr/local/spot-on-lite/.
+> make -j $(nproc)
+> sudo mkdir -p /opt/spot-on-lite
+> sudo cp Scripts/spot-on-lite-daemon.sh /opt/spot-on-lite/.
+> sudo cp Spot-On-Lite-* spot-on-lite-daemon.conf /opt/spot-on-lite/.
 > make distclean
-> /usr/local/spot-on-lite/spot-on-lite-daemon.sh &
+> /opt/spot-on-lite/spot-on-lite-daemon.sh &

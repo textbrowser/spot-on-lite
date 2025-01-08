@@ -9,7 +9,10 @@ is an extremely lite version of Spot-On.
 .SH OPTIONS
 .TP
 .BI --configuration-file " file"
-Absolute path of the configuration file. Only the first instance will be considered. Reprocessing of the configuration file may be performed via the SIGUSR1 signal. If a Spot-On-Lite-Daemon process receives the SIGUSR1 signal, its listeners and peers will be restarted.
+Absolute path of the configuration file. Only the first instance will be
+considered. Reprocessing of the configuration file may be performed via the
+SIGUSR1 signal. If a Spot-On-Lite-Daemon process receives the SIGUSR1 signal,
+its listeners and peers will be restarted.
 .TP
 .BI --help
 Display helpful text.
@@ -21,11 +24,13 @@ Do not become a daemon process. Ignored on Mac.
 Display vitals.
 .TP
 .BI --validate-configuration-file " file"
-Validate the specified configuration file. Only the first instance will be considered.
+Validate the specified configuration file. Only the first instance will be
+considered.
 .TP
 .BI --version
 Display software information.
 .SH NOTES
-A Spot-On-Lite-Daemon process will monitor Spot-On-Lite-Daemon-Child peer processes. If a child peer process is terminated, it will be restarted.
+A Spot-On-Lite-Daemon process will monitor Spot-On-Lite-Daemon-Child peer
+processes. If a child peer process is terminated, it will be restarted.
 .SH AUTHOR(S)
 .B Alexis Megas

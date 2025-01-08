@@ -9,67 +9,96 @@ is the child process of Spot-On-Lite-Daemon.
 .SH OPTIONS
 .TP
 .BI --certificates-file " file"
-Absolute path of the SSL/TLS certificates file. Assumed to be correct. Only the first instance will be considered.
+Absolute path of the SSL/TLS certificates file. Assumed to be correct. Only
+the first instance will be considered.
 .TP
 .BI --certificate-lifetime " days"
-The certificate's lifetime in days. Assumed to be correct. Only the first instance will be considered.
+The certificate's lifetime in days. Assumed to be correct. Only the first
+instance will be considered.
 .TP
 .BI --configuration-file " file"
-Absolute path of the configuration file. Assumed to be correct. Only the first instance will be considered.
+Absolute path of the configuration file. Assumed to be correct. Only the
+first instance will be considered.
 .TP
 .BI --congestion-control-file " file"
-Absolute path of the congestion control file. Assumed to be correct. Only the first instance will be considered.
+Absolute path of the congestion control file. Assumed to be correct. Only the
+first instance will be considered.
 .TP
 .BI --end-of-message-marker " text"
-Messages may be separated via the end-of-message-marker. Assumed to be correct. Only the first instance will be considered.
+Messages may be separated via the end-of-message-marker. Assumed to be
+correct. Only the first instance will be considered.
 .TP
 .BI --identities-lifetime " seconds"
-Recorded identities will expire within the specified number of seconds. A default value of 90 seconds is assumed. The seconds parameter will be bound to the range [30, 600]. Only the first instance will be considered.
+Recorded identities will expire within the specified number of seconds. A
+default value of 90 seconds is assumed. The seconds parameter will be bound to
+the range [30, 600]. Only the first instance will be considered.
 .TP
 .BI --local-server-file " file"
-Absolute path of the parent daemon's local server file. Assumed to be correct. Only the first instance will be considered.
+Absolute path of the parent daemon's local server file. Assumed to be correct.
+Only the first instance will be considered.
 .TP
 .BI --local-so-rcvbuf-so-sndbuf " bytes"
-The local-socket SO_RCVBUF / SO_SNDBUF value. The bytes parameter must be in the range [4096, 65536]. Only the first instance will be considered.
+The local-socket SO_RCVBUF / SO_SNDBUF value. The bytes parameter must be in
+the range [4096, 65536]. Only the first instance will be considered.
 .TP
 .BI --log-file " file"
-Absolute path of the log file. Assumed to be correct. Only the first instance will be considered.
+Absolute path of the log file. Assumed to be correct. Only the first instance
+will be considered.
 .TP
 .BI --maximum-accumulated-bytes " bytes"
-The maximum number of bytes a child process will accumulate. Data will be discarded if the limit is breached. A default value of 8 MiB is assumed. The bytes parameter must be in the range [1024, 2147483647]. Only the first instance will be considered.
+The maximum number of bytes a child process will accumulate. Data will be
+discarded if the limit is breached. A default value of 8 MiB is assumed. The
+bytes parameter must be in the range [1024, 2147483647]. Only the first
+instance will be considered.
 .TP
 .BI --peer-address " address"
-UDP address of peer. Assumed to be correct. Only the first instance will be considered.
+UDP address of peer. Assumed to be correct. Only the first instance will be
+considered.
 .TP
 .BI --peer-port " port"
-UDP port of peer. Assumed to be correct. Only the first instance will be considered.
+UDP port of peer. Assumed to be correct. Only the first instance will be
+considered.
 .TP
 .BI --peer-scope-identity " identity"
-UDP scope identity of peer. Assumed to be correct. Only the first instance will be considered.
+UDP scope identity of peer. Assumed to be correct. Only the first instance
+will be considered.
 .TP
 .BI --remote-identities-file " file"
-Absolute path of the remote identities file. Assumed to be correct. Only the first instance will be considered.
+Absolute path of the remote identities file. Assumed to be correct. Only the
+first instance will be considered.
 .TP
 .BI --server-identity " identity"
-Identity of the parent listener. Required for permanent SSL/TLS certificates. Assumed to be correct. Only the first instance will be considered.
+Identity of the parent listener. Required for permanent SSL/TLS certificates.
+Assumed to be correct. Only the first instance will be considered.
 .TP
 .BI --schedule " policy:priority"
 Specifies the desired schedule. Only the first instance will be considered.
 .TP
 .BI --silence-timeout " seconds"
-The process expects periodic data from its peer. If data is not received within the specified number of seconds, the process will terminate itself. The seconds parameter will be bound to the range [5, 3600]. If seconds is zero, the mechanism will be disabled. Only the first instance will be considered.
+The process expects periodic data from its peer. If data is not received
+within the specified number of seconds, the process will terminate itself.
+The seconds parameter will be bound to the range [5, 3600]. If seconds is
+zero, the mechanism will be disabled. Only the first instance will be
+considered.
 .TP
 .BI --so-linger " seconds"
 SO_LINGER seconds. If -1, ignored.
 .TP
 .BI --socket-descriptor " descriptor"
-The socket descriptor. Assumed to be correct. If incorrect, the child process will self-terminate. Only the first instance will be considered.
+The socket descriptor. Assumed to be correct. If incorrect, the child process
+will self-terminate. Only the first instance will be considered.
 .TP
 .BI --ssl-tls-control-string " string"
-May be used to define the preferred cipher algorithms. The available algorithms depend on both OpenSSL and Qt. Assumed to be correct. Only the first instance will be considered. Please review the results of openssl ciphers -v.
+May be used to define the preferred cipher algorithms. The available
+algorithms depend on both OpenSSL and Qt. Assumed to be correct. Only the
+first instance will be considered. Please review the results of openssl
+ciphers -v.
 .TP
 .BI --ssl-tls-key-size " size"
-The size, in bits, of the ECC or RSA key to be generated for the server's certificate. If the provided size is not in the set {256, 384, 521, 2048, 3072, 4096, 7680}, SSL/TLS will be disabled. Only the first instance will be considered.
+The size, in bits, of the ECC or RSA key to be generated for the server's
+certificate. If the provided size is not in the set {256, 384, 521, 2048,
+3072, 4096, 7680}, SSL/TLS will be disabled. Only the first instance will be
+considered.
 .TP
 .BI --tcp
 TCP is the assumed protocol. Only the first instance will be considered.
@@ -79,8 +108,11 @@ UDP is the assumed protocol. Only the first instance will be considered.
 .SH NOTES
 SSL/TLS certificates are self-signed and expire in five years.
 
-openssl s_client -connect 127.0.0.1:4711, for example, may be used to test OpenSSL.
+openssl s_client -connect 127.0.0.1:4711, for example, may be used to test
+OpenSSL.
 
-Spot-On-Lite supports Cryptographic Discovery. The end-of-message-marker must be defined. Clients are expected to provide valid identities. SHA-512 is supported.
+Spot-On-Lite supports Cryptographic Discovery. The end-of-message-marker must
+be defined. Clients are expected to provide valid identities. SHA-512 is
+supported.
 .SH AUTHOR(S)
 .B Alexis Megas
