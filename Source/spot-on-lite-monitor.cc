@@ -166,7 +166,7 @@ spot_on_lite_monitor::spot_on_lite_monitor(void):QMainWindow()
 
   if(m_ui.configuration_file->text().isEmpty())
     {
-      QFileInfo file_info("/usr/local/spot-on-lite/spot-on-lite-daemon.conf");
+      QFileInfo file_info("/opt/spot-on-lite/spot-on-lite-daemon.conf");
 
       if(file_info.isReadable())
 	m_ui.configuration_file->setText(file_info.absoluteFilePath());
@@ -184,7 +184,7 @@ spot_on_lite_monitor::spot_on_lite_monitor(void):QMainWindow()
 
   if(m_ui.launch_executable->text().isEmpty())
     {
-      QFileInfo file_info("/usr/local/spot-on-lite/Spot-On-Lite-Daemon");
+      QFileInfo file_info("/opt/spot-on-lite/Spot-On-Lite-Daemon");
 
       if(file_info.isExecutable() && file_info.isReadable())
 	m_ui.launch_executable->setText(file_info.absoluteFilePath());

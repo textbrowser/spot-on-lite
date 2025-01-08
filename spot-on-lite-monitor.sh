@@ -14,11 +14,11 @@ then
     echo "Launching a local Spot-On-Lite-Monitor."
     exec ./Spot-On-Lite-Monitor "$@"
     exit $?
-elif [ -r /usr/local/spot-on-lite/Spot-On-Lite-Monitor ] && \
-     [ -x /usr/local/spot-on-lite/Spot-On-Lite-Monitor ]
+elif [ -r /opt/spot-on-lite/Spot-On-Lite-Monitor ] && \
+     [ -x /opt/spot-on-lite/Spot-On-Lite-Monitor ]
 then
     echo "Launching an official Spot-On-Lite-Monitor."
-    cd /usr/local/spot-on-lite && exec ./Spot-On-Lite-Monitor "$@"
+    cd /opt/spot-on-lite && exec ./Spot-On-Lite-Monitor "$@"
     exit $?
 else
     exit 1

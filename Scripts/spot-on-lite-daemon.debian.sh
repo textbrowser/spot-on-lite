@@ -13,7 +13,7 @@
 
 case "$1" in
   start)
-      su -c "cd /usr/local/spot-on-lite && exec ./Spot-On-Lite-Daemon --configuration-file /usr/local/spot-on-lite/spot-on-lite-daemon.conf" spot-on-lite-daemon
+      su -c "cd /opt/spot-on-lite && exec ./Spot-On-Lite-Daemon --configuration-file /opt/spot-on-lite/spot-on-lite-daemon.conf" spot-on-lite-daemon
       ;;
   stop)
       pkill -U spot-on-lite-daemon -f Spot-On-Lite-Daemon

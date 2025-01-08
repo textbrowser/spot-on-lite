@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
 # Alexis Megas.
 
-cd /usr/local/spot-on-lite && \
+cd /opt/spot-on-lite && \
 exec ./Spot-On-Lite-Daemon \
-     --configuration-file /usr/local/spot-on-lite/spot-on-lite-daemon.conf
+     --configuration-file /opt/spot-on-lite/spot-on-lite-daemon.conf
 exit $?

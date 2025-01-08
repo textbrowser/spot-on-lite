@@ -43,7 +43,7 @@ Summary of Spot-On-Lite
 </ul>
 
 ```
-/usr/local/spot-on-lite/Spot-On-Lite-Daemon --statistics
+/opt/spot-on-lite/Spot-On-Lite-Daemon --statistics
 PID                 652
 Bytes Accumulated   0
 Bytes Read          0
