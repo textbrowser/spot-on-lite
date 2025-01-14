@@ -107,7 +107,7 @@ QMAKE_CXXFLAGS_RELEASE += -O3 \
                           -fstack-protector-all \
                           -fwrapv \
                           -pedantic \
-                          -std=c++17
+                          -std=c++20
 } else:netbsd-* {
 QMAKE_CXXFLAGS_RELEASE += -O3 \
                           -Wall \
