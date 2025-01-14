@@ -53,6 +53,11 @@ extern "C"
 #undef slots
 #endif
 #include <ecl/ecl.h>
+
+extern "C"
+{
+  extern void init_lib_SPOTON_LITE_DAEMON_SHA(cl_object);
+}
 #endif
 #endif
 
@@ -285,6 +290,7 @@ int main(int argc, char *argv[])
 #ifdef SPOTON_LITE_DAEMON_CHILD_ECL_SUPPORTED
 #ifdef SPOTON_LITE_DAEMON_SHA_TEST
   cl_boot(argc, argv);
+  ecl_init_module(nullptr, init_lib_SPOTON_LITE_DAEMON_SHA);
 
   spot_on_lite_daemon_sha s;
 
