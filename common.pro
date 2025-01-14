@@ -97,6 +97,7 @@ QMAKE_CXXFLAGS_RELEASE += -O3 \
                           -Wdouble-promotion \
                           -Wextra \
                           -Wformat=2 \
+                          -Wno-c++20-attribute-extensions \
                           -Wno-deprecated-declarations \
                           -Wno-unused-variable \
                           -Woverloaded-virtual \
@@ -107,7 +108,7 @@ QMAKE_CXXFLAGS_RELEASE += -O3 \
                           -fstack-protector-all \
                           -fwrapv \
                           -pedantic \
-                          -std=c++20
+                          -std=c++17
 } else:netbsd-* {
 QMAKE_CXXFLAGS_RELEASE += -O3 \
                           -Wall \

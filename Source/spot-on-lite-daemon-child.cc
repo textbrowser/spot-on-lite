@@ -787,7 +787,7 @@ int spot_on_lite_daemon_child::bytes_in_send_queue(void) const
 	   &count) == -1)
     count = 0;
 #elif defined(Q_OS_MACOS)
-  auto const length = static_cast<socklen_t> (sizeof(count));
+  auto length = static_cast<socklen_t> (sizeof(count));
 
   if(getsockopt(static_cast<int> (m_remote_socket->socketDescriptor()),
 		SOL_SOCKET,
