@@ -103,7 +103,6 @@ QMAKE_CXXFLAGS_RELEASE += -O3 \
                           -Wpointer-arith \
                           -Wstack-protector \
                           -Wundef \
-                          -Wzero-as-null-pointer-constant \
                           -fPIE \
                           -fstack-protector-all \
                           -fwrapv \
