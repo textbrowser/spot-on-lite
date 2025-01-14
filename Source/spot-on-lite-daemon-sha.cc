@@ -160,7 +160,8 @@ QByteArray spot_on_lite_daemon_sha::sha_512(const QByteArray &data) const
 
   for(int i = 0; i < data.length(); i++)
     {
-      bytes.append(QByteArray::number(static_cast<unsigned char> (data.at(i))));
+      bytes.append
+	(QByteArray::number(static_cast<unsigned char> (data.at(i))));
       bytes.append(' ');
     }
 
@@ -168,7 +169,7 @@ QByteArray spot_on_lite_daemon_sha::sha_512(const QByteArray &data) const
   bytes.append("))");
   ecl_import_current_thread(ECL_NIL, ECL_NIL);
 
-  auto c = ecl_read_from_cstring(bytes.data()); // constData()?
+  auto c = ecl_read_from_cstring(bytes.constData());
 
   if(c)
     c = cl_safe_eval(c, Cnil, Cnil);
