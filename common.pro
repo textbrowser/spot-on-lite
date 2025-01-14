@@ -189,12 +189,13 @@ QT += concurrent
 DEFINES += nullptr=NULL
 }
 
-libshalisp.target = spot-on-lite-daemon-sha.a
 libshalisp.commands = cd Source && ecl -norc -eval "'(require :asdf)'" -eval "'(push \"./\" asdf:*central-registry*)'" -eval "'(asdf:make-build :spot-on-lite-daemon-sha :type :static-library :move-here \"./\" :init-name \"init_lib_SPOTON_LITE_DAEMON_SHA\")'" -eval "'(quit)'" && cd ..
 libshalisp.depends =
+libshalisp.target = spot-on-lite-daemon-sha.a
 
 exists(/usr/bin/ecl) {
-DEFINES += SPOTON_LITE_DAEMON_CHILD_ECL_SUPPORTED
+DEFINES += SPOTON_LITE_DAEMON_CHILD_ECL_SUPPORTED \
+           SPOTON_LITE_DAEMON_SHA_TEST
 LIBS += -lecl
 LIBS += Source/spot-on-lite-daemon-sha.a
 PRE_TARGETDEPS += spot-on-lite-daemon-sha.a
@@ -205,7 +206,8 @@ QMAKE_LFLAGS += `ecl-config --ldflags`
 }
 
 exists(/usr/local/bin/ecl) {
-DEFINES += SPOTON_LITE_DAEMON_CHILD_ECL_SUPPORTED
+DEFINES += SPOTON_LITE_DAEMON_CHILD_ECL_SUPPORTED \
+           SPOTON_LITE_DAEMON_SHA_TEST
 LIBS += -lecl
 LIBS += Source/spot-on-lite-daemon-sha.a
 PRE_TARGETDEPS += spot-on-lite-daemon-sha.a

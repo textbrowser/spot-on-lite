@@ -47,6 +47,15 @@ extern "C"
 #include "spot-on-lite-daemon-sha.h"
 #endif
 
+#ifdef SPOTON_LITE_DAEMON_CHILD_ECL_SUPPORTED
+#ifdef SPOTON_LITE_DAEMON_SHA_TEST
+#ifdef slots
+#undef slots
+#endif
+#include <ecl/ecl.h>
+#endif
+#endif
+
 char *spot_on_lite_daemon::s_congestion_control_file_name = nullptr;
 char *spot_on_lite_daemon::s_local_socket_server_name = nullptr;
 char *spot_on_lite_daemon::s_log_file_name = nullptr;
@@ -273,7 +282,10 @@ int main(int argc, char *argv[])
 	  }
       }
 
+#ifdef SPOTON_LITE_DAEMON_CHILD_ECL_SUPPORTED
 #ifdef SPOTON_LITE_DAEMON_SHA_TEST
+  cl_boot(argc, argv);
+
   spot_on_lite_daemon_sha s;
 
   qDebug() << "SHA-512 test 1: "
@@ -290,6 +302,8 @@ int main(int argc, char *argv[])
 	       "8f7779c6eb9f7fa17299aeadb6889018501d289e4900f7e4"
 	       "331b99dec4b5433ac7d329eeb6dd26545e96e55b874be909")
 	   << ".";
+  cl_shutdown();
+#endif
 #endif
 
   auto keep_terminal = false;
@@ -348,7 +362,7 @@ int main(int argc, char *argv[])
     {
       qDebug() << "The configuration file \""
 	       << configuration_file_name
-	       << "\" is not readable. Exiting";
+	       << "\" is not readable. Exiting.";
       return EXIT_FAILURE;
     }
 

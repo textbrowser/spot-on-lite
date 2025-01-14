@@ -156,6 +156,10 @@ QByteArray spot_on_lite_daemon_sha::sha_512(const QByteArray &data) const
 {
 #ifdef SPOTON_LITE_DAEMON_CHILD_ECL_SUPPORTED
   QByteArray hash;
+
+  if(!ecl_import_current_thread(ECL_NIL, ECL_NIL))
+    return hash;
+
   auto bytes(QString("(sha_512 '#%1(").arg(data.length()).toLatin1());
 
   for(int i = 0; i < data.length(); i++)
@@ -167,7 +171,6 @@ QByteArray spot_on_lite_daemon_sha::sha_512(const QByteArray &data) const
 
   bytes = bytes.mid(0, bytes.length() - 1);
   bytes.append("))");
-  ecl_import_current_thread(ECL_NIL, ECL_NIL);
 
   auto c = ecl_read_from_cstring(bytes.constData());
 
