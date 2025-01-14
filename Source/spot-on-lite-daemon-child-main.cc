@@ -128,7 +128,7 @@ int main(int argc, char *argv[])
 
 #ifdef SPOTON_LITE_DAEMON_CHILD_ECL_SUPPORTED
   cl_boot(argc, argv);
-  ecl_init_module(nullptr, init_lib_SPOT_ON_LITE_DAEMON_SHA);
+  ecl_init_module(nullptr, init_lib_SPOTON_LITE_DAEMON_SHA);
   atexit(cl_shutdown);
 #endif
 
