@@ -64,6 +64,7 @@ extern "C"
 
 #include "spot-on-lite-common.h"
 #include "spot-on-lite-daemon-child.h"
+#include "spot-on-lite-daemon-sha.h"
 
 QAtomicInteger<quint64> spot_on_lite_daemon_child::s_db_id = 0;
 
@@ -1707,12 +1708,13 @@ void spot_on_lite_daemon_child::process_local_content(void)
 	    }
 
 	  QHashIterator<QByteArray, QString> it(identities);
+	  spot_on_lite_daemon_sha sha_512;
 
 	  while(it.hasNext() && !m_process_local_content_future.isCanceled())
 	    {
 	      it.next();
 
-	      if(memcmp(hash, m_sha_512.sha_512_hmac(data, it.key())))
+	      if(memcmp(hash, sha_512.sha_512_hmac(data, it.key())))
 		{
 		  /*
 		  ** Found!

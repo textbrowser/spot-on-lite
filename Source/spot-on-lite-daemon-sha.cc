@@ -157,9 +157,6 @@ QByteArray spot_on_lite_daemon_sha::sha_512(const QByteArray &data) const
 #ifdef SPOTON_LITE_DAEMON_CHILD_ECL_SUPPORTED
   QByteArray hash;
 
-  if(!ecl_import_current_thread(ECL_NIL, ECL_NIL))
-    return hash;
-
   auto bytes(QString("(sha_512 '#%1(").arg(data.length()).toLatin1());
 
   for(int i = 0; i < data.length(); i++)
@@ -195,7 +192,6 @@ QByteArray spot_on_lite_daemon_sha::sha_512(const QByteArray &data) const
     }
 
  done_label:
-  ecl_release_current_thread();
   return hash;
 #else
   return QCryptographicHash::hash(data, QCryptographicHash::Sha512);
@@ -373,8 +369,8 @@ QByteArray spot_on_lite_daemon_sha::sha_512(const QByteArray &data) const
 #endif
 }
 
-QByteArray spot_on_lite_daemon_sha::sha_512_hmac(const QByteArray &data,
-						 const QByteArray &key) const
+QByteArray spot_on_lite_daemon_sha::sha_512_hmac
+(const QByteArray &data, const QByteArray &key) const
 {
   /*
   ** Block length is 1024 bits.

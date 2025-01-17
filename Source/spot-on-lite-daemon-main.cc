@@ -250,7 +250,7 @@ static int prepare_signal_handlers(void)
   return 0;
 }
 
-static std::string s_version = "2024.08.15";
+static std::string s_version = "2025.01.16";
 
 int main(int argc, char *argv[])
 {

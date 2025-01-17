@@ -52,8 +52,6 @@ extern "C"
 #include <QSslConfiguration>
 #include <QTimer>
 
-#include "spot-on-lite-daemon-sha.h"
-
 class spot_on_lite_daemon_child: public QObject
 {
   Q_OBJECT
@@ -153,7 +151,6 @@ class spot_on_lite_daemon_child: public QObject
   qint64 m_local_content_last_parsed;
   qint64 m_remote_content_last_parsed;
   quint16 m_peer_port;
-  spot_on_lite_daemon_sha m_sha_512;
   static QAtomicInteger<quint64> s_db_id;
   unsigned int m_identity_lifetime;
   QHash<QByteArray, QString> remote_identities(bool *ok) const;
