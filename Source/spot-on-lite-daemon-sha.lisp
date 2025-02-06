@@ -315,8 +315,8 @@
   ;;  hijklmnoijklmnopjklmnopqklmnopqrlmnopqrsmnopqrstnopqrstu"
   (print "8E959B75DAE313DA 8CF4F72814FC143F 8F7779C6EB9F7FA1 7299AEADB6889018")
   (print "501D289E4900F7E4 331B99DEC4B5433A C7D329EEB6DD2654 5E96E55B874BE909")
-  (let* ((a "abcdefghbcdefghicdefghijdefghijkefghijklfghijklmghijklmnhijklmno"
-	    "ijklmnopjklmnopqklmnopqrlmnopqrsmnopqrstnopqrstu")
+  (let* ((a "abcdefghbcdefghicdefghijdefghijkefghijklfghijklmghijklmnhijklmno
+             ijklmnopjklmnopqklmnopqrlmnopqrsmnopqrstnopqrstu")
 	 (d (make-array (length a)
 			:element-type '(unsigned-byte 8))))
     (loop for i from 0 to (1- (length a)) do
