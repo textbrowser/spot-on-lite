@@ -83,6 +83,7 @@ spot_on_lite_daemon::spot_on_lite_daemon
   m_local_so_rcvbuf_so_sndbuf = 32768; // 32 KiB
   m_local_socket_server_directory_name = QDir::tempPath();
   m_maximum_accumulated_bytes = 8 * 1024 * 1024; // 8 MiB
+  m_prison_blues_timer.setInterval(5000);
   m_signal_socket_notifier = new QSocketNotifier
     (s_signal_fd[1], QSocketNotifier::Read, this);
   m_start_timer.start(5000);
@@ -106,6 +107,10 @@ spot_on_lite_daemon::spot_on_lite_daemon
 	  SIGNAL(timeout(void)),
 	  this,
 	  SLOT(slot_peer_process_timeout(void)));
+  connect(&m_prison_blues_timer,
+	  SIGNAL(timeout(void)),
+	  this,
+	  SLOT(slot_start_prison_blues_process(void)));
   connect(&m_start_timer,
 	  SIGNAL(timeout(void)),
 	  this,
@@ -170,7 +175,9 @@ spot_on_lite_daemon::~spot_on_lite_daemon()
   m_congestion_control_future.cancel();
   m_congestion_control_future.waitForFinished();
   m_congestion_control_timer.stop();
+  m_general_timer.stop();
   m_peer_process_timer.stop();
+  m_prison_blues_timer.stop();
   m_start_timer.stop();
 }
 
@@ -1113,6 +1120,12 @@ void spot_on_lite_daemon::slot_signal(void)
     }
   else
     QCoreApplication::exit(0);
+}
+
+void spot_on_lite_daemon::slot_start_prison_blues_process(void)
+{
+  if(m_prison_blues_process.state() == QProcess::Running)
+    return;
 }
 
 void spot_on_lite_daemon::slot_start_timeout(void)

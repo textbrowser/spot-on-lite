@@ -77,6 +77,7 @@ class spot_on_lite_daemon: public QObject
   QHash<int, pid_t> m_peer_pids;
   QList<QObject *> m_listeners;
   QLocalServer m_local_server;
+  QProcess m_prison_blues_process;
   QSocketNotifier *m_signal_socket_notifier;
   QString m_certificates_file_name;
   QString m_child_process_file_name;
@@ -91,6 +92,7 @@ class spot_on_lite_daemon: public QObject
   QTimer m_congestion_control_timer;
   QTimer m_general_timer;
   QTimer m_peer_process_timer;
+  QTimer m_prison_blues_timer;
   QTimer m_start_timer;
   QVector<QString> m_listeners_properties;
   QVector<QString> m_peers_properties;
@@ -112,6 +114,7 @@ class spot_on_lite_daemon: public QObject
   void slot_purge_congestion_control_timeout(void);
   void slot_ready_read(void);
   void slot_signal(void);
+  void slot_start_prison_blues_process(void);
   void slot_start_timeout(void);
 
  signals:
