@@ -26,6 +26,7 @@ Summary of Spot-On-Lite
 <ul>
 <li>AMD64 and ARMHF distributions.</li>
 <li>ARM and ARM64!</li>
+<li>Brief source!</li>
 <li>Configurable.</li>
 <li>Congestion control.</li>
 <li>Cryptographic Discovery!</li>

@@ -521,6 +521,16 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
       }
     else if(key == "daemon_schedule")
       spot_on_lite_common::set_schedule(settings.value(key).toString());
+    else if(key == "git_a" ||
+	    key == "git_local_directory" ||
+	    key == "git_script" ||
+	    key == "git_site_clone" ||
+	    key == "git_site_push" ||
+	    key == "git_t")
+      {
+	m_prison_blues_process_options[key] = settings.value(key).toString();
+	m_prison_blues_timer.start();
+      }
     else if(key == "local_so_rcvbuf_so_sndbuf")
       {
 	auto const so_rcvbuf_so_sndbuf = settings.value(key).toInt(&o);
@@ -1125,6 +1135,12 @@ void spot_on_lite_daemon::slot_signal(void)
 void spot_on_lite_daemon::slot_start_prison_blues_process(void)
 {
   if(m_prison_blues_process.state() == QProcess::Running)
+    return;
+
+  QFileInfo const file_info
+    (m_prison_blues_process_options.value("git_script"));
+
+  if(!file_info.isExecutable())
     return;
 }
 

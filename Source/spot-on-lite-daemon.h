@@ -74,6 +74,7 @@ class spot_on_lite_daemon: public QObject
   QAtomicInt m_congestion_control_lifetime;
   QFuture<void> m_congestion_control_future;
   QHash<QLocalSocket *, char> m_local_sockets;
+  QHash<QString, QString> m_prison_blues_process_options;
   QHash<int, pid_t> m_peer_pids;
   QList<QObject *> m_listeners;
   QLocalServer m_local_server;
