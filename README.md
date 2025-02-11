@@ -1,14 +1,13 @@
 Spot-On-Lite is a curious product of curious love. It thrives
 on low-power machines. Curious?
 
-Raspberry Pi, Sophos, medical equipment. A machine capable of electronic
-curiosity. Escape the techno-wardens.
+Compulab, Lanner, Raspberry Pi, Sophos, medical equipment.
+A machine capable of electronic curiosity. Escape the techno-wardens.
 
 Spot-On-Lite supports Qt LTS. ARM, PowerPC, and Sparc are supported.
 Qt 5.5.1 is also supported for PowerPC.
 
-Included is a curious Lisp implementation of SHA-512.
-Super fast, super cute.
+Included is a curious Lisp implementation of SHA-512. Super fast, super cute.
 
 On Linux, limiting the number of processes may be achieved
 via /etc/security/limits.conf.
@@ -26,7 +25,7 @@ sudo update-rc.d spot-on-lite-daemon.debian.sh defaults.
 Summary of Spot-On-Lite
 <ul>
 <li>AMD64 and ARMHF distributions.</li>
-<li>ARM (Pi!)</li>
+<li>ARM and ARM64!</li>
 <li>Configurable.</li>
 <li>Congestion control.</li>
 <li>Cryptographic Discovery!</li>
@@ -39,6 +38,7 @@ Summary of Spot-On-Lite
 <li>Per-process TCP clients.</li>
 <li>PowerPC!</li>
 <li>Prison Blues and Smoke.</li>
+<li>Raspberry Pi.</li>
 <li>Qt 5.5.1 (PowerPC).</li>
 <li>Qt LTS.</li>
 <li>Sparc.</li>
