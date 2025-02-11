@@ -1,11 +1,13 @@
-Spot-On-Lite supports Qt LTS.
-It has been tested on Debian and OpenBSD.
-Spot-On-Lite compiles on Debian, FreeBSD, Mac OS X, and OpenBSD.
+Spot-On-Lite is a curious product of curious love. It thrives
+on low-power machines. Curious?
 
-ARM, PowerPC, and Sparc are supported. Qt 5.5.1 is also supported for
-PowerPC.
+Raspberry Pi, Sophos, medical equipment. A machine capable of electronic
+curiosity. Escape the techno-wardens.
 
-Included is a thread-safe Lisp implementation of SHA-512.
+Spot-On-Lite supports Qt LTS. ARM, PowerPC, and Sparc are supported.
+Qt 5.5.1 is also supported for PowerPC.
+
+Included is a curious Lisp implementation of SHA-512.
 Super fast, super cute.
 
 On Linux, limiting the number of processes may be achieved
@@ -18,7 +20,8 @@ The LD_LIBRARY_PATH may require adjusting.
 export LD_LIBRARY_PATH=/usr/local/Trolltech/Qt-5.12.x/lib
 
 Debian administrators, please add spot-on-lite-daemon.debian.sh to
-/etc/init.d and execute sudo update-rc.d spot-on-lite-daemon.debian.sh defaults.
+/etc/init.d and execute
+sudo update-rc.d spot-on-lite-daemon.debian.sh defaults.
 
 Summary of Spot-On-Lite
 <ul>
@@ -35,6 +38,7 @@ Summary of Spot-On-Lite
 <li>Multiple instances of a daemon.</li>
 <li>Per-process TCP clients.</li>
 <li>PowerPC!</li>
+<li>Prison Blues and Smoke.</li>
 <li>Qt 5.5.1 (PowerPC).</li>
 <li>Qt LTS.</li>
 <li>Sparc.</li>
