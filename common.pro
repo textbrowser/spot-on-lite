@@ -175,7 +175,7 @@ unix {
 purge.commands = rm -f */*~ *~
 }
 
-QMAKE_DISTCLEAN += -r temp
+QMAKE_DISTCLEAN += -r Temporary
 QMAKE_EXTRA_TARGETS = purge
 QT += network sql
 TEMPLATE = app
@@ -241,6 +241,6 @@ QMAKE_CLEAN += Source/spot-on-lite-daemon-sha.a \
                Source/spot-on-lite-daemon-sha.fas \
                Source/spot-on-lite-daemon-sha.lib
 INCLUDEPATH += Source
-MOC_DIR = temp/moc
-OBJECTS_DIR = temp/obj
-RCC_DIR = temp/rcc
+MOC_DIR = Temporary/moc
+OBJECTS_DIR = Temporary/obj
+RCC_DIR = Temporary/rcc
