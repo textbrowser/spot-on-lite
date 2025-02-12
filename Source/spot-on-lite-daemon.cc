@@ -530,6 +530,13 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
 	    key == "git_site_push" ||
 	    key == "git_t")
       {
+	if(ok)
+	  /*
+	  ** Ignore if validating the configuration file.
+	  */
+
+	  continue;
+
 	m_prison_blues_process_options[key] = settings.value(key).toString();
 	m_prison_blues_timer.start();
       }
@@ -1176,6 +1183,8 @@ void spot_on_lite_daemon::start(void)
   m_peer_pids.clear();
   m_peer_process_timer.start(2500);
   m_peers_properties.clear();
+  m_prison_blues_process.kill();
+  m_prison_blues_process.waitForFinished();
   process_configuration_file(nullptr);
   prepare_listeners();
   prepare_local_socket_server();
