@@ -53,7 +53,7 @@ PID                 652
 Bytes Accumulated   0
 Bytes Read          0
 Bytes Written       0
-IP Information      
+IP Information
 Memory              11,204
 Name                ./Spot-On-Lite-Daemon
 Uptime              1254994 Second(s)

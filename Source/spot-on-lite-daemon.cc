@@ -177,6 +177,8 @@ spot_on_lite_daemon::~spot_on_lite_daemon()
   m_congestion_control_timer.stop();
   m_general_timer.stop();
   m_peer_process_timer.stop();
+  m_prison_blues_process.kill();
+  m_prison_blues_process.waitForFinished();
   m_prison_blues_timer.stop();
   m_start_timer.stop();
 }
@@ -1142,6 +1144,21 @@ void spot_on_lite_daemon::slot_start_prison_blues_process(void)
 
   if(!file_info.isExecutable())
     return;
+
+  auto environment(QProcessEnvironment::systemEnvironment());
+
+  environment.insert("GIT_A", m_prison_blues_process_options.value("git_a"));
+  environment.insert
+    ("GIT_LOCAL_DIRECTORY",
+     m_prison_blues_process_options.value("git_local_directory"));
+  environment.insert
+    ("GIT_SITE_CLONE", m_prison_blues_process_options.value("git_site_clone"));
+  environment.insert
+    ("GIT_SITE_PUSH", m_prison_blues_process_options.value("git_site_push"));
+  environment.insert("GIT_T", m_prison_blues_process_options.value("git_t"));
+  m_prison_blues_process.setProcessEnvironment(environment);
+  m_prison_blues_process.start(file_info.absoluteFilePath(), QStringList());
+  m_prison_blues_process.waitForStarted();
 }
 
 void spot_on_lite_daemon::slot_start_timeout(void)
