@@ -101,7 +101,8 @@ void spot_on_lite_daemon_tcp_listener::incomingConnection
     (m_parent->local_server_file_name().toStdString());
   auto const log_file_name(m_parent->log_file_name().toStdString());
   auto const maximum_accumulated_bytes = m_parent->maximum_accumulated_bytes();
-  auto const prison_blues_directory(m_parent->prison_blues_directory());
+  auto const prison_blues_directory
+    (m_parent->prison_blues_directory().toStdString());
   auto const remote_identities_file_name
     (m_parent->remote_identities_file_name().toStdString());
   auto const server_identity(QString("%1:%2").

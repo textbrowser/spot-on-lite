@@ -819,6 +819,16 @@ void spot_on_lite_daemon_child::create_prison_blues_directory
 {
   if(identity.trimmed().isEmpty())
     return;
+
+  QFileInfo const directory(m_prison_blues_directory);
+
+  if(!directory.isWritable())
+    return;
+
+  QDir().mkpath
+    (directory.absoluteFilePath() +
+     QDir::separator() +
+     identity.trimmed().toHex());
 }
 
 void spot_on_lite_daemon_child::create_remote_identities_database(void) const
