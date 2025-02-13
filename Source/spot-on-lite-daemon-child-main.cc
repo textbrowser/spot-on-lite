@@ -140,6 +140,7 @@ int main(int argc, char *argv[])
   QString log_file_name("");
   QString peer_address("");
   QString peer_scope_identity("");
+  QString prison_blues_directory("");
   QString protocol("");
   QString remote_identities_file_name("");
   QString schedule("");
@@ -157,7 +158,9 @@ int main(int argc, char *argv[])
   quint16 peer_port = 0;
 
   for(int i = 0; i < argc; i++)
-    if(argv && argv[i] && strcmp(argv[i], "--certificate-lifetime") == 0)
+    if(argv == nullptr || argv[i] == nullptr)
+      continue;
+    else if(strcmp(argv[i], "--certificate-lifetime") == 0)
       {
 	if(certificate_lifetime == -1)
 	  {
@@ -176,7 +179,7 @@ int main(int argc, char *argv[])
 	      }
 	  }
       }
-    else if(argv && argv[i] && strcmp(argv[i], "--certificates-file") == 0)
+    else if(strcmp(argv[i], "--certificates-file") == 0)
       {
 	if(certificates_file_name.isEmpty())
 	  {
@@ -192,7 +195,7 @@ int main(int argc, char *argv[])
 	      }
 	  }
       }
-    else if(argv && argv[i] && strcmp(argv[i], "--configuration-file") == 0)
+    else if(strcmp(argv[i], "--configuration-file") == 0)
       {
 	if(configuration_file_name.isEmpty())
 	  {
@@ -208,8 +211,7 @@ int main(int argc, char *argv[])
 	      }
 	  }
       }
-    else if(argv && argv[i] &&
-	    strcmp(argv[i], "--congestion-control-file") == 0)
+    else if(strcmp(argv[i], "--congestion-control-file") == 0)
       {
 	if(congestion_control_file_name.isEmpty())
 	  {
@@ -225,7 +227,7 @@ int main(int argc, char *argv[])
 	      }
 	  }
       }
-    else if(argv && argv[i] && strcmp(argv[i], "--end-of-message-marker") == 0)
+    else if(strcmp(argv[i], "--end-of-message-marker") == 0)
       {
 	if(end_of_message_marker.isEmpty())
 	  {
@@ -242,8 +244,7 @@ int main(int argc, char *argv[])
 	      }
 	  }
       }
-    else if(argv && argv[i] &&
-	    strcmp(argv[i], "--identities-lifetime") == 0)
+    else if(strcmp(argv[i], "--identities-lifetime") == 0)
       {
 	if(identities_lifetime == -1)
 	  {
@@ -262,7 +263,7 @@ int main(int argc, char *argv[])
 	      }
 	  }
       }
-    else if(argv && argv[i] && strcmp(argv[i], "--local-server-file") == 0)
+    else if(strcmp(argv[i], "--local-server-file") == 0)
       {
 	if(local_server_file_name.isEmpty())
 	  {
@@ -278,8 +279,7 @@ int main(int argc, char *argv[])
 	      }
 	  }
       }
-    else if(argv && argv[i] &&
-	    strcmp(argv[i], "--local-so-rcvbuf-so-sndbuf") == 0)
+    else if(strcmp(argv[i], "--local-so-rcvbuf-so-sndbuf") == 0)
       {
 	if(local_so_rcvbuf_so_sndbuf == -1)
 	  {
@@ -299,7 +299,7 @@ int main(int argc, char *argv[])
 	      }
 	  }
       }
-    else if(argv && argv[i] && strcmp(argv[i], "--log-file") == 0)
+    else if(strcmp(argv[i], "--log-file") == 0)
       {
 	if(log_file_name.isEmpty())
 	  {
@@ -315,8 +315,7 @@ int main(int argc, char *argv[])
 	      }
 	  }
       }
-    else if(argv && argv[i] &&
-	    strcmp(argv[i], "--maximum-accumulated-bytes") == 0)
+    else if(strcmp(argv[i], "--maximum-accumulated-bytes") == 0)
       {
 	if(maximum_accumulated_bytes == -1)
 	  {
@@ -335,7 +334,7 @@ int main(int argc, char *argv[])
 	      }
 	  }
       }
-    else if(argv && argv[i] && strcmp(argv[i], "--peer-address") == 0)
+    else if(strcmp(argv[i], "--peer-address") == 0)
       {
 	if(peer_address.isEmpty())
 	  {
@@ -351,7 +350,7 @@ int main(int argc, char *argv[])
 	      }
 	  }
       }
-    else if(argv && argv[i] && strcmp(argv[i], "--peer-port") == 0)
+    else if(strcmp(argv[i], "--peer-port") == 0)
       {
 	if(peer_port == 0)
 	  {
@@ -370,7 +369,7 @@ int main(int argc, char *argv[])
 	      }
 	  }
       }
-    else if(argv && argv[i] && strcmp(argv[i], "--peer-scope-identity") == 0)
+    else if(strcmp(argv[i], "--peer-scope-identity") == 0)
       {
 	if(peer_scope_identity.isEmpty())
 	  {
@@ -387,7 +386,23 @@ int main(int argc, char *argv[])
 	      }
 	  }
       }
-    else if(argv && argv[i] && strcmp(argv[i], "--remote-identities-file") == 0)
+    else if(strcmp(argv[i], "--prison-blues-directory") == 0)
+      {
+	if(prison_blues_directory.isEmpty())
+	  {
+	    i += 1;
+
+	    if(argc > i && argv[i])
+	      prison_blues_directory = argv[i];
+	    else
+	      {
+		std::cerr << "Invalid prison-blues-directory usage. Exiting."
+			  << std::endl;
+		return EXIT_FAILURE;
+	      }
+	  }
+      }
+    else if(strcmp(argv[i], "--remote-identities-file") == 0)
       {
 	if(remote_identities_file_name.isEmpty())
 	  {
@@ -403,7 +418,7 @@ int main(int argc, char *argv[])
 	      }
 	  }
       }
-    else if(argv && argv[i] && strcmp(argv[i], "--schedule") == 0)
+    else if(strcmp(argv[i], "--schedule") == 0)
       {
 	if(schedule.isEmpty())
 	  {
@@ -413,7 +428,7 @@ int main(int argc, char *argv[])
 	      schedule = argv[i];
 	  }
       }
-    else if(argv && argv[i] && strcmp(argv[i], "--server-identity") == 0)
+    else if(strcmp(argv[i], "--server-identity") == 0)
       {
 	if(server_identity.isEmpty())
 	  {
@@ -429,7 +444,7 @@ int main(int argc, char *argv[])
 	      }
 	  }
       }
-    else if(argv && argv[i] && strcmp(argv[i], "--silence-timeout") == 0)
+    else if(strcmp(argv[i], "--silence-timeout") == 0)
       {
 	if(silence == -1)
 	  {
@@ -448,7 +463,7 @@ int main(int argc, char *argv[])
 	      }
 	  }
       }
-    else if(argv && argv[i] && strcmp(argv[i], "--so-linger") == 0)
+    else if(strcmp(argv[i], "--so-linger") == 0)
       {
 	if(so_linger == -1)
 	  {
@@ -466,7 +481,7 @@ int main(int argc, char *argv[])
 	      }
 	  }
       }
-    else if(argv && argv[i] && strcmp(argv[i], "--socket-descriptor") == 0)
+    else if(strcmp(argv[i], "--socket-descriptor") == 0)
       {
 	if(sd == -1)
 	  {
@@ -485,7 +500,7 @@ int main(int argc, char *argv[])
 	      }
 	  }
       }
-    else if(argv && argv[i] && strcmp(argv[i], "--ssl-tls-control-string") == 0)
+    else if(strcmp(argv[i], "--ssl-tls-control-string") == 0)
       {
 	if(ssl_control_string.isEmpty())
 	  {
@@ -501,7 +516,7 @@ int main(int argc, char *argv[])
 	      }
 	  }
       }
-    else if(argv && argv[i] && strcmp(argv[i], "--ssl-tls-key-size") == 0)
+    else if(strcmp(argv[i], "--ssl-tls-key-size") == 0)
       {
 	if(ssl_key_size == -1)
 	  {
@@ -520,12 +535,12 @@ int main(int argc, char *argv[])
 	      }
 	  }
       }
-    else if(argv && argv[i] && strcmp(argv[i], "--tcp") == 0)
+    else if(strcmp(argv[i], "--tcp") == 0)
       {
 	if(protocol.isEmpty())
 	  protocol = "tcp";
       }
-    else if(argv && argv[i] && strcmp(argv[i], "--udp") == 0)
+    else if(strcmp(argv[i], "--udp") == 0)
       {
 	if(protocol.isEmpty())
 	  protocol = "udp";
@@ -546,6 +561,7 @@ int main(int argc, char *argv[])
 	     log_file_name,
 	     peer_address,
 	     peer_scope_identity,
+	     prison_blues_directory,
 	     protocol,
 	     remote_identities_file_name,
 	     schedule,

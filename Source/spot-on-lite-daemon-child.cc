@@ -111,6 +111,7 @@ spot_on_lite_daemon_child::spot_on_lite_daemon_child
  const QString &log_file_name,
  const QString &peer_address,
  const QString &peer_scope_identity,
+ const QString &prison_blues_directory,
  const QString &protocol,
  const QString &remote_identities_file_name,
  const QString &schedule,
@@ -153,6 +154,7 @@ spot_on_lite_daemon_child::spot_on_lite_daemon_child
   m_peer_address.setScopeId(peer_scope_identity);
   m_peer_port = peer_port;
   m_pid = QCoreApplication::applicationPid();
+  m_prison_blues_directory = prison_blues_directory;
   m_protocol = protocol.toLower().trimmed() == "tcp" ?
     QAbstractSocket::TcpSocket : QAbstractSocket::UdpSocket;
   m_remote_content_last_parsed = QDateTime::currentMSecsSinceEpoch();
@@ -702,7 +704,8 @@ QList<QSslCipher> spot_on_lite_daemon_child::default_ssl_ciphers(void) const
   return list;
 }
 
-bool spot_on_lite_daemon_child::memcmp(const QByteArray &a, const QByteArray &b)
+bool spot_on_lite_daemon_child::memcmp
+(const QByteArray &a, const QByteArray &b)
 {
   auto const length = qMax(a.length(), b.length());
   quint64 rc = 0;
@@ -809,6 +812,13 @@ int spot_on_lite_daemon_child::bytes_in_send_queue(void) const
 quint64 spot_on_lite_daemon_child::db_id(void)
 {
   return s_db_id.fetchAndAddOrdered(1);
+}
+
+void spot_on_lite_daemon_child::create_prison_blues_directory
+(const QByteArray &identity) const
+{
+  if(identity.trimmed().isEmpty())
+    return;
 }
 
 void spot_on_lite_daemon_child::create_remote_identities_database(void) const
@@ -1119,8 +1129,7 @@ void spot_on_lite_daemon_child::generate_certificate
 
   if(bptr->length + 1 <= 0 ||
      std::numeric_limits<size_t>::max() - bptr->length < 1 ||
-     !(buffer = static_cast<char *> (calloc(bptr->length + 1,
-					    sizeof(char)))))
+     !(buffer = static_cast<char *> (calloc(bptr->length + 1, sizeof(char)))))
     {
       error = "calloc() failure or bptr->length + 1 is irregular";
       goto done_label;
@@ -2057,6 +2066,7 @@ void spot_on_lite_daemon_child::record_remote_identity
 
       QSqlDatabase::removeDatabase(QString::number(db_connection_id));
 #endif
+      create_prison_blues_directory(identity);
       share_identity(data + m_end_of_message_marker);
     }
 }

@@ -61,6 +61,7 @@ class spot_on_lite_daemon: public QObject
   QString congestion_control_file_name(void) const;
   QString local_server_file_name(void) const;
   QString log_file_name(void) const;
+  QString prison_blues_directory(void) const;
   QString remote_identities_file_name(void) const;
   int maximum_accumulated_bytes(void) const;
   static void handler_signal(int signal_number);

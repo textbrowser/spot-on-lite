@@ -223,6 +223,11 @@ QString spot_on_lite_daemon::log_file_name(void) const
   return m_log_file_name;
 }
 
+QString spot_on_lite_daemon::prison_blues_directory(void) const
+{
+  return m_prison_blues_process_options.value("git_local_directory");
+}
+
 QString spot_on_lite_daemon::remote_identities_file_name(void) const
 {
   return m_remote_identities_file_name;
@@ -371,6 +376,8 @@ void spot_on_lite_daemon::prepare_peers(void)
 		    "--maximum-accumulated-bytes",
 		    QString::number(m_maximum_accumulated_bytes).
 		    toStdString().data(),
+		    "--prison-blues-directory",
+		    prison_blues_directory().toStdString().data(),
 		    "--remote-identities-file",
 		    m_remote_identities_file_name.toStdString().data(),
 		    "--schedule",

@@ -67,6 +67,7 @@ class spot_on_lite_daemon_child: public QObject
      const QString &log_file_name,
      const QString &peer_address,
      const QString &peer_scope_identity,
+     const QString &prison_blues_directory,
      const QString &protocol,
      const QString &remote_identities_file_name,
      const QString &schedule,
@@ -128,6 +129,7 @@ class spot_on_lite_daemon_child: public QObject
   QString m_congestion_control_file_name;
   QString m_local_server_file_name;
   QString m_log_file_name;
+  QString m_prison_blues_directory;
   QString m_remote_identities_file_name;
   QString m_server_identity;
   QString m_ssl_control_string;
@@ -160,6 +162,7 @@ class spot_on_lite_daemon_child: public QObject
   int bytes_accumulated(void) const;
   int bytes_in_send_queue(void) const;
   static quint64 db_id(void);
+  void create_prison_blues_directory(const QByteArray &identity) const;
   void create_remote_identities_database(void) const;
   void generate_certificate(void *key,
 			    QByteArray &certificate,

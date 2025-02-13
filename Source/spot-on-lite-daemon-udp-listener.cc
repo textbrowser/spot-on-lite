@@ -100,6 +100,7 @@ void spot_on_lite_daemon_udp_listener::new_connection
      m_parent->log_file_name(),
      peer_address.toString(),
      peer_address.scopeId(),
+     m_parent->prison_blues_directory(),
      "udp",
      m_parent->remote_identities_file_name(),
      child_process_schedule,
