@@ -2083,7 +2083,6 @@ void spot_on_lite_daemon_child::record_remote_identity
 
       QSqlDatabase::removeDatabase(QString::number(db_connection_id));
 #endif
-      create_prison_blues_directory(identity);
       share_identity(data + m_end_of_message_marker);
     }
 }
@@ -2661,7 +2660,7 @@ void spot_on_lite_daemon_child::slot_write_prison_blues_file
      QDir::separator() +
      identity.trimmed().toHex() +
      QDir::separator() +
-     "PrisonBluesXXXXXXXXXX.txt");
+     "PrisonSmokeBluesXXXXXXXXXX.txt");
 
   if(file.open())
     {

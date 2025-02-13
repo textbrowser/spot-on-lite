@@ -61,13 +61,23 @@ then
 fi
 
 echo "Setting $local_directory as the current directory."
-cd $local_directory
+cd "$local_directory"
 
 if [ ! $? -eq 0 ]
 then
     echo "[Cannot set current directory! Bye!]"
     exit 1
 else
+    # Remove files older than five minutes.
+
+    echo "Removing files older than five minutes."
+    find "$local_directory" ! -path "*.git*" \
+	 -daystart \
+	 -mmin +5 \
+	 -name "*Smoke*.txt" \
+	 -type f \
+	 -exec rm -f {} \;
+
     # Merge.
 
     echo "Instructing GIT to avoid the rebase strategy. " \
