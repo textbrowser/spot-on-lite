@@ -43,7 +43,6 @@ extern "C"
 #include <QHostAddress>
 #include <QLocalServer>
 #include <QLocalSocket>
-#include <QSettings>
 #include <QSocketNotifier>
 #include <QSqlDatabase>
 #include <QSqlQuery>
@@ -409,12 +408,62 @@ void spot_on_lite_daemon::prepare_peers(void)
 
 void spot_on_lite_daemon::process_configuration_file(bool *ok)
 {
+  if(m_configuration_file_name.trimmed().isEmpty())
+    {
+      if(ok)
+	*ok = false;
+
+      return;
+    }
+
+  QFile file(m_configuration_file_name);
   QHash<QString, char> listeners;
   QHash<QString, char> peers;
-  QSettings settings(m_configuration_file_name, QSettings::IniFormat);
+  QMap<QString, QVariant> settings;
   auto o = true;
 
-  foreach(auto const &key, settings.allKeys())
+  if(file.open(QIODevice::ReadOnly | QIODevice::Text))
+    while(!file.atEnd())
+      {
+	auto const line(file.readLine().trimmed());
+
+	if(line.contains('=') == false ||
+	   line.isEmpty() ||
+	   line.startsWith('#'))
+	  continue;
+
+	auto const index = line.indexOf('=');
+	auto const key(line.mid(0, index).trimmed());
+
+	if(key.isEmpty())
+	  continue;
+
+	auto value(line.mid(index + 1).trimmed());
+
+	if(value.endsWith('\\'))
+	  {
+	    value = value.mid(0, value.lastIndexOf('\\')).trimmed();
+
+	    while(!file.atEnd())
+	      {
+		auto const line(file.readLine().trimmed());
+
+		if(line.isEmpty() || line.startsWith('#'))
+		  continue;
+
+		value.append(line);
+
+		if(value.endsWith('\\') == false)
+		  break;
+		else
+		  value = value.mid(0, value.lastIndexOf('\\')).trimmed();
+	      }
+	  }
+
+	settings[key] = value;
+      }
+
+  foreach(auto const &key, settings.keys())
     if(key == "certificates_file")
       {
 #ifdef Q_OS_WINDOWS

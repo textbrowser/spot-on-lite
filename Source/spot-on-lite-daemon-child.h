@@ -220,9 +220,13 @@ class spot_on_lite_daemon_child: public QObject
   void slot_remove_expired_identities(void);
   void slot_ssl_errors(const QList<QSslError> &errors);
   void slot_write_data(const QByteArray &data);
+  void slot_write_prison_blues_file
+    (const QByteArray &data, const QByteArray &identity);
 
  signals:
   void read_signal(void);
+  void write_prison_blues_file
+    (const QByteArray &data, const QByteArray &identity);
   void write_signal(const QByteArray &data);
 };
 

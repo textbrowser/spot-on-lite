@@ -299,6 +299,12 @@ spot_on_lite_daemon_child::spot_on_lite_daemon_child
 	  this,
 	  SLOT(slot_local_socket_ready_read(void)));
   connect(this,
+	  SIGNAL(write_prison_blues_file(const QByteArray &,
+					 const QByteArray &)),
+	  this,
+	  SLOT(slot_write_prison_blues_file(const QByteArray &,
+					    const QByteArray &)));
+  connect(this,
 	  SIGNAL(write_signal(const QByteArray &)),
 	  this,
 	  SLOT(slot_write_data(const QByteArray &)));
@@ -1739,6 +1745,7 @@ void spot_on_lite_daemon_child::process_local_content(void)
 		  ** Found!
 		  */
 
+		  emit write_prison_blues_file(bytes, it.key());
 		  emit write_signal(bytes);
 		  break;
 		}
@@ -2303,8 +2310,9 @@ void spot_on_lite_daemon_child::slot_broadcast_capabilities(void)
 		     "Content-Length: %1\r\n"
 		     "Content-Type: application/x-www-form-urlencoded\r\n"
 		     "\r\n"
-		     "type=" + type_spot_on_lite_client + "&content=%2\r\n"
-		     "\r\n\r\n");
+		     "type=" +
+		     type_spot_on_lite_client +
+		     "&content=%2\r\n\r\n\r\n");
       results.replace
 	("%1",
 	 QByteArray::
@@ -2638,6 +2646,31 @@ slot_ssl_errors(const QList<QSslError> &errors)
 void spot_on_lite_daemon_child::slot_write_data(const QByteArray &data)
 {
   write(data);
+}
+
+void spot_on_lite_daemon_child::slot_write_prison_blues_file
+(const QByteArray &data, const QByteArray &identity)
+{
+  if(data.trimmed().isEmpty() || identity.trimmed().isEmpty())
+    return;
+
+  create_prison_blues_directory(identity);
+
+  QTemporaryFile file
+    (m_prison_blues_directory +
+     QDir::separator() +
+     identity.trimmed().toHex() +
+     QDir::separator() +
+     "PrisonBluesXXXXXXXXXX.txt");
+
+  if(file.open())
+    {
+      QTextStream stream(&file);
+
+      Q_UNUSED(file.fileName()); // Prevents removal of file.
+      file.setAutoRemove(false);
+      stream << data.trimmed() << Qt::endl;
+    }
 }
 
 void spot_on_lite_daemon_child::stop_threads_and_timers(void)
