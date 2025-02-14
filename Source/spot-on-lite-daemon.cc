@@ -1101,9 +1101,7 @@ void spot_on_lite_daemon::slot_ready_read(void)
     {
       it.next();
 
-      if(it.key() &&
-	 it.key() != socket &&
-	 it.key()->state() == QLocalSocket::ConnectedState)
+      if(it.key() && it.key()->state() == QLocalSocket::ConnectedState)
 	{
 	  auto const maximum = m_local_so_rcvbuf_so_sndbuf -
 	    static_cast<int> (it.key()->bytesToWrite());
