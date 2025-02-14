@@ -1746,13 +1746,12 @@ void spot_on_lite_daemon_child::process_local_content(void)
 		  ** Found!
 		  */
 
-		  emit write_prison_blues_file(bytes, it.key());
 		  emit write_signal(bytes);
 		  break;
 		}
-	      else
-		emit write_prison_blues_file(bytes, it.key());
 	    }
+
+	  emit write_prison_blues_file(bytes, hash);
 	}
       else
 	emit write_signal(bytes);
