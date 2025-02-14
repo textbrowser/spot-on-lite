@@ -1972,6 +1972,34 @@ void spot_on_lite_daemon_child::purge_statistics(void)
   QSqlDatabase::removeDatabase(QString::number(db_connection_id));
 }
 
+void spot_on_lite_daemon_child::read_prison_blues_files
+(const QList<QByteArray> &identities, const QString &prison_blues_directory)
+{
+  if(identities.isEmpty() || prison_blues_directory.trimmed().isEmpty())
+    return;
+
+  foreach(auto const &i, identities)
+    {
+      if(m_read_prison_blues_files_future.isCanceled())
+	break;
+
+      auto const directory = QDir
+	(prison_blues_directory + QDir::separator() + i.toHex());
+
+      foreach(auto const &file_info,
+	      directory.entryInfoList(QDir::Files, QDir::Time))
+	{
+	  if(m_read_prison_blues_files_future.isCanceled())
+	    return;
+
+	  QFile file(file_info.absoluteFilePath());
+
+	  if(file.open(QIODevice::ReadOnly))
+	    emit write_signal(file.readAll());
+	}
+    }
+}
+
 void spot_on_lite_daemon_child::record_certificate
 (const QByteArray &certificate,
  const QByteArray &private_key,
@@ -2404,6 +2432,21 @@ void spot_on_lite_daemon_child::slot_general_timer_timeout(void)
       }
   }
 
+  if(m_read_prison_blues_files_future.isFinished())
+#if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
+    m_read_prison_blues_files_future = QtConcurrent::run
+      (this,
+       &spot_on_lite_daemon_child::read_prison_blues_files,
+       remote_identities(nullptr).keys(),
+       m_prison_blues_directory);
+#else
+    m_read_prison_blues_files_future = QtConcurrent::run
+      (&spot_on_lite_daemon_child::read_prison_blues_files,
+       this,
+       remote_identities(nullptr).keys(),
+       m_prison_blues_directory);
+#endif
+
   if(QDateTime::currentMSecsSinceEpoch() - m_remote_content_last_parsed >
      END_OF_MESSAGE_MARKER_WINDOW)
     {
@@ -2682,14 +2725,16 @@ void spot_on_lite_daemon_child::stop_threads_and_timers(void)
   m_general_timer.stop();
   m_keep_alive_timer.stop();
   m_process_local_content_future.cancel();
+  m_read_prison_blues_files_future.cancel();
   m_statistics_future.cancel();
 
   /*
-  ** Wait for threads to complete.
+  ** Wait for tasks to complete.
   */
 
   m_expired_identities_future.waitForFinished();
   m_process_local_content_future.waitForFinished();
+  m_read_prison_blues_files_future.waitForFinished();
   m_statistics_future.waitForFinished();
 }
 

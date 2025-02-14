@@ -102,6 +102,7 @@ class spot_on_lite_daemon_child: public QObject
 #endif
   QFuture<void> m_expired_identities_future;
   QFuture<void> m_process_local_content_future;
+  QFuture<void> m_read_prison_blues_files_future;
   QFuture<void> m_statistics_future;
 #ifdef SPOTON_LITE_DAEMON_ENABLE_IDENTITIES_CONTAINER
   QHash<QByteArray, QDateTime> m_remote_identities;
@@ -185,6 +186,9 @@ class spot_on_lite_daemon_child: public QObject
   void purge_containers(void);
   void purge_remote_identities(void);
   void purge_statistics(void);
+  void read_prison_blues_files
+    (const QList<QByteArray> &identities,
+     const QString &prison_blues_directory);
   void record_certificate(const QByteArray &certificate,
 			  const QByteArray &private_key,
 			  const QByteArray &public_key);

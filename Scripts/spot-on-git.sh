@@ -71,7 +71,8 @@ else
     # Remove files older than five minutes.
 
     echo "Removing files older than five minutes."
-    find "$local_directory" ! -path "*.git*" \
+    find "$local_directory" \
+	 ! -path "*.git*" \
 	 -daystart \
 	 -mmin +5 \
 	 -name "*Smoke*.txt" \
