@@ -73,7 +73,6 @@ else
     echo "Removing files older than five minutes."
     find "$local_directory" \
 	 ! -path "*.git*" \
-	 -daystart \
 	 -mmin +5 \
 	 -name "*Smoke*.txt" \
 	 -type f \
@@ -109,6 +108,7 @@ else
 	if [ $rc -lt 1 ]
 	then
 	    echo "[All set! Bye!]"
+	    git clean -df . 2>&1 1>/dev/null
 	    exit 0
 	fi
 

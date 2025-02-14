@@ -141,8 +141,10 @@ void spot_on_lite_daemon_udp_listener::slot_general_timeout(void)
 	(sizeof(maximum_accumulated_bytes));
       auto const sd = static_cast<int> (socketDescriptor());
 
-      setsockopt(sd, SOL_SOCKET, SO_RCVBUF, &maximum_accumulated_bytes, optlen);
-      setsockopt(sd, SOL_SOCKET, SO_SNDBUF, &maximum_accumulated_bytes, optlen);
+      setsockopt
+	(sd, SOL_SOCKET, SO_RCVBUF, &maximum_accumulated_bytes, optlen);
+      setsockopt
+	(sd, SOL_SOCKET, SO_SNDBUF, &maximum_accumulated_bytes, optlen);
 
       /*
       ** 0 - IP Address
@@ -172,13 +174,14 @@ void spot_on_lite_daemon_udp_listener::slot_ready_read(void)
 
   while(hasPendingDatagrams())
     {
-      size = qMax(static_cast<qint64> (0), pendingDatagramSize());
+      size = qMax(pendingDatagramSize(), static_cast<qint64> (0));
       data.resize(static_cast<int> (size));
 
       if(readDatagram(data.data(), size, &peer_address, &peer_port) <= 0)
 	continue;
 
-      if(m_clients.size() >= m_max_pending_connections || peer_address.isNull())
+      if(m_clients.size() >= m_max_pending_connections ||
+	 peer_address.isNull())
 	continue;
 
       auto const key(QString::number(peer_port) +

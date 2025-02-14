@@ -1735,7 +1735,8 @@ void spot_on_lite_daemon_child::process_local_content(void)
 	  QHashIterator<QByteArray, QString> it(identities);
 	  spot_on_lite_daemon_sha sha_512;
 
-	  while(it.hasNext() && !m_process_local_content_future.isCanceled())
+	  while(it.hasNext() &&
+		m_process_local_content_future.isCanceled() == false)
 	    {
 	      it.next();
 
@@ -1747,9 +1748,13 @@ void spot_on_lite_daemon_child::process_local_content(void)
 
 		  emit write_prison_blues_file(bytes, it.key());
 		  emit write_signal(bytes);
+		  hash.clear();
 		  break;
 		}
 	    }
+
+	  if(hash.size() == 64)
+	    emit write_prison_blues_file(bytes, hash);
 	}
       else
 	emit write_signal(bytes);
@@ -1886,7 +1891,7 @@ void spot_on_lite_daemon_child::process_remote_content(void)
 
 	  if(maximum > 0)
 	    {
-	      auto rc = m_local_socket.write(data.mid(0, maximum));
+	      auto const rc = m_local_socket.write(data.mid(0, maximum));
 
 	      if(rc > 0)
 		m_bytes_written.fetchAndAddOrdered(static_cast<quint64> (rc));
@@ -1895,8 +1900,9 @@ void spot_on_lite_daemon_child::process_remote_content(void)
     }
 
   save_statistic("bytes_accumulated", QString::number(bytes_accumulated()));
-  save_statistic("bytes_written",
-		 QString::number(m_bytes_written.fetchAndAddOrdered(0ULL)));
+  save_statistic
+    ("bytes_written",
+     QString::number(m_bytes_written.fetchAndAddOrdered(0ULL)));
 }
 
 void spot_on_lite_daemon_child::purge_containers(void)
@@ -2554,7 +2560,8 @@ void spot_on_lite_daemon_child::slot_local_socket_ready_read(void)
 
       if(!data.isEmpty())
 	{
-	  m_bytes_read.fetchAndAddOrdered(static_cast<quint64> (data.length()));
+	  m_bytes_read.fetchAndAddOrdered
+	    (static_cast<quint64> (data.length()));
 
 	  {
 	    QWriteLocker lock(&m_local_content_mutex);
@@ -2571,7 +2578,6 @@ void spot_on_lite_daemon_child::slot_local_socket_ready_read(void)
 	      (data.mid(0, qAbs(m_maximum_accumulated_bytes -
 				m_local_content.length())));
 	  }
-
 	}
     }
 
@@ -2608,8 +2614,7 @@ void spot_on_lite_daemon_child::slot_ready_read(void)
       auto data(m_remote_socket->readAll());
 
       if(!data.isEmpty())
-	m_bytes_read.fetchAndAddOrdered
-	  (static_cast<quint64> (data.length()));
+	m_bytes_read.fetchAndAddOrdered(static_cast<quint64> (data.length()));
 
 #ifdef SPOTON_LITE_DAEMON_DTLS_SUPPORTED
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 12, 0))

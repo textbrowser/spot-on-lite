@@ -416,54 +416,12 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
       return;
     }
 
-  QFile file(m_configuration_file_name);
   QHash<QString, char> listeners;
   QHash<QString, char> peers;
-  QMap<QString, QVariant> settings;
+  QSettings settings(m_configuration_file_name, QSettings::IniFormat);
   auto o = true;
 
-  if(file.open(QIODevice::ReadOnly | QIODevice::Text))
-    while(!file.atEnd())
-      {
-	auto const line(file.readLine().trimmed());
-
-	if(line.contains('=') == false ||
-	   line.isEmpty() ||
-	   line.startsWith('#'))
-	  continue;
-
-	auto const index = line.indexOf('=');
-	auto const key(line.mid(0, index).trimmed());
-
-	if(key.isEmpty())
-	  continue;
-
-	auto value(line.mid(index + 1).trimmed());
-
-	if(value.endsWith('\\'))
-	  {
-	    value = value.mid(0, value.lastIndexOf('\\')).trimmed();
-
-	    while(!file.atEnd())
-	      {
-		auto const line(file.readLine().trimmed());
-
-		if(line.isEmpty() || line.startsWith('#'))
-		  continue;
-
-		value.append(line);
-
-		if(value.endsWith('\\') == false)
-		  break;
-		else
-		  value = value.mid(0, value.lastIndexOf('\\')).trimmed();
-	      }
-	  }
-
-	settings[key] = value;
-      }
-
-  foreach(auto const &key, settings.keys())
+  foreach(auto const &key, settings.allKeys())
     if(key == "certificates_file")
       {
 #ifdef Q_OS_WINDOWS
@@ -1143,9 +1101,7 @@ void spot_on_lite_daemon::slot_ready_read(void)
     {
       it.next();
 
-      if(it.key() &&
-	 it.key() != socket &&
-	 it.key()->state() == QLocalSocket::ConnectedState)
+      if(it.key() && it.key()->state() == QLocalSocket::ConnectedState)
 	{
 	  auto const maximum = m_local_so_rcvbuf_so_sndbuf -
 	    static_cast<int> (it.key()->bytesToWrite());

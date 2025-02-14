@@ -120,7 +120,6 @@ void spot_on_lite_daemon_tcp_listener::incomingConnection
 	  socklen_t length = 0;
 	  struct linger l = {};
 
-	  memset(&l, 0, sizeof(l));
 	  l.l_linger = so_linger;
 	  l.l_onoff = 1;
 	  length = static_cast<socklen_t> (sizeof(l));
