@@ -834,7 +834,7 @@ void spot_on_lite_daemon_child::create_prison_blues_directory
   QDir().mkpath
     (directory.absoluteFilePath() +
      QDir::separator() +
-     identity.trimmed().toHex());
+     identity.toHex());
 }
 
 void spot_on_lite_daemon_child::create_remote_identities_database(void) const
@@ -1748,13 +1748,11 @@ void spot_on_lite_daemon_child::process_local_content(void)
 
 		  emit write_prison_blues_file(bytes, it.key());
 		  emit write_signal(bytes);
-		  hash.clear();
 		  break;
 		}
+	      else
+		emit write_prison_blues_file(bytes, it.key());
 	    }
-
-	  if(hash.size() == 64)
-	    emit write_prison_blues_file(bytes, hash);
 	}
       else
 	emit write_signal(bytes);
@@ -1985,6 +1983,7 @@ void spot_on_lite_daemon_child::read_prison_blues_files
     return;
 
   QDirIterator it(prison_blues_directory, QDirIterator::Subdirectories);
+  spot_on_lite_daemon_sha sha_512;
 
   while(it.hasNext())
     {
@@ -2008,7 +2007,33 @@ void spot_on_lite_daemon_child::read_prison_blues_files
 	      QFile file(entry.absoluteFilePath());
 
 	      if(file.open(QIODevice::ReadOnly | QIODevice::Text))
-		emit write_signal(file.readAll());
+		{
+		  auto const bytes(file.readAll());
+		  int index = 0;
+
+		  if((index = bytes.indexOf("content=")) >= 0)
+		    {
+		      QByteArray hash;
+		      auto data(bytes.mid(8 + index).trimmed());
+
+		      data = QByteArray::fromBase64(data);
+		      hash = data.mid(data.length() - 64);
+		      data = data.mid(0, data.length() - hash.length());
+
+		      for(int i = 0; i < identities.size(); i++)
+			if(memcmp(hash,
+				  sha_512.sha_512_hmac(bytes, identities[i])))
+			  {
+			    /*
+			    ** Found!
+			    */
+
+			    emit write_signal(bytes);
+			    file.remove();
+			    break;
+			  }
+		    }
+		}
 	    }
 	}
     }
@@ -2720,11 +2745,9 @@ void spot_on_lite_daemon_child::slot_write_prison_blues_file
 
   if(file.open())
     {
-      QTextStream stream(&file);
-
       Q_UNUSED(file.fileName()); // Prevents removal of file.
       file.setAutoRemove(false);
-      stream << data;
+      file.write(data);
     }
 }
 
