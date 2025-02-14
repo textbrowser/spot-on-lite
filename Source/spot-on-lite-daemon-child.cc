@@ -1733,6 +1733,7 @@ void spot_on_lite_daemon_child::process_local_content(void)
 	    }
 
 	  QHashIterator<QByteArray, QString> it(identities);
+	  auto found = false;
 	  spot_on_lite_daemon_sha sha_512;
 
 	  while(it.hasNext() &&
@@ -1747,12 +1748,12 @@ void spot_on_lite_daemon_child::process_local_content(void)
 		  */
 
 		  emit write_signal(bytes);
-		  hash.clear();
+		  found = true;
 		  break;
 		}
 	    }
 
-	  if(!hash.isEmpty())
+	  if(!found)
 	    emit write_prison_blues_file(bytes, hash);
 	}
       else
