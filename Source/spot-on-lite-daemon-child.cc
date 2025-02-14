@@ -1984,11 +1984,8 @@ void spot_on_lite_daemon_child::read_prison_blues_files
   QDirIterator it(prison_blues_directory, QDirIterator::Subdirectories);
   spot_on_lite_daemon_sha sha_512;
 
-  while(it.hasNext())
+  while(it.hasNext() && m_read_prison_blues_files_future.isCanceled() == false)
     {
-      if(m_read_prison_blues_files_future.isCanceled())
-	return;
-
       QFileInfo const file_info(it.next());
 
       if(file_info.isDir())
@@ -2005,7 +2002,7 @@ void spot_on_lite_daemon_child::read_prison_blues_files
 
 	      QFile file(entry.absoluteFilePath());
 
-	      if(file.open(QIODevice::ReadOnly | QIODevice::Text))
+	      if(file.open(QIODevice::ReadOnly))
 		{
 		  auto const bytes(file.readAll());
 		  int index = 0;
@@ -2020,8 +2017,11 @@ void spot_on_lite_daemon_child::read_prison_blues_files
 		      data = data.mid(0, data.length() - hash.length());
 
 		      for(int i = 0; i < identities.size(); i++)
-			if(memcmp(hash,
-				  sha_512.sha_512_hmac(bytes, identities[i])))
+			if(m_read_prison_blues_files_future.isCanceled())
+			  break;
+			else if(memcmp(hash,
+				       sha_512.sha_512_hmac(data,
+							    identities[i])))
 			  {
 			    /*
 			    ** Found!
