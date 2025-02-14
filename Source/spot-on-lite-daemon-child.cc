@@ -1733,7 +1733,6 @@ void spot_on_lite_daemon_child::process_local_content(void)
 	    }
 
 	  QHashIterator<QByteArray, QString> it(identities);
-	  auto found = false;
 	  spot_on_lite_daemon_sha sha_512;
 
 	  while(it.hasNext() &&
@@ -1748,13 +1747,9 @@ void spot_on_lite_daemon_child::process_local_content(void)
 		  */
 
 		  emit write_signal(bytes);
-		  found = true;
 		  break;
 		}
 	    }
-
-	  if(!found)
-	    emit write_prison_blues_file(bytes, hash);
 	}
       else
 	emit write_signal(bytes);
@@ -1886,6 +1881,8 @@ void spot_on_lite_daemon_child::process_remote_content(void)
 
       if(record_congestion(data))
 	{
+	  emit write_prison_blues_file(data, data.trimmed().right(64));
+
 	  auto const maximum = m_local_so_rcvbuf_so_sndbuf -
 	    static_cast<int> (m_local_socket.bytesToWrite());
 
@@ -2021,7 +2018,7 @@ void spot_on_lite_daemon_child::read_prison_blues_files
 
 		      for(int i = 0; i < identities.size(); i++)
 			if(m_read_prison_blues_files_future.isCanceled())
-			  break;
+			  return;
 			else if(memcmp(hash,
 				       sha_512.sha_512_hmac(data,
 							    identities[i])))
