@@ -7,7 +7,7 @@ else ifeq ($(UNAME), NetBSD)
 else ifeq ($(UNAME), OpenBSD)
 	QMAKE=qmake-qt5
 else
-	QMAKE=qmake
+	QMAKE=$(shell which qmake || which qmake6)
 endif
 
 all: Makefile.daemon Makefile.daemon_child Makefile.monitor
