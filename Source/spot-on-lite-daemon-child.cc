@@ -1747,11 +1747,13 @@ void spot_on_lite_daemon_child::process_local_content(void)
 		  */
 
 		  emit write_signal(bytes);
+		  hash.clear();
 		  break;
 		}
 	    }
 
-	  emit write_prison_blues_file(bytes, hash);
+	  if(!hash.isEmpty())
+	    emit write_prison_blues_file(bytes, hash);
 	}
       else
 	emit write_signal(bytes);
