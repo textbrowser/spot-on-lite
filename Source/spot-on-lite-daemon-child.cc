@@ -1984,24 +1984,32 @@ void spot_on_lite_daemon_child::read_prison_blues_files
   if(identities.isEmpty() || prison_blues_directory.trimmed().isEmpty())
     return;
 
-  foreach(auto const &i, identities)
+  QDirIterator it(prison_blues_directory, QDirIterator::Subdirectories);
+
+  while(it.hasNext())
     {
       if(m_read_prison_blues_files_future.isCanceled())
-	break;
+	return;
 
-      auto const directory = QDir
-	(prison_blues_directory + QDir::separator() + i.toHex());
+      QFileInfo const file_info(it.next());
 
-      foreach(auto const &file_info,
-	      directory.entryInfoList(QDir::Files, QDir::Time))
+      if(file_info.isDir())
 	{
-	  if(m_read_prison_blues_files_future.isCanceled())
-	    return;
+	  QDir const directory(file_info.absoluteFilePath());
 
-	  QFile file(file_info.absoluteFilePath());
+	  foreach(auto const &entry,
+		  directory.entryInfoList(QStringList() << "*Smoke*.txt",
+					  QDir::Files,
+					  QDir::Time))
+	    {
+	      if(m_read_prison_blues_files_future.isCanceled())
+		return;
 
-	  if(file.open(QIODevice::ReadOnly))
-	    emit write_signal(file.readAll());
+	      QFile file(entry.absoluteFilePath());
+
+	      if(file.open(QIODevice::ReadOnly | QIODevice::Text))
+		emit write_signal(file.readAll());
+	    }
 	}
     }
 }
@@ -2706,7 +2714,7 @@ void spot_on_lite_daemon_child::slot_write_prison_blues_file
   QTemporaryFile file
     (m_prison_blues_directory +
      QDir::separator() +
-     identity.trimmed().toHex() +
+     identity.toHex() +
      QDir::separator() +
      "PrisonSmokeBluesXXXXXXXXXX.txt");
 
@@ -2716,7 +2724,7 @@ void spot_on_lite_daemon_child::slot_write_prison_blues_file
 
       Q_UNUSED(file.fileName()); // Prevents removal of file.
       file.setAutoRemove(false);
-      stream << data.trimmed() << Qt::endl;
+      stream << data;
     }
 }
 
