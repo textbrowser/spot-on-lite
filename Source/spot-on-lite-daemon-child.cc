@@ -1978,7 +1978,12 @@ void spot_on_lite_daemon_child::purge_statistics(void)
 void spot_on_lite_daemon_child::read_prison_blues_files
 (const QList<QByteArray> &identities, const QString &prison_blues_directory)
 {
-  if(identities.isEmpty() || prison_blues_directory.trimmed().isEmpty())
+  if(identities.isEmpty())
+    return;
+
+  QFileInfo const directory(prison_blues_directory);
+
+  if(!directory.isReadable())
     return;
 
   QDirIterator it(prison_blues_directory, QDirIterator::Subdirectories);
@@ -2470,20 +2475,27 @@ void spot_on_lite_daemon_child::slot_general_timer_timeout(void)
       }
   }
 
-  if(m_read_prison_blues_files_future.isFinished())
+  {
+    QFileInfo const directory(m_prison_blues_directory);
+
+    if(directory.isReadable())
+      {
+	if(m_read_prison_blues_files_future.isFinished())
 #if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
-    m_read_prison_blues_files_future = QtConcurrent::run
-      (this,
-       &spot_on_lite_daemon_child::read_prison_blues_files,
-       remote_identities(nullptr).keys(),
-       m_prison_blues_directory);
+	  m_read_prison_blues_files_future = QtConcurrent::run
+	    (this,
+	     &spot_on_lite_daemon_child::read_prison_blues_files,
+	     remote_identities(nullptr).keys(),
+	     m_prison_blues_directory);
 #else
-    m_read_prison_blues_files_future = QtConcurrent::run
-      (&spot_on_lite_daemon_child::read_prison_blues_files,
-       this,
-       remote_identities(nullptr).keys(),
-       m_prison_blues_directory);
+	  m_read_prison_blues_files_future = QtConcurrent::run
+	    (&spot_on_lite_daemon_child::read_prison_blues_files,
+	     this,
+	     remote_identities(nullptr).keys(),
+	     m_prison_blues_directory);
 #endif
+      }
+  }
 
   if(QDateTime::currentMSecsSinceEpoch() - m_remote_content_last_parsed >
      END_OF_MESSAGE_MARKER_WINDOW)
@@ -2734,6 +2746,11 @@ void spot_on_lite_daemon_child::slot_write_prison_blues_file
     return;
 
   create_prison_blues_directory(identity);
+
+  QFileInfo const directory(m_prison_blues_directory);
+
+  if(!directory.isWritable())
+    return;
 
   QTemporaryFile file
     (m_prison_blues_directory +
