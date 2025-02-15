@@ -27,6 +27,7 @@ Completed Items
 - OpenSSL 3.x (https://wiki.openssl.org/index.php/OpenSSL_3.0).
 - Optionally remove temporary files.
 - Partition datagrams.
+- Prison Blues and Smoke.
 - Process accumulated data which may have arrived
   while a local socket is not connected.
 - Process scheduling for Unix.
@@ -43,5 +44,4 @@ Completed Items
 Remaining Items
 
 - Enumerator classes.
-- Prison Blues and Smoke.
 - Release notes in the monitor interface.
