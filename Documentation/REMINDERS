@@ -33,6 +33,7 @@ Completed Items
 - Process scheduling for Unix.
 - Purge entries from UDP listener's m_clients.
 - Record certificate data.
+- Release notes in the monitor interface.
 - Remote peers.
 - Remove expired identities.
 - Remove local socket server file on exit.
@@ -44,4 +45,3 @@ Completed Items
 Remaining Items
 
 - Enumerator classes.
-- Release notes in the monitor interface.

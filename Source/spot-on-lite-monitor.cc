@@ -116,6 +116,7 @@ spot_on_lite_monitor::spot_on_lite_monitor(void):QMainWindow()
   m_path_timer.start(1500);
   m_ui.setupUi(this);
   m_ui.processes->sortByColumn(PID, Qt::AscendingOrder);
+  m_ui.release_notes->setSource(QUrl("qrc:/ReleaseNotes.html"));
   statusBar()->showMessage
     (tr("%1 Process(es)").arg(m_ui.processes->rowCount()));
   connect(&m_path_timer,

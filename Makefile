@@ -3,7 +3,7 @@ UNAME := $(shell uname)
 ifeq ($(UNAME), FreeBSD)
 	QMAKE=$(shell which qmake || which qmake6)
 else ifeq ($(UNAME), NetBSD)
-	QMAKE=qmake
+	QMAKE=$(shell which qmake || which qmake6)
 else ifeq ($(UNAME), OpenBSD)
 	QMAKE=qmake-qt5
 else

@@ -108,84 +108,156 @@
      </layout>
     </item>
     <item>
-     <widget class="spot_on_lite_monitor_table" name="processes">
-      <property name="alternatingRowColors">
-       <bool>true</bool>
+     <widget class="QTabWidget" name="spot_on_configuration">
+      <property name="currentIndex">
+       <number>0</number>
       </property>
-      <property name="selectionMode">
-       <enum>QAbstractItemView::SingleSelection</enum>
-      </property>
-      <property name="selectionBehavior">
-       <enum>QAbstractItemView::SelectRows</enum>
-      </property>
-      <property name="horizontalScrollMode">
-       <enum>QAbstractItemView::ScrollPerPixel</enum>
-      </property>
-      <property name="sortingEnabled">
-       <bool>true</bool>
-      </property>
-      <attribute name="horizontalHeaderMinimumSectionSize">
-       <number>55</number>
-      </attribute>
-      <attribute name="horizontalHeaderDefaultSectionSize">
-       <number>175</number>
-      </attribute>
-      <attribute name="horizontalHeaderShowSortIndicator" stdset="0">
-       <bool>true</bool>
-      </attribute>
-      <attribute name="horizontalHeaderStretchLastSection">
-       <bool>true</bool>
-      </attribute>
-      <column>
-       <property name="text">
-        <string>Name</string>
-       </property>
-      </column>
-      <column>
-       <property name="text">
-        <string>PID</string>
-       </property>
-      </column>
-      <column>
-       <property name="text">
-        <string>Status</string>
-       </property>
-      </column>
-      <column>
-       <property name="text">
-        <string>IP Information</string>
-       </property>
-      </column>
-      <column>
-       <property name="text">
-        <string>Memory</string>
-       </property>
-      </column>
-      <column>
-       <property name="text">
-        <string>Bytes Accumulated</string>
-       </property>
-      </column>
-      <column>
-       <property name="text">
-        <string>Bytes Read</string>
-       </property>
-      </column>
-      <column>
-       <property name="text">
-        <string>Bytes Written</string>
-       </property>
-      </column>
-      <column>
-       <property name="text">
-        <string>Type</string>
-       </property>
-      </column>
-      <column>
-       <property name="text">
-        <string>Arguments</string>
-       </property>
-      </column>
+      <widget class="QWidget" name="tab_processes">
+       <attribute name="title">
+        <string>Processes</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="verticalLayout_4">
+        <item>
+         <widget class="spot_on_lite_monitor_table" name="processes">
+          <property name="alternatingRowColors">
+           <bool>true</bool>
+          </property>
+          <property name="selectionMode">
+           <enum>QAbstractItemView::SingleSelection</enum>
+          </property>
+          <property name="selectionBehavior">
+           <enum>QAbstractItemView::SelectRows</enum>
+          </property>
+          <property name="horizontalScrollMode">
+           <enum>QAbstractItemView::ScrollPerPixel</enum>
+          </property>
+          <property name="sortingEnabled">
+           <bool>true</bool>
+          </property>
+          <attribute name="horizontalHeaderMinimumSectionSize">
+           <number>55</number>
+          </attribute>
+          <attribute name="horizontalHeaderDefaultSectionSize">
+           <number>175</number>
+          </attribute>
+          <attribute name="horizontalHeaderShowSortIndicator" stdset="0">
+           <bool>true</bool>
+          </attribute>
+          <attribute name="horizontalHeaderStretchLastSection">
+           <bool>true</bool>
+          </attribute>
+          <column>
+           <property name="text">
+            <string>Name</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>PID</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Status</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>IP Information</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Memory</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Bytes Accumulated</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Bytes Read</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Bytes Written</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Type</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Arguments</string>
+           </property>
+          </column>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="tab_release_notes">
+       <attribute name="title">
+        <string>Release Notes</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="verticalLayout_5">
+        <item>
+         <widget class="QTextBrowser" name="release_notes">
+          <property name="tabChangesFocus">
+           <bool>true</bool>
+          </property>
+          <property name="openLinks">
+           <bool>false</bool>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="spot_on_configuration_file">
+       <attribute name="title">
+        <string>Spot-On Configuration File</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="verticalLayout_6">
+        <item>
+         <widget class="QPlainTextEdit" name="plainTextEdit"/>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_2">
+          <item>
+           <spacer name="horizontalSpacer">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item>
+           <widget class="QPushButton" name="refresh">
+            <property name="text">
+             <string>Refresh</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="save">
+            <property name="text">
+             <string>Save</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+       </layout>
+      </widget>
      </widget>
     </item>
    </layout>
@@ -235,7 +307,12 @@
   <tabstop>launch_executable</tabstop>
   <tabstop>launch_executable_file_select</tabstop>
   <tabstop>off_on</tabstop>
+  <tabstop>spot_on_configuration</tabstop>
   <tabstop>processes</tabstop>
+  <tabstop>release_notes</tabstop>
+  <tabstop>plainTextEdit</tabstop>
+  <tabstop>refresh</tabstop>
+  <tabstop>save</tabstop>
  </tabstops>
  <resources>
   <include location="../Icons/icons.qrc"/>
