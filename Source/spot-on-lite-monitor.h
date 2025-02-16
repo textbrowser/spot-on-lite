@@ -91,6 +91,7 @@ class spot_on_lite_monitor: public QMainWindow
   static QString ini_path(void);
   void prepare_icons(void);
   void read_statistics_database(void);
+  void show_message(const QString &text);
 
  private slots:
   void slot_added(const QMap<Columns, QString> &values,
@@ -101,6 +102,7 @@ class spot_on_lite_monitor: public QMainWindow
   void slot_path_timeout(void);
   void slot_quit(void);
   void slot_refresh_configuration_file(void);
+  void slot_save_configuration_file(void);
   void slot_select_path(void);
   void slot_set_path(void);
   void slot_start_or_stop(void);

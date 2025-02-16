@@ -152,6 +152,10 @@ spot_on_lite_monitor::spot_on_lite_monitor(void):QMainWindow()
 	  SIGNAL(clicked(void)),
 	  this,
 	  SLOT(slot_refresh_configuration_file(void)));
+  connect(m_ui.save,
+	  SIGNAL(clicked(void)),
+	  this,
+	  SLOT(slot_save_configuration_file(void)));
   connect(this,
 	  SIGNAL(added(const QMap<Columns, QString> &, const QString &)),
 	  this,
@@ -387,6 +391,15 @@ void spot_on_lite_monitor::read_statistics_database(void)
     }
 }
 
+void spot_on_lite_monitor::show_message(const QString &text)
+{
+  if(text.trimmed().isEmpty())
+    return;
+
+  if(statusBar())
+    statusBar()->showMessage(text.trimmed(), 5000);
+}
+
 void spot_on_lite_monitor::slot_added
 (const QMap<Columns, QString> &values, const QString &tool_tip)
 {
@@ -546,6 +559,32 @@ void spot_on_lite_monitor::slot_refresh_configuration_file(void)
       m_ui.configuration_file_contents->horizontalScrollBar()->setValue(h);
       m_ui.configuration_file_contents->verticalScrollBar()->setValue(v);
     }
+}
+
+void spot_on_lite_monitor::slot_save_configuration_file(void)
+{
+  if(m_ui.configuration_file->text().trimmed().isEmpty())
+    {
+      show_message(tr("Invalid configuration file name."));
+      return;
+    }
+
+  QFile file(m_ui.configuration_file->text().trimmed());
+
+  if(file.open(QIODevice::WriteOnly))
+    {
+      auto const text
+	(m_ui.configuration_file_contents->toPlainText().trimmed().toUtf8());
+
+      if(file.write(text) == static_cast<qint64> (text.length()))
+	show_message
+	  (tr("Contents saved in %1.").arg(file.fileName()));
+      else
+	show_message(tr("Incomplete save."));
+    }
+  else
+    show_message
+      (tr("Cannot open %1 file for writing.").arg(file.fileName()));
 }
 
 void spot_on_lite_monitor::slot_select_path(void)
