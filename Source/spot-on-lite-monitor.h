@@ -89,6 +89,7 @@ class spot_on_lite_monitor: public QMainWindow
   pid_t m_daemon_pid;
   static QString home_path(void);
   static QString ini_path(void);
+  void prepare_icons(void);
   void read_statistics_database(void);
 
  private slots:

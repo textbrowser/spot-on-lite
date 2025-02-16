@@ -205,6 +205,7 @@ spot_on_lite_monitor::spot_on_lite_monitor(void):QMainWindow()
 
   m_ui.processes->resizeColumnsToContents();
   m_ui.processes->setFocus();
+  prepare_icons();
   restoreGeometry(settings.value("geometry").toByteArray());
   slot_deleted(m_daemon_pid);
   slot_path_timeout();
@@ -237,6 +238,16 @@ QString spot_on_lite_monitor::ini_path(void)
     ".spot-on-lite-monitor" +
     QDir::separator() +
     "Spot-On-Lite-Monitor.INI";
+}
+
+void spot_on_lite_monitor::prepare_icons(void)
+{
+  m_ui.action_Quit->setIcon(QIcon::fromTheme("application-exit"));
+  m_ui.configuration_file_select->setIcon(QIcon::fromTheme("document-open"));
+  m_ui.launch_executable_file_select->setIcon
+    (QIcon::fromTheme("document-open"));
+  m_ui.refresh->setIcon(QIcon::fromTheme("view-refresh"));
+  m_ui.save->setIcon(QIcon::fromTheme("document-save"));
 }
 
 void spot_on_lite_monitor::read_statistics_database(void)
@@ -526,9 +537,14 @@ void spot_on_lite_monitor::slot_refresh_configuration_file(void)
 
   if(file.open(QIODevice::ReadOnly))
     {
+      auto const h = m_ui.configuration_file_contents->horizontalScrollBar()->
+	value();
+      auto const v = m_ui.configuration_file_contents->verticalScrollBar()->
+	value();
+
       m_ui.configuration_file_contents->setPlainText(file.readAll());
-      m_ui.configuration_file_contents->horizontalScrollBar()->setValue(0);
-      m_ui.configuration_file_contents->verticalScrollBar()->setValue(0);
+      m_ui.configuration_file_contents->horizontalScrollBar()->setValue(h);
+      m_ui.configuration_file_contents->verticalScrollBar()->setValue(v);
     }
 }
 
@@ -554,7 +570,10 @@ void spot_on_lite_monitor::slot_select_path(void)
       QApplication::processEvents();
 
       if(m_ui.configuration_file_select == sender())
-	m_ui.configuration_file->setText(dialog.selectedFiles().value(0));
+	{
+	  m_ui.configuration_file->setText(dialog.selectedFiles().value(0));
+	  slot_refresh_configuration_file();
+	}
       else
 	m_ui.launch_executable->setText(dialog.selectedFiles().value(0));
 
