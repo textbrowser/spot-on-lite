@@ -223,7 +223,13 @@
        </attribute>
        <layout class="QVBoxLayout" name="verticalLayout_6">
         <item>
-         <widget class="QPlainTextEdit" name="plainTextEdit"/>
+         <widget class="QPlainTextEdit" name="configuration_file_contents">
+          <property name="font">
+           <font>
+            <family>Courier 10 Pitch</family>
+           </font>
+          </property>
+         </widget>
         </item>
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_2">
@@ -310,7 +316,7 @@
   <tabstop>spot_on_configuration</tabstop>
   <tabstop>processes</tabstop>
   <tabstop>release_notes</tabstop>
-  <tabstop>plainTextEdit</tabstop>
+  <tabstop>configuration_file_contents</tabstop>
   <tabstop>refresh</tabstop>
   <tabstop>save</tabstop>
  </tabstops>

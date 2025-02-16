@@ -32,6 +32,7 @@
 #include <QJniObject>
 #endif
 #endif
+#include <QScrollBar>
 #include <QSqlDatabase>
 #include <QSqlQuery>
 #include <QtConcurrent>
@@ -147,6 +148,10 @@ spot_on_lite_monitor::spot_on_lite_monitor(void):QMainWindow()
 	  SIGNAL(clicked(void)),
 	  this,
 	  SLOT(slot_start_or_stop(void)));
+  connect(m_ui.refresh,
+	  SIGNAL(clicked(void)),
+	  this,
+	  SLOT(slot_refresh_configuration_file(void)));
   connect(this,
 	  SIGNAL(added(const QMap<Columns, QString> &, const QString &)),
 	  this,
@@ -203,6 +208,7 @@ spot_on_lite_monitor::spot_on_lite_monitor(void):QMainWindow()
   restoreGeometry(settings.value("geometry").toByteArray());
   slot_deleted(m_daemon_pid);
   slot_path_timeout();
+  slot_refresh_configuration_file();
 }
 
 spot_on_lite_monitor::~spot_on_lite_monitor()
@@ -512,6 +518,18 @@ void spot_on_lite_monitor::slot_quit(void)
   activity.callMethod<void> ("finishAndRemoveTask");
 #endif
 #endif
+}
+
+void spot_on_lite_monitor::slot_refresh_configuration_file(void)
+{
+  QFile file(m_ui.configuration_file->text());
+
+  if(file.open(QIODevice::ReadOnly))
+    {
+      m_ui.configuration_file_contents->setPlainText(file.readAll());
+      m_ui.configuration_file_contents->horizontalScrollBar()->setValue(0);
+      m_ui.configuration_file_contents->verticalScrollBar()->setValue(0);
+    }
 }
 
 void spot_on_lite_monitor::slot_select_path(void)

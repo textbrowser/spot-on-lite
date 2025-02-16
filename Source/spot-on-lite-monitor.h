@@ -99,6 +99,7 @@ class spot_on_lite_monitor: public QMainWindow
   void slot_deleted(const qint64 pid);
   void slot_path_timeout(void);
   void slot_quit(void);
+  void slot_refresh_configuration_file(void);
   void slot_select_path(void);
   void slot_set_path(void);
   void slot_start_or_stop(void);
