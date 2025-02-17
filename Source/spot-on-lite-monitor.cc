@@ -559,6 +559,8 @@ void spot_on_lite_monitor::slot_refresh_configuration_file(void)
       m_ui.configuration_file_contents->horizontalScrollBar()->setValue(h);
       m_ui.configuration_file_contents->verticalScrollBar()->setValue(v);
     }
+  else
+    show_message(tr("Cannot read the configuration file."));
 }
 
 void spot_on_lite_monitor::slot_save_configuration_file(void)
@@ -580,7 +582,7 @@ void spot_on_lite_monitor::slot_save_configuration_file(void)
 	show_message
 	  (tr("Contents saved in %1.").arg(file.fileName()));
       else
-	show_message(tr("Incomplete save."));
+	show_message(tr("Incomplete save. QFile::write() failure."));
     }
   else
     show_message
