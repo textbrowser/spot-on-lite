@@ -63,7 +63,7 @@ class spot_on_lite_monitor: public QMainWindow
   Q_OBJECT
 
  public:
-  enum Columns
+  enum class Columns
     {
      ARGUMENTS = 9,
      BYTES_ACCUMULATED = 5,

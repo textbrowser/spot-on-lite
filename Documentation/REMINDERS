@@ -20,6 +20,7 @@ Completed Items
   receives the identity.
 - Distribute capabilities.
 - Echo through child processes.
+- Enumerator classes.
 - Introduce QSsl::Ec.
 - Limit number of processes via /etc/security/limits.conf.
 - Lisp version of the SHA-512 implementation. Optional.
@@ -43,5 +44,3 @@ Completed Items
 - Uptime statistic and large values (seconds-since is zero).
 
 Remaining Items
-
-- Enumerator classes.

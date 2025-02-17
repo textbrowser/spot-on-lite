@@ -114,13 +114,60 @@
      </layout>
     </item>
     <item>
-     <widget class="QTabWidget" name="spot_on_configuration">
+     <widget class="QTabWidget" name="tab">
       <property name="currentIndex">
        <number>0</number>
       </property>
-      <widget class="QWidget" name="tab_processes">
+      <widget class="QWidget" name="spot_on_lite_configuration_file">
        <attribute name="title">
-        <string>Processes</string>
+        <string>Spot-On-Lite Configuration File</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="verticalLayout_6">
+        <item>
+         <widget class="QPlainTextEdit" name="configuration_file_contents">
+          <property name="font">
+           <font>
+            <family>Courier 10 Pitch</family>
+           </font>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_2">
+          <item>
+           <spacer name="horizontalSpacer">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item>
+           <widget class="QPushButton" name="refresh">
+            <property name="text">
+             <string>Refresh</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="save">
+            <property name="text">
+             <string>Save</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="spot_on_lite_processes">
+       <attribute name="title">
+        <string>Spot-On-Lite Processes</string>
        </attribute>
        <layout class="QVBoxLayout" name="verticalLayout_4">
         <item>
@@ -206,9 +253,9 @@
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="tab_release_notes">
+      <widget class="QWidget" name="spot_on_lite_release_notes">
        <attribute name="title">
-        <string>Release Notes</string>
+        <string>Spot-On-Lite Release Notes</string>
        </attribute>
        <layout class="QVBoxLayout" name="verticalLayout_5">
         <item>
@@ -220,53 +267,6 @@
            <bool>false</bool>
           </property>
          </widget>
-        </item>
-       </layout>
-      </widget>
-      <widget class="QWidget" name="spot_on_configuration_file">
-       <attribute name="title">
-        <string>Spot-On Configuration File</string>
-       </attribute>
-       <layout class="QVBoxLayout" name="verticalLayout_6">
-        <item>
-         <widget class="QPlainTextEdit" name="configuration_file_contents">
-          <property name="font">
-           <font>
-            <family>Courier 10 Pitch</family>
-           </font>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <layout class="QHBoxLayout" name="horizontalLayout_2">
-          <item>
-           <spacer name="horizontalSpacer">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>40</width>
-              <height>20</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-          <item>
-           <widget class="QPushButton" name="refresh">
-            <property name="text">
-             <string>Refresh</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="save">
-            <property name="text">
-             <string>Save</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
         </item>
        </layout>
       </widget>
@@ -319,12 +319,12 @@
   <tabstop>launch_executable</tabstop>
   <tabstop>launch_executable_file_select</tabstop>
   <tabstop>off_on</tabstop>
-  <tabstop>spot_on_configuration</tabstop>
-  <tabstop>processes</tabstop>
-  <tabstop>release_notes</tabstop>
+  <tabstop>tab</tabstop>
   <tabstop>configuration_file_contents</tabstop>
   <tabstop>refresh</tabstop>
   <tabstop>save</tabstop>
+  <tabstop>processes</tabstop>
+  <tabstop>release_notes</tabstop>
  </tabstops>
  <resources>
   <include location="../Icons/icons.qrc"/>

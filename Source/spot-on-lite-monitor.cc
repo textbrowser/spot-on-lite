@@ -51,27 +51,27 @@ static spot_on_lite_monitor::Columns field_name_to_column
 (const QString &field_name)
 {
   if(field_name == "arguments")
-    return spot_on_lite_monitor::ARGUMENTS;
+    return spot_on_lite_monitor::Columns::ARGUMENTS;
   else if(field_name == "bytes_accumulated")
-    return spot_on_lite_monitor::BYTES_ACCUMULATED;
+    return spot_on_lite_monitor::Columns::BYTES_ACCUMULATED;
   else if(field_name == "bytes_read")
-    return spot_on_lite_monitor::BYTES_READ;
+    return spot_on_lite_monitor::Columns::BYTES_READ;
   else if(field_name == "bytes_written")
-    return spot_on_lite_monitor::BYTES_WRITTEN;
+    return spot_on_lite_monitor::Columns::BYTES_WRITTEN;
   else if(field_name == "ip_information")
-    return spot_on_lite_monitor::IP_INFORMATION;
+    return spot_on_lite_monitor::Columns::IP_INFORMATION;
   else if(field_name == "memory")
-    return spot_on_lite_monitor::MEMORY;
+    return spot_on_lite_monitor::Columns::MEMORY;
   else if(field_name == "name")
-    return spot_on_lite_monitor::NAME;
+    return spot_on_lite_monitor::Columns::NAME;
   else if(field_name == "pid")
-    return spot_on_lite_monitor::PID;
+    return spot_on_lite_monitor::Columns::PID;
   else if(field_name == "status")
-    return spot_on_lite_monitor::STATUS;
+    return spot_on_lite_monitor::Columns::STATUS;
   else if(field_name == "type")
-    return spot_on_lite_monitor::TYPE;
+    return spot_on_lite_monitor::Columns::TYPE;
   else
-    return spot_on_lite_monitor::ZZZ;
+    return spot_on_lite_monitor::Columns::ZZZ;
 }
 
 int main(int argc, char *argv[])
@@ -116,7 +116,8 @@ spot_on_lite_monitor::spot_on_lite_monitor(void):QMainWindow()
 #endif
   m_path_timer.start(1500);
   m_ui.setupUi(this);
-  m_ui.processes->sortByColumn(PID, Qt::AscendingOrder);
+  m_ui.processes->sortByColumn
+    (static_cast<int> (Columns::PID), Qt::AscendingOrder);
   m_ui.release_notes->setSource(QUrl("qrc:/ReleaseNotes.html"));
   statusBar()->showMessage
     (tr("%1 Process(es)").arg(m_ui.processes->rowCount()));
@@ -314,25 +315,25 @@ void spot_on_lite_monitor::read_statistics_database(void)
 		  QMap<Columns, QString> values;
 		  auto status(tr("Active"));
 
-		  values[ARGUMENTS] = query.value(0).toString();
-		  values[BYTES_ACCUMULATED] = query.value(1).toString();
-		  values[BYTES_READ] = query.value(2).toString();
-		  values[BYTES_WRITTEN] = query.value(3).toString();
-		  values[IP_INFORMATION] = query.value(4).toString();
-		  values[MEMORY] = query.value(5).toString();
-		  values[NAME] = query.value(6).toString();
-		  values[PID] = query.value(7).toString();
-		  values[TYPE] = query.value(8).toString();
+		  values[Columns::ARGUMENTS] = query.value(0).toString();
+		  values[Columns::BYTES_ACCUMULATED] =
+		    query.value(1).toString();
+		  values[Columns::BYTES_READ] = query.value(2).toString();
+		  values[Columns::BYTES_WRITTEN] = query.value(3).toString();
+		  values[Columns::IP_INFORMATION] = query.value(4).toString();
+		  values[Columns::MEMORY] = query.value(5).toString();
+		  values[Columns::NAME] = query.value(6).toString();
+		  values[Columns::PID] = query.value(7).toString();
+		  values[Columns::TYPE] = query.value(8).toString();
 
-		  auto const pid = values.value(PID).toLongLong();
+		  auto const pid = values.value(Columns::PID).toLongLong();
 
 #ifdef Q_OS_UNIX
 		  if(kill(static_cast<pid_t> (pid), 0) != 0)
 		    status = tr("Dead");
 #else
 #endif
-
-		  values[STATUS] = status;
+		  values[Columns::STATUS] = status;
 
 		  auto const index = deleted_processes.indexOf(pid);
 
@@ -352,22 +353,22 @@ void spot_on_lite_monitor::read_statistics_database(void)
 		     "<b>Type:</b> %9<br>"
 		     "<b>Arguments:</b> %10"
 		     "</html>").
-		    arg(values.value(NAME)).
-		    arg(values.value(PID)).
-		    arg(values.value(STATUS)).
-		    arg(values.value(IP_INFORMATION)).
-		    arg(values.value(MEMORY)).
-		    arg(values.value(BYTES_ACCUMULATED)).
-		    arg(values.value(BYTES_READ)).
-		    arg(values.value(BYTES_WRITTEN)).
-		    arg(values.value(TYPE)).
-		    arg(values.value(ARGUMENTS));
+		    arg(values.value(Columns::NAME)).
+		    arg(values.value(Columns::PID)).
+		    arg(values.value(Columns::STATUS)).
+		    arg(values.value(Columns::IP_INFORMATION)).
+		    arg(values.value(Columns::MEMORY)).
+		    arg(values.value(Columns::BYTES_ACCUMULATED)).
+		    arg(values.value(Columns::BYTES_READ)).
+		    arg(values.value(Columns::BYTES_WRITTEN)).
+		    arg(values.value(Columns::TYPE)).
+		    arg(values.value(Columns::ARGUMENTS));
 
 		  if(!processes.contains(pid))
 		    {
-		      if(!values.value(ARGUMENTS).isEmpty() &&
-			 !values.value(NAME).isEmpty() &&
-			 !values.value(TYPE).isEmpty())
+		      if(!values.value(Columns::ARGUMENTS).isEmpty() &&
+			 !values.value(Columns::NAME).isEmpty() &&
+			 !values.value(Columns::TYPE).isEmpty())
 			{
 			  processes[pid] = values;
 			  emit added(values, tool_tip);
@@ -407,7 +408,7 @@ void spot_on_lite_monitor::slot_added
   m_ui.processes->setRowCount(m_ui.processes->rowCount() + 1);
 
   QMapIterator<Columns, QString> it(values);
-  auto const pid = values.value(PID).toLongLong();
+  auto const pid = values.value(Columns::PID).toLongLong();
   auto const row = m_ui.processes->rowCount() - 1;
 
   while(it.hasNext())
@@ -418,27 +419,30 @@ void spot_on_lite_monitor::slot_added
 
       item->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
       item->setToolTip(tool_tip);
-      m_ui.processes->setItem(row, it.key(), item);
+      m_ui.processes->setItem(row, static_cast<int> (it.key()), item);
 
       if(!m_pid_to_index.contains(pid))
 	m_pid_to_index[pid] = item;
     }
 
-  if(m_ui.processes->item(row, STATUS) &&
-     m_ui.processes->item(row, STATUS)->text() == tr("Active"))
-    m_ui.processes->item(row, STATUS)->setBackground
-      (QBrush(QColor(144, 238, 144)));
-  else if(m_ui.processes->item(row, STATUS))
-    m_ui.processes->item(row, STATUS)->setBackground
-      (QBrush(QColor(240, 128, 128)));
+  if(m_ui.processes->item(row, static_cast<int> (Columns::STATUS)) &&
+     m_ui.processes->item(row, static_cast<int> (Columns::STATUS))->text() ==
+     tr("Active"))
+    m_ui.processes->item(row, static_cast<int> (Columns::STATUS))->
+      setBackground(QBrush(QColor(144, 238, 144)));
+  else if(m_ui.processes->item(row, static_cast<int> (Columns::STATUS)))
+    m_ui.processes->item(row, static_cast<int> (Columns::STATUS))->
+      setBackground(QBrush(QColor(240, 128, 128)));
 
   m_ui.processes->setSortingEnabled(true);
   statusBar()->showMessage
     (tr("%1 Process(es)").arg(m_ui.processes->rowCount()));
 
-  if(values.value(STATUS) == tr("Active") && values.value(TYPE) == "daemon")
+  if(values.value(Columns::STATUS) == tr("Active") &&
+     values.value(Columns::TYPE) == "daemon")
     {
-      m_daemon_pid = static_cast<pid_t> (values.value(PID).toLongLong());
+      m_daemon_pid = static_cast<pid_t>
+	(values.value(Columns::PID).toLongLong());
       m_ui.off_on->setChecked(true);
       m_ui.off_on->setText(tr("Online"));
     }
@@ -449,7 +453,7 @@ void spot_on_lite_monitor::slot_added
 void spot_on_lite_monitor::slot_changed
 (const QMap<Columns, QString> &values, const QString &tool_tip)
 {
-  auto item = m_pid_to_index.value(values.value(PID).toLongLong());
+  auto item = m_pid_to_index.value(values.value(Columns::PID).toLongLong());
 
   if(!item)
     return;
@@ -467,7 +471,7 @@ void spot_on_lite_monitor::slot_changed
     {
       it.next();
 
-      auto item = m_ui.processes->item(row, it.key());
+      auto item = m_ui.processes->item(row, static_cast<int> (it.key()));
 
       if(item)
 	{
@@ -476,13 +480,14 @@ void spot_on_lite_monitor::slot_changed
 	}
     }
 
-  if(m_ui.processes->item(row, STATUS) &&
-     m_ui.processes->item(row, STATUS)->text() == tr("Active"))
-    m_ui.processes->item(row, STATUS)->setBackground
-      (QBrush(QColor(144, 238, 144)));
-  else if(m_ui.processes->item(row, STATUS))
-    m_ui.processes->item(row, STATUS)->setBackground
-      (QBrush(QColor(240, 128, 128)));
+  if(m_ui.processes->item(row, static_cast<int> (Columns::STATUS)) &&
+     m_ui.processes->item(row, static_cast<int> (Columns::STATUS))->text() ==
+     tr("Active"))
+    m_ui.processes->item(row, static_cast<int> (Columns::STATUS))->
+      setBackground(QBrush(QColor(144, 238, 144)));
+  else if(m_ui.processes->item(row, static_cast<int> (Columns::STATUS)))
+    m_ui.processes->item(row, static_cast<int> (Columns::STATUS))->
+      setBackground(QBrush(QColor(240, 128, 128)));
 
   m_ui.processes->setSortingEnabled(true);
 }
