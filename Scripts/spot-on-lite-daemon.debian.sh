@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env sh
 ### BEGIN INIT INFO
 # Provides:          spot-on-lite-daemon.debian.sh
 # Required-Start:    $network $remote_fs $time

@@ -19,8 +19,8 @@ The LD_LIBRARY_PATH may require adjusting.
 export LD_LIBRARY_PATH=/usr/local/Trolltech/Qt-5.12.x/lib
 
 Debian administrators, please add spot-on-lite-daemon.debian.sh to
-/etc/init.d and execute
-sudo update-rc.d spot-on-lite-daemon.debian.sh defaults.
+/etc/init.d.
+Execute sudo update-rc.d spot-on-lite-daemon.debian.sh defaults.
 
 Summary of Spot-On-Lite
 <ul>
@@ -39,9 +39,9 @@ Summary of Spot-On-Lite
 <li>Per-process TCP clients.</li>
 <li>PowerPC!</li>
 <li>Prison Blues and Smoke.</li>
-<li>Raspberry Pi.</li>
 <li>Qt 5.5.1 (PowerPC).</li>
 <li>Qt LTS.</li>
+<li>Raspberry Pi.</li>
 <li>Sparc.</li>
 <li>UDP unicast.</li>
 <li>Vitals!</li>
