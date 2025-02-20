@@ -114,6 +114,7 @@ void spot_on_lite_daemon_udp_listener::new_connection
      list.value(6).toInt(),
      sd,
      list.value(4).toInt(),
+     m_parent->git_maximum_file_size(),
      peer_port);
   m_clients[QString::number(peer_port) +
 	    peer_address.scopeId() +

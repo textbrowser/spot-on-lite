@@ -89,6 +89,7 @@ void spot_on_lite_daemon_tcp_listener::incomingConnection
     (m_parent->configuration_file_name().toStdString());
   auto const congestion_control_file_name
     (m_parent->congestion_control_file_name().toStdString());
+  auto const git_maximum_file_size(m_parent->git_maximum_file_size());
   auto const ld_library_path
     (m_parent->child_process_ld_library_path().toStdString());
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 15, 0))
@@ -140,6 +141,8 @@ void spot_on_lite_daemon_tcp_listener::incomingConnection
 		congestion_control_file_name.data(),
 		"--end-of-message-marker",
 		list.value(7).toUtf8().toBase64().data(),
+		"--git-maximum-file-size",
+		QString::number(git_maximum_file_size).toStdString().data(),
 		"--identities-lifetime",
 		list.value(9).toStdString().data(),
 		"--local-server-file",

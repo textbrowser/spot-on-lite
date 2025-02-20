@@ -125,6 +125,7 @@ spot_on_lite_daemon_child::spot_on_lite_daemon_child
  const int so_linger,
  const int socket_descriptor,
  const int ssl_key_size,
+ const qint64 git_maximum_file_size,
  const quint16 peer_port):QObject()
 {
   m_attempt_local_connection_timer.setInterval(2500);
@@ -139,6 +140,7 @@ spot_on_lite_daemon_child::spot_on_lite_daemon_child
   m_congestion_control_file_name = congestion_control_file_name;
   m_end_of_message_marker = end_of_message_marker.toUtf8();
   m_general_timer.start(5000);
+  m_git_maximum_file_size = qBound(1024LL, git_maximum_file_size, 8388608LL);
   m_identity_lifetime = 1000 * static_cast<unsigned int>
     (qBound(5, identities_lifetime, 600));
   m_local_content_last_parsed = QDateTime::currentMSecsSinceEpoch();
@@ -1454,9 +1456,9 @@ void spot_on_lite_daemon_child::generate_ssl_tls(void)
 #endif
 }
 
-void spot_on_lite_daemon_child::log(const QString &error) const
+void spot_on_lite_daemon_child::log(const QVariant &error) const
 {
-  auto const e(error.trimmed());
+  auto const e(error.toString().trimmed());
 
   if(e.isEmpty())
     return;
@@ -2742,7 +2744,9 @@ void spot_on_lite_daemon_child::slot_write_data(const QByteArray &data)
 void spot_on_lite_daemon_child::slot_write_prison_blues_file
 (const QByteArray &data, const QByteArray &identity)
 {
-  if(data.trimmed().isEmpty() || identity.trimmed().isEmpty())
+  if(data.isEmpty() ||
+     data.size() > m_git_maximum_file_size ||
+     identity.trimmed().isEmpty())
     return;
 
   create_prison_blues_directory(identity);

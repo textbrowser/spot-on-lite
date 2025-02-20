@@ -237,6 +237,12 @@ int spot_on_lite_daemon::maximum_accumulated_bytes(void) const
   return m_maximum_accumulated_bytes;
 }
 
+qint64 spot_on_lite_daemon::git_maximum_file_size(void) const
+{
+  return m_prison_blues_process_options.value
+    ("git_maximum_file_size").toLongLong();
+}
+
 size_t spot_on_lite_daemon::memory(void) const
 {
   struct rusage rusage = {};
@@ -539,6 +545,7 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
       spot_on_lite_common::set_schedule(settings.value(key).toString());
     else if(key == "git_a" ||
 	    key == "git_local_directory" ||
+	    key == "git_maximum_file_size" ||
 	    key == "git_script" ||
 	    key == "git_site_clone" ||
 	    key == "git_site_push" ||

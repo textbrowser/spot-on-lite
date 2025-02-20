@@ -81,6 +81,7 @@ class spot_on_lite_daemon_child: public QObject
      const int so_linger,
      const int socket_descriptor,
      const int ssl_key_size,
+     const qint64 git_maximum_file_size,
      const quint16 peer_port);
   ~spot_on_lite_daemon_child();
   static bool memcmp(const QByteArray &a, const QByteArray &b);
@@ -120,10 +121,10 @@ class spot_on_lite_daemon_child: public QObject
 #endif
 #endif
   QQueue<QList<QVariant>> m_statistics_queue;
-  QReadWriteLock m_statistics_queue_mutex;
 #ifdef SPOTON_LITE_DAEMON_ENABLE_IDENTITIES_CONTAINER
   QReadWriteLock m_remote_identities_mutex;
 #endif
+  QReadWriteLock m_statistics_queue_mutex;
   QSslConfiguration m_ssl_configuration;
   QString m_certificates_file_name;
   QString m_configuration_file_name;
@@ -150,8 +151,9 @@ class spot_on_lite_daemon_child: public QObject
   int m_so_linger;
   int m_ssl_key_size;
   mutable QReadWriteLock m_local_content_mutex;
-  qint64 m_pid;
+  qint64 m_git_maximum_file_size;
   qint64 m_local_content_last_parsed;
+  qint64 m_pid;
   qint64 m_remote_content_last_parsed;
   quint16 m_peer_port;
   static QAtomicInteger<quint64> s_db_id;
@@ -170,7 +172,7 @@ class spot_on_lite_daemon_child: public QObject
 			    const long int days,
 			    QString &error);
   void generate_ssl_tls(void);
-  void log(const QString &error) const;
+  void log(const QVariant &error) const;
   void memzero(QByteArray &bytes) const;
 #ifdef SPOTON_LITE_DAEMON_DTLS_SUPPORTED
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 12, 0))

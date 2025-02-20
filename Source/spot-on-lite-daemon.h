@@ -64,6 +64,7 @@ class spot_on_lite_daemon: public QObject
   QString prison_blues_directory(void) const;
   QString remote_identities_file_name(void) const;
   int maximum_accumulated_bytes(void) const;
+  qint64 git_maximum_file_size(void) const;
   static void handler_signal(int signal_number);
   static void vitals(void);
   void log(const QString &error) const;

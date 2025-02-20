@@ -72,6 +72,19 @@ static int spoton_atoi(bool *ok, const char *argv)
   return QString(argv).toInt(ok);
 }
 
+static int spoton_atoll(bool *ok, const char *argv)
+{
+  if(!argv)
+    {
+      if(ok)
+	*ok = false;
+
+      return 0LL;
+    }
+
+  return QString(argv).toLongLong(ok);
+}
+
 static void handler_signal(int signal_number)
 {
   Q_UNUSED(signal_number);
@@ -155,6 +168,7 @@ int main(int argc, char *argv[])
   int silence = -1;
   int so_linger = -1;
   int ssl_key_size = -1;
+  qint64 git_maximum_file_size = -1;
   quint16 peer_port = 0;
 
   for(int i = 0; i < argc; i++)
@@ -239,6 +253,26 @@ int main(int argc, char *argv[])
 	    else
 	      {
 		std::cerr << "Invalid end-of-message-marker usage. Exiting."
+			  << std::endl;
+		return EXIT_FAILURE;
+	      }
+	  }
+      }
+    else if(strcmp(argv[i], "--git-maximum-file-size") == 0)
+      {
+	if(git_maximum_file_size == -1)
+	  {
+	    i += 1;
+
+	    auto ok = false;
+
+	    if(argc > i)
+	      git_maximum_file_size = static_cast<qint64>
+		(spoton_atoll(&ok, argv[i]));
+
+	    if(!ok)
+	      {
+		std::cerr << "Invalid git-maximum-file-size usage. Exiting."
 			  << std::endl;
 		return EXIT_FAILURE;
 	      }
@@ -575,6 +609,7 @@ int main(int argc, char *argv[])
 	     so_linger,
 	     sd,
 	     ssl_key_size,
+	     git_maximum_file_size,
 	     peer_port);
 
 	  rc = qapplication.exec();
