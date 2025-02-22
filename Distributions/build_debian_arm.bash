@@ -36,7 +36,6 @@ cp -p ./TO-DO ./opt/spot-on-lite/Documentation/.
 cp -p ./spot-on-lite-daemon.conf ./opt/spot-on-lite/.
 cp -p ./spot-on-lite-monitor.sh ./opt/spot-on-lite/.
 cp -pr ./Documentation/* ./opt/spot-on-lite/Documentation/.
-
 mkdir -p spot-on-lite-debian/usr/local
 
 architecture="$(dpkg --print-architecture)"
