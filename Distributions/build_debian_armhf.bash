@@ -14,6 +14,12 @@ then
     exit 1
 fi
 
+if [ ! -r common.pro ]
+then
+    echo "Please execute $0 from the primary directory."
+    exit 1
+fi
+
 make distclean 2>/dev/null
 mkdir -p ./opt/spot-on-lite/Documentation
 make -j $(nproc)
