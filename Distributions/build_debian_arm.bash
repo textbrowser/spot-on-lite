@@ -42,9 +42,9 @@ architecture="$(dpkg --print-architecture)"
 
 if [ "$architecture" = "armhf" ]
 then
-    cp -pr ./PiOS32 spot-on-lite-debian/DEBIAN
+    cp -pr ./Distributions/PiOS32 spot-on-lite-debian/DEBIAN
 else
-    cp -pr ./PiOS64 spot-on-lite-debian/DEBIAN
+    cp -pr ./Distributions/PiOS64 spot-on-lite-debian/DEBIAN
 fi
 
 cp -r ./opt/spot-on-lite spot-on-lite-debian/opt/.
