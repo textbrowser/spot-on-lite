@@ -30,8 +30,8 @@ cp -p ./TO-DO ./opt/spot-on-lite/Documentation/.
 cp -p ./spot-on-lite-daemon.conf ./opt/spot-on-lite/.
 cp -p ./spot-on-lite-monitor.sh ./opt/spot-on-lite/.
 cp -pr ./Documentation/* ./opt/spot-on-lite/Documentation/.
-mkdir -p spot-on-lite-debian/usr/local
-cp -pr ./DEBIAN spot-on-lite-debian/.
+mkdir -p spot-on-lite-debian/opt
+cp -pr ./Distributions/DEBIAN spot-on-lite-debian/.
 cp -r ./opt/spot-on-lite spot-on-lite-debian/opt/.
 fakeroot dpkg-deb --build spot-on-lite-debian Spot-On-Lite-2025.03.05_amd64.deb
 rm -fr ./opt
