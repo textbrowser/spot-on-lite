@@ -2,6 +2,12 @@
 
 # Alexis Megas.
 
+if [ ! -x /usr/bin/dpkg ]
+then
+    echo "Please install dpkg."
+    exit 1
+fi
+
 if [ ! -x /usr/bin/dpkg-deb ]
 then
     echo "Please install dpkg-deb."
@@ -32,9 +38,20 @@ cp -p ./spot-on-lite-monitor.sh ./opt/spot-on-lite/.
 cp -pr ./Documentation/* ./opt/spot-on-lite/Documentation/.
 
 mkdir -p spot-on-lite-debian/usr/local
-cp -pr ./PiOS spot-on-lite-debian/DEBIAN
+
+architecture="$(dpkg --print-architecture)"
+
+if [ "$architecture" = "armhf" ]
+then
+    cp -pr ./PiOS32 spot-on-lite-debian/DEBIAN
+else
+    cp -pr ./PiOS64 spot-on-lite-debian/DEBIAN
+fi
+
 cp -r ./opt/spot-on-lite spot-on-lite-debian/opt/.
-fakeroot dpkg-deb --build spot-on-lite-debian Spot-On-Lite-2025.03.05_armhf.deb
+fakeroot dpkg-deb \
+	 --build spot-on-lite-debian \
+	 Spot-On-Lite-2025.03.05_$(architecture).deb
 rm -fr ./opt
 rm -fr spot-on-lite-debian
 make distclean
