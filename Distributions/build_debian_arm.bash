@@ -50,8 +50,7 @@ fi
 
 cp -r ./opt/spot-on-lite spot-on-lite-debian/opt/.
 fakeroot dpkg-deb \
-	 --build spot-on-lite-debian \
-	 Spot-On-Lite-2025.03.05_$(architecture).deb
+	 --build spot-on-lite-debian Spot-On-Lite-2025.03.05_$architecture.deb
 rm -fr ./opt
 rm -fr spot-on-lite-debian
 make distclean
