@@ -9,16 +9,17 @@ QT		+= gui sql widgets
 
 FORMS           = UI/spot-on-lite-monitor.ui
 HEADERS		= Source/spot-on-lite-monitor.h
+PROJECTNAME	= Spot-On-Lite-Monitor
 RESOURCES	= Documentation/documentation.qrc \
                   Icons/icons.qrc
 SOURCES		= Source/spot-on-lite-monitor.cc
+TARGET		= Spot-On-Lite-Monitor
+TEMPLATE	= app
 TRANSLATIONS    =
 UI_HEADERS_DIR  = .
 
-PROJECTNAME	= Spot-On-Lite-Monitor
-TARGET		= Spot-On-Lite-Monitor
-TEMPLATE	= app
-
+android {
+ANDROID_PACKAGE_SOURCE_DIR = $$PWD/Android
 DISTFILES += Android/AndroidManifest.xml \
              Android/build.gradle \
              Android/gradle.properties \
@@ -27,4 +28,4 @@ DISTFILES += Android/AndroidManifest.xml \
              Android/gradlew \
              Android/gradlew.bat \
              Android/res/values/libs.xml
-ANDROID_PACKAGE_SOURCE_DIR = $$PWD/Android
+}
