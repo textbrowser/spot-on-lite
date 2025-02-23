@@ -53,10 +53,10 @@ then
 
     if [ ! $rc -eq 0 ]
     then
-	echo "[GIT-CLONE failed! Bye!]"
+	echo "GIT-CLONE failed! Bye!"
 	exit $rc
     else
-	echo "[Great!]"
+	echo "Great!"
     fi
 fi
 
@@ -65,7 +65,7 @@ cd "$local_directory"
 
 if [ ! $? -eq 0 ]
 then
-    echo "[Cannot set current directory! Bye!]"
+    echo "Cannot set current directory! Bye!"
     exit 1
 else
     # Remove files older than five minutes.
@@ -86,9 +86,9 @@ else
 
     if [ ! $? eq 0 ]
     then
-	echo "[GIT-CONFIG failed!]"
+	echo "GIT-CONFIG failed!"
     else
-	echo "[Great!]"
+	echo "Great!"
     fi
 
     # Pull?
@@ -100,14 +100,14 @@ else
 
     if [ $rc -eq 0 ]
     then
-	echo "[Great!]"
+	echo "Great!"
 	echo "Determining if there are local revisions."
 	rc=$(git ls-files --deleted --exclude-standard --others \
 		 2>/dev/null | wc -l)
 
 	if [ $rc -lt 1 ]
 	then
-	    echo "[All set! Bye!]"
+	    echo "All set! Bye!"
 	    git clean -df . 1>/dev/null 2>/dev/null
 	    exit 0
 	fi
@@ -119,7 +119,7 @@ else
 
 	if [ ! $rc -eq 0 ]
 	then
-	    echo "[GIT-ADD failed! Bye!]"
+	    echo "GIT-ADD failed! Bye!"
 	    exit $rc
 	fi
 
@@ -130,10 +130,10 @@ else
 
 	if [ ! $rc -eq 0 ]
 	then
-	    echo "[GIT-COMMIT failed! Bye!]"
+	    echo "GIT-COMMIT failed! Bye!"
 	    exit $rc
 	else
-	    echo "[Great!]"
+	    echo "Great!"
 	fi
 
 	echo "Issuing a GIT-PULL request."
@@ -141,9 +141,9 @@ else
 
 	if [ ! $? -eq 0 ]
 	then
-	    echo "[GIT-PULL failed!]"
+	    echo "GIT-PULL failed!"
 	else
-	    echo "[Great!]"
+	    echo "Great!"
 	fi
 
 	site=$(eval "echo ${GIT_SITE_PUSH}")
@@ -155,13 +155,13 @@ else
 
 	if [ ! $rc -eq 0 ]
 	then
-	    echo "[GIT-PUSH failed! Bye!]"
+	    echo "GIT-PUSH failed! Bye!"
 	    exit $rc
 	else
-	    echo "[Great!]"
+	    echo "Great!"
 	fi
     else
-	echo "[GIT-PULL failed! Bye!]"
+	echo "GIT-PULL failed! Bye!"
 	exit $rc
     fi
 fi
