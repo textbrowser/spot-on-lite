@@ -5,4 +5,4 @@
 
 2. Private Server
 
-> ssh -CR 4170:192.168.178.xyz:4170 -Nf user@public-server.org
+> ssh -CR 5170:192.168.178.xyz:5170 -Nf user@public-server.org

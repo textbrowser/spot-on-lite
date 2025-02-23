@@ -6,7 +6,7 @@ sudo iptables -D INPUT 1
 
 iptables -A INPUT \
 	 -p tcp \
-	 --dport 4710 \
+	 --dport 5710 \
 	 --syn \
 	 -j REJECT \
 	 --reject-with tcp-reset \
@@ -23,11 +23,11 @@ iptables -A INPUT \
 	 --connlimit-above 1 \
 	 --connlimit-mask 32
 
-# Limit 50 connections to port 4710.
+# Limit 50 connections to port 5710.
 
 iptables -A INPUT \
 	 -p tcp \
-	 --dport 4710 \
+	 --dport 5710 \
 	 --syn \
 	 -j REJECT \
 	 --reject-with tcp-reset \
