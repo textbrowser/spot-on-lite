@@ -22,5 +22,6 @@ then
     cd /opt/spot-on-lite && exec ./Spot-On-Lite-Monitor "$@"
     exit $?
 else
+    echo "Where is Spot-On-Lite-Monitor?"
     exit 1
 fi
