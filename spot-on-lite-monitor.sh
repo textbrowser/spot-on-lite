@@ -13,13 +13,13 @@ export QT_X11_NO_MITSHM=1
 if [ -r ./Spot-On-Lite-Monitor ] && [ -x ./Spot-On-Lite-Monitor ]
 then
     echo "Launching a local Spot-On-Lite-Monitor."
-    exec ./Spot-On-Lite-Monitor "$@"
+    ./Spot-On-Lite-Monitor "$@"
     exit $?
 elif [ -r /opt/spot-on-lite/Spot-On-Lite-Monitor ] && \
      [ -x /opt/spot-on-lite/Spot-On-Lite-Monitor ]
 then
     echo "Launching an official Spot-On-Lite-Monitor."
-    cd /opt/spot-on-lite && exec ./Spot-On-Lite-Monitor "$@"
+    cd /opt/spot-on-lite && ./Spot-On-Lite-Monitor "$@"
     exit $?
 else
     echo "Where is Spot-On-Lite-Monitor?"
