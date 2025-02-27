@@ -152,7 +152,7 @@ spot_on_lite_daemon_sha::spot_on_lite_daemon_sha(void)
 {
 }
 
-QByteArray spot_on_lite_daemon_sha::sha_512(const QByteArray &data) const
+QByteArray spot_on_lite_daemon_sha::sha2_512(const QByteArray &data) const
 {
 #ifdef SPOTON_LITE_DAEMON_CHILD_ECL_SUPPORTED
   QByteArray hash;
@@ -322,8 +322,8 @@ QByteArray spot_on_lite_daemon_sha::sha_512(const QByteArray &data) const
 
       for(int t = 0; t <= 79; t++)
 	{
-	  auto T1 = h + S1_512(e) + Ch(e, f, g) + m_K.at(t) + W.at(t);
-	  auto T2 = S0_512(a) + Maj(a, b, c);
+	  auto const T1 = h + S1_512(e) + Ch(e, f, g) + m_K.at(t) + W.at(t);
+	  auto const T2 = S0_512(a) + Maj(a, b, c);
 
 	  h = g;
 	  g = f;
@@ -369,7 +369,7 @@ QByteArray spot_on_lite_daemon_sha::sha_512(const QByteArray &data) const
 #endif
 }
 
-QByteArray spot_on_lite_daemon_sha::sha_512_hmac
+QByteArray spot_on_lite_daemon_sha::sha2_512_hmac
 (const QByteArray &data, const QByteArray &key) const
 {
   /*
@@ -380,7 +380,7 @@ QByteArray spot_on_lite_daemon_sha::sha_512_hmac
   auto k(key);
 
   if(s_block_length < k.length())
-    k = sha_512(k);
+    k = sha2_512(k);
 
   if(s_block_length > k.length())
     k.append(QByteArray(s_block_length - k.length(), 0));
@@ -397,5 +397,20 @@ QByteArray spot_on_lite_daemon_sha::sha_512_hmac
   for(int i = 0; i < s_block_length; i++)
     right[i] = static_cast<char> (k.at(i) ^ ipad.at(i));
 
-  return sha_512(left.append(sha_512(right.append(data))));
+  return sha2_512(left.append(sha2_512(right.append(data))));
+}
+
+QByteArray spot_on_lite_daemon_sha::sha3_512(const QByteArray &data) const
+{
+  return QCryptographicHash::hash(data, QCryptographicHash::Sha3_512);
+}
+
+QByteArray spot_on_lite_daemon_sha::sha3_512_hmac
+(const QByteArray &data, const QByteArray &key) const
+{
+  QMessageAuthenticationCode message_authentication
+    (QCryptographicHash::Sha3_512, key);
+
+  message_authentication.addData(data);
+  return message_authentication.result();
 }

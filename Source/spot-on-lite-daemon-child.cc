@@ -1735,14 +1735,14 @@ void spot_on_lite_daemon_child::process_local_content(void)
 	    }
 
 	  QHashIterator<QByteArray, QString> it(identities);
-	  spot_on_lite_daemon_sha sha_512;
+	  spot_on_lite_daemon_sha sha2_512;
 
 	  while(it.hasNext() &&
 		m_process_local_content_future.isCanceled() == false)
 	    {
 	      it.next();
 
-	      if(memcmp(hash, sha_512.sha_512_hmac(data, it.key())))
+	      if(memcmp(hash, sha2_512.sha2_512_hmac(data, it.key())))
 		{
 		  /*
 		  ** Found!
@@ -1989,7 +1989,7 @@ void spot_on_lite_daemon_child::read_prison_blues_files
     return;
 
   QDirIterator it(prison_blues_directory, QDirIterator::Subdirectories);
-  spot_on_lite_daemon_sha sha_512;
+  spot_on_lite_daemon_sha sha2_512;
 
   while(it.hasNext() && m_read_prison_blues_files_future.isCanceled() == false)
     {
@@ -2027,8 +2027,8 @@ void spot_on_lite_daemon_child::read_prison_blues_files
 			if(m_read_prison_blues_files_future.isCanceled())
 			  return;
 			else if(memcmp(hash,
-				       sha_512.sha_512_hmac(data,
-							    identities[i])))
+				       sha2_512.sha2_512_hmac(data,
+							      identities[i])))
 			  {
 			    /*
 			    ** Found!
@@ -2103,7 +2103,8 @@ void spot_on_lite_daemon_child::record_remote_identity
     {
       algorithm = identity.mid(index + 1).toLower().trimmed();
 
-      if(!(algorithm == "sha-512"))
+      if(!(algorithm == "sha-512" ||
+	   algorithm == "sha3-512"))
 	algorithm = "sha-512";
 
       identity = identity.mid(0, index);
