@@ -24,14 +24,14 @@ Execute sudo update-rc.d spot-on-lite-daemon.debian.sh defaults.
 
 Summary of Spot-On-Lite
 <ul>
-<li>AMD64 and ARMHF distributions.</li>
-<li>ARM and ARM64!</li>
+<li>AMD64 distributions.</li>
+<li>ARM and ARM64 distributions!</li>
 <li>Brief source!</li>
 <li>Configurable.</li>
 <li>Congestion control.</li>
 <li>Cryptographic Discovery!</li>
 <li>DTLS!</li>
-<li>Debian, FreeBSD, Mac, OpenBSD.</li>
+<li>Debian, FreeBSD, MacOS, OpenBSD.</li>
 <li>Documentation manuals.</li>
 <li>Infinite listeners.</li>
 <li>Monitor interface.</li>
