@@ -1,8 +1,8 @@
-1. Public Server SSH Configuration
+Private Server
+
+> ssh -CR 5170:192.168.178.xyz:5170 -Nf user@public-server.org
+
+Public Server SSH Configuration
 
 > sudo nano /etc/ssh/sshd_config
   GatewayPorts yes
-
-2. Private Server
-
-> ssh -CR 5170:192.168.178.xyz:5170 -Nf user@public-server.org
