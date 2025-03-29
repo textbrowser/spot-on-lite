@@ -4,36 +4,16 @@ on low-power machines. Curious?
 Compulab, Lanner, Raspberry Pi, Sophos, medical equipment.
 A machine capable of electronic curiosity. Escape the techno-wardens.
 
-Spot-On-Lite supports Qt LTS. ARM, PowerPC, and Sparc are supported.
-Qt 5.5.1 is also supported for PowerPC.
-
-Included is a curious Lisp implementation of SHA-512. Super fast, super cute.
-
-On Linux, limiting the number of processes may be achieved
-via /etc/security/limits.conf.
-
-spot-on-lite-daemon		hard	nproc		256
-
-The LD_LIBRARY_PATH may require adjusting.
-
-export LD_LIBRARY_PATH=/usr/local/Trolltech/Qt-5.12.x/lib
-
-Debian administrators, please add spot-on-lite-daemon.debian.sh to
-/etc/init.d.
-Execute sudo update-rc.d spot-on-lite-daemon.debian.sh defaults.
-
 Summary of Spot-On-Lite
 <ul>
-<li>AMD64 distributions.</li>
-<li>ARM and ARM64 distributions!</li>
-<li>Brief source!</li>
-<li>Configurable.</li>
+<li>AMD64, ARM, and ARM64 distributions!</li>
 <li>Congestion control.</li>
 <li>Cryptographic Discovery!</li>
 <li>DTLS!</li>
 <li>Debian, FreeBSD, MacOS, OpenBSD.</li>
 <li>Documentation manuals.</li>
 <li>Infinite listeners.</li>
+<li>LISP implementation of SHA-512.</li>
 <li>Monitor interface.</li>
 <li>Multiple instances of a daemon.</li>
 <li>Per-process TCP clients.</li>
@@ -44,7 +24,6 @@ Summary of Spot-On-Lite
 <li>Raspberry Pi.</li>
 <li>Sparc.</li>
 <li>UDP unicast.</li>
-<li>Vitals!</li>
 </ul>
 
 ```
@@ -59,5 +38,3 @@ Name                ./Spot-On-Lite-Daemon
 Uptime              1254994 Second(s)
 Type                daemon
 ```
-
-![alt text](https://github.com/textbrowser/spot-on-lite/blob/master/Images/spot-on-lite-monitor.png)
