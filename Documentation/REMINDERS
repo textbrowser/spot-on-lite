@@ -24,7 +24,7 @@ Completed Items
 - Introduce QSsl::Ec.
 - Limit number of processes via /etc/security/limits.conf.
 - Lisp version of the SHA-512 implementation. Optional.
-- Mac! Yuck!
+- MacOS! Yuck!
 - OpenSSL 3.x (https://wiki.openssl.org/index.php/OpenSSL_3.0).
 - Optionally remove temporary files.
 - Partition datagrams.
