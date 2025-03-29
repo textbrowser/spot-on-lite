@@ -17,15 +17,3 @@ TARGET		= Spot-On-Lite-Monitor
 TEMPLATE	= app
 TRANSLATIONS    =
 UI_HEADERS_DIR  = .
-
-android {
-ANDROID_PACKAGE_SOURCE_DIR = $$PWD/Android
-DISTFILES += Android/AndroidManifest.xml \
-             Android/build.gradle \
-             Android/gradle.properties \
-             Android/gradle/wrapper/gradle-wrapper.jar \
-             Android/gradle/wrapper/gradle-wrapper.properties \
-             Android/gradlew \
-             Android/gradlew.bat \
-             Android/res/values/libs.xml
-}
