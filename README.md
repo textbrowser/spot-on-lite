@@ -6,23 +6,20 @@ A machine capable of electronic curiosity. Escape the techno-wardens.
 
 Summary of Spot-On-Lite
 <ul>
-<li>AMD64, ARM, and ARM64 distributions!</li>
+<li>AMD64, ARM, ARM64, Apple Silicon, PowerPC, Sparc.</li>
 <li>Congestion control.</li>
 <li>Cryptographic Discovery!</li>
 <li>DTLS!</li>
-<li>Debian, FreeBSD, MacOS, OpenBSD.</li>
+<li>Debian, FreeBSD, MacOS, OpenBSD, PiOS.</li>
 <li>Documentation manuals.</li>
 <li>Infinite listeners.</li>
 <li>LISP implementation of SHA-512.</li>
 <li>Monitor interface.</li>
 <li>Multiple instances of a daemon.</li>
 <li>Per-process TCP clients.</li>
-<li>PowerPC!</li>
 <li>Prison Blues and Smoke.</li>
 <li>Qt 5.5.1 (PowerPC).</li>
 <li>Qt LTS.</li>
-<li>Raspberry Pi.</li>
-<li>Sparc.</li>
 <li>UDP unicast.</li>
 </ul>
 
