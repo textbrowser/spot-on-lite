@@ -185,6 +185,7 @@ class spot_on_lite_daemon_child: public QObject
   void process_local_content(void);
   void process_read_data(const QByteArray &data);
   void process_remote_content(void);
+  void purge(void);
   void purge_containers(void);
   void purge_remote_identities(void);
   void purge_statistics(void);

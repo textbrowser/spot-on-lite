@@ -459,8 +459,6 @@ spot_on_lite_daemon_child::spot_on_lite_daemon_child
 
 spot_on_lite_daemon_child::~spot_on_lite_daemon_child()
 {
-  purge_statistics();
-  stop_threads_and_timers();
 }
 
 QHash<QByteArray, QString>spot_on_lite_daemon_child::
@@ -1904,6 +1902,12 @@ void spot_on_lite_daemon_child::process_remote_content(void)
      QString::number(m_bytes_written.fetchAndAddOrdered(0ULL)));
 }
 
+void spot_on_lite_daemon_child::purge(void)
+{
+  purge_statistics();
+  stop_threads_and_timers();
+}
+
 void spot_on_lite_daemon_child::purge_containers(void)
 {
   {
@@ -2455,7 +2459,10 @@ void spot_on_lite_daemon_child::slot_disconnected(void)
       if(m_protocol != QAbstractSocket::UdpSocket)
 	QCoreApplication::exit(0);
       else
-	deleteLater();
+	{
+	  purge();
+	  QCoreApplication::exit(0);
+	}
     }
 }
 
@@ -2567,7 +2574,10 @@ void spot_on_lite_daemon_child::slot_keep_alive_timer_timeout(void)
       if(m_protocol != QAbstractSocket::UdpSocket)
 	QCoreApplication::exit(0);
       else
-	deleteLater();
+	{
+	  purge();
+	  QCoreApplication::exit(0);
+	}
     }
 }
 
