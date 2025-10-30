@@ -584,6 +584,10 @@ int main(int argc, char *argv[])
     {
       if(protocol == "tcp" || protocol == "udp")
 	{
+#ifdef Q_OS_MACOS
+	  qputenv("QT_SSL_USE_TEMPORARY_KEYCHAIN", "1");
+#endif
+
 	  QCoreApplication qapplication(argc, argv);
 	  spot_on_lite_daemon_child child
 	    (QByteArray(),
