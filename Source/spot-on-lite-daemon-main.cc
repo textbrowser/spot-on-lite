@@ -378,11 +378,14 @@ int main(int argc, char *argv[])
       return EXIT_FAILURE;
 #else
   Q_UNUSED(keep_terminal);
-  qputenv("QT_SSL_USE_TEMPORARY_KEYCHAIN", "1");
 #endif
 
   if(prepare_signal_handlers())
     return EXIT_FAILURE;
+
+#ifdef Q_OS_MACOS
+  qputenv("QT_SSL_USE_TEMPORARY_KEYCHAIN", "1");
+#endif
 
   QCoreApplication qapplication(argc, argv);
   auto rc = EXIT_SUCCESS;
