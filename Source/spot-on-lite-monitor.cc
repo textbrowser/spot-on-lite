@@ -102,7 +102,7 @@ int main(int argc, char *argv[])
 
 spot_on_lite_monitor::spot_on_lite_monitor(void):QMainWindow()
 {
-  QDir home_dir(home_path());
+  QDir const home_dir(home_path());
 
   home_dir.mkdir(".spot-on-lite-monitor");
   qRegisterMetaType<QMap<Columns, QString> > ("QMap<Columns, QString>");
@@ -204,7 +204,7 @@ spot_on_lite_monitor::spot_on_lite_monitor(void):QMainWindow()
 	  file_info = QFileInfo("Spot-On-Lite-Daemon");
 
 	  if(file_info.isExecutable() && file_info.isReadable())
-	  m_ui.launch_executable->setText(file_info.absoluteFilePath());
+	    m_ui.launch_executable->setText(file_info.absoluteFilePath());
 	}
     }
 

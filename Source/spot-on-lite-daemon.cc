@@ -1228,10 +1228,10 @@ void spot_on_lite_daemon::validate_configuration_file
 
 void spot_on_lite_daemon::vitals(void)
 {
-  QString connectionName("vitals");
+  QString const connection_name("vitals");
 
   {
-    auto db = QSqlDatabase::addDatabase("QSQLITE", connectionName);
+    auto db = QSqlDatabase::addDatabase("QSQLITE", connection_name);
 
     db.setDatabaseName(QDir::tempPath() +
 		       QDir::separator() +
@@ -1330,5 +1330,5 @@ void spot_on_lite_daemon::vitals(void)
     db.close();
   }
 
-  QSqlDatabase::removeDatabase(connectionName);
+  QSqlDatabase::removeDatabase(connection_name);
 }
