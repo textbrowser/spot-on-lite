@@ -78,9 +78,10 @@ class spot_on_lite_common
     else
       return -1;
 
-    auto priority = qBound(sched_get_priority_min(p),
-			   list.value(1).trimmed().toInt(),
-			   sched_get_priority_max(p));
+    auto const priority = qBound
+      (sched_get_priority_min(p),
+       list.value(1).trimmed().toInt(),
+       sched_get_priority_max(p));
     pid_t pid = 0;
     struct sched_param parameters = {};
 
