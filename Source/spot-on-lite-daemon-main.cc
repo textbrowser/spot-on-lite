@@ -179,14 +179,17 @@ static int make_daemon(void)
   for(rlim_t i = 0; i < rl.rlim_max; i++)
     close(static_cast<int> (i));
 
-  auto fd0 = open("/dev/null", O_RDWR);
-  auto fd1 = dup(0);
-  auto fd2 = dup(1);
+  auto const fd0 = open("/dev/null", O_RDWR);
+  auto const fd1 = dup(0);
+  auto const fd2 = dup(1);
 
   if(fd0 != 0 || fd1 != 1 || fd2 != 2)
     {
-      fprintf(stderr, "incorrect file descriptors: %d, %d, %d, exiting.\n",
-	      fd0, fd1, fd2);
+      fprintf(stderr,
+	      "incorrect file descriptors: %d, %d, %d, exiting.\n",
+	      fd0,
+	      fd1,
+	      fd2);
       return 1;
     }
 

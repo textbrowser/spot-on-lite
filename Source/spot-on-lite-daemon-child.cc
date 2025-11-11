@@ -897,8 +897,7 @@ void spot_on_lite_daemon_child::data_received
 	      if(m_dtls_client_verifier.
 		 verifyClient(socket, data, peer_address, peer_port))
 		m_verified_udp_clients[pair] = 0;
-	      else if(m_dtls_client_verifier.dtlsError() !=
-		      QDtlsError::NoError)
+	      else if(m_dtls_client_verifier.dtlsError() != QDtlsError::NoError)
 		{
 		  slot_disconnected();
 		  return;
