@@ -751,7 +751,7 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
 
 	auto const backlog = list.at(2).toInt(&o);
 
-	if(backlog < 1 || !o)
+	if(!o || backlog < 1)
 	  {
 	    entry_ok = false;
 
@@ -771,15 +771,15 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
 
 	if(!list.at(4).isEmpty())
 	  {
-	    auto const keySize = list.at(4).toInt(&o);
+	    auto const key_size = list.at(4).toInt(&o);
 
-	    if(!(keySize == 256 ||
-		 keySize == 384 ||
-		 keySize == 521 ||
-		 keySize == 2048 ||
-		 keySize == 3072 ||
-		 keySize == 4096 ||
-		 keySize == 7680) ||
+	    if(!(key_size == 256 ||
+		 key_size == 384 ||
+		 key_size == 521 ||
+		 key_size == 2048 ||
+		 key_size == 3072 ||
+		 key_size == 4096 ||
+		 key_size == 7680) ||
 	       !o)
 	      {
 		entry_ok = false;
@@ -858,7 +858,7 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
 
 	auto const identities_lifetime = list.at(9).toInt(&o);
 
-	if(identities_lifetime < 30 || identities_lifetime > 600 || !o)
+	if(!o || identities_lifetime < 30 || identities_lifetime > 600)
 	  {
 	    entry_ok = false;
 
@@ -896,7 +896,7 @@ void spot_on_lite_daemon::process_configuration_file(bool *ok)
 
 	auto const certificate_lifetime = list.at(11).toInt(&o);
 
-	if(certificate_lifetime < 1 || !o)
+	if(!o || certificate_lifetime < 1)
 	  {
 	    entry_ok = false;
 
