@@ -28,6 +28,7 @@
 #ifndef _spot_on_lite_daemon_udp_listener_h_
 #define _spot_on_lite_daemon_udp_listener_h_
 
+#include <QHash>
 #include <QPointer>
 #include <QTimer>
 #include <QUdpSocket>

@@ -28,6 +28,7 @@
 #ifndef _spot_on_lite_daemon_tcp_listener_h_
 #define _spot_on_lite_daemon_tcp_listener_h_
 
+#include <QHash>
 #include <QTcpServer>
 #include <QTimer>
 
