@@ -2278,6 +2278,8 @@ void spot_on_lite_daemon_child::share_identity(const QByteArray &data)
 	("bytes_written",
 	 QString::number(m_bytes_written.fetchAndAddOrdered(0ULL)));
     }
+
+  m_local_socket.flush();
 }
 
 void spot_on_lite_daemon_child::slot_attempt_local_connection(void)
@@ -2868,6 +2870,7 @@ void spot_on_lite_daemon_child::write(const QByteArray &data)
 	      {
 		i += static_cast<int> (rc);
 		m_bytes_written.fetchAndAddOrdered(static_cast<quint64> (rc));
+		m_remote_socket->flush();
 	      }
 	    else
 	      break;
