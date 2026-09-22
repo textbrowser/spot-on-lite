@@ -2,13 +2,19 @@
 
 # Alexis Megas.
 
-# We will not correct GIT errors.
-
 # If git has locked the local directory, a git command will fail.
 # We will not remove the lock.
 
 # If the local directory already exists, a git-clone will fail.
 # We will not remove the local directory!
+
+# We will not correct GIT errors.
+
+if [ -z "$(which git)" ]
+then
+    echo "Please install git. Bye!"
+    exit 1
+fi
 
 if [ -z ${GIT_A} ]
 then
@@ -42,12 +48,12 @@ fi
 
 local_directory="${GIT_LOCAL_DIRECTORY}"
 
-if [ ! -r "$local_directory" ]
+if [ ! -e "$local_directory" ]
 then
     site=$(eval "echo ${GIT_SITE_CLONE}")
 
     echo "Cloning $site into $local_directory."
-    git clone -q "$site" "$local_directory" 1>/dev/null 2>/dev/null
+    git clone --depth 1 -q "$site" "$local_directory" 1>/dev/null 2>/dev/null
 
     rc=$?
 
@@ -56,7 +62,7 @@ then
 	echo "GIT-CLONE failed! Bye!"
 	exit $rc
     else
-	echo "Great!"
+	echo "GIT-CLONE finished! Great!"
     fi
 fi
 
