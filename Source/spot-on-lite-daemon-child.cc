@@ -711,14 +711,18 @@ QList<QSslCipher> spot_on_lite_daemon_child::default_ssl_ciphers(void) const
 }
 
 bool spot_on_lite_daemon_child::memcmp
-(const QByteArray &a, const QByteArray &b)
+(const QByteArray &bytes1, const QByteArray &bytes2)
 {
-  auto const length = qMax(a.length(), b.length());
+  QByteArray a;
+  QByteArray b;
+  auto const length = qMax(bytes1.length(), bytes2.length());
   quint64 rc = 0;
 
+  a = bytes1.leftJustified(length, 0);
+  b = bytes2.leftJustified(length, 0);
+
   for(int i = 0; i < length; i++)
-    rc |= (i < a.length() ? static_cast<quint64> (a.at(i)) : 0ULL) ^
-      (i < b.length() ? static_cast<quint64> (b.at(i)) : 0ULL);
+    rc |= static_cast<quint64> (a[i]) ^ static_cast<quint64> (b[i]);
 
   return rc == 0;
 }
