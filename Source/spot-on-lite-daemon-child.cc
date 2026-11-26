@@ -716,13 +716,13 @@ bool spot_on_lite_daemon_child::memcmp
   QByteArray a;
   QByteArray b;
   auto const length = qMax(bytes1.length(), bytes2.length());
-  quint64 rc = 0;
+  auto rc = static_cast<quint64> (bytes1.length() ^ bytes2.length());
 
   a = bytes1.leftJustified(length, 0);
   b = bytes2.leftJustified(length, 0);
 
   for(int i = 0; i < length; i++)
-    rc |= static_cast<quint64> (a[i]) ^ static_cast<quint64> (b[i]);
+    rc |= static_cast<quint8> (a[i]) ^ static_cast<quint8> (b[i]);
 
   return rc == 0;
 }
